@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('reservation_cost', 10, 2)->default(0);
             $table->json('rules')->nullable(); // Reglas en formato JSON
             
-            $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

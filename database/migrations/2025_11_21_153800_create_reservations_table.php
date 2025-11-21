@@ -18,8 +18,8 @@ return new class extends Migration
             $table->decimal('total_cost', 10, 2)->default(0);
             $table->enum('status', ['Pendiente', 'Aprobada', 'Rechazada', 'Cancelada', 'Completada'])->default('Pendiente');
             
-            $table->foreignId('amenities_id')->constrained()->onDelete('cascade');
-            $table->foreignId('residents_id')->constrained()->onDelete('cascade');
+            $table->foreignId('amenity_id')->constrained()->onDelete('cascade');
+            $table->foreignId('resident_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

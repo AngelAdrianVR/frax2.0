@@ -18,11 +18,11 @@ return new class extends Migration
             // Campos polimórficos (crea reactable_id y reactable_type)
             $table->morphs('reactable'); 
             
-            $table->foreignId('residents_id')->constrained()->onDelete('cascade');
+            $table->foreignId('resident_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             
             // Evitar duplicados: Un residente solo una reacción por item
-            $table->unique(['residents_id', 'reactable_id', 'reactable_type']);
+            $table->unique(['resident_id', 'reactable_id', 'reactable_type']);
         });
     }
 

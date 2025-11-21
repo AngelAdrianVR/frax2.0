@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('punctuation'); // 1 a 5 estrellas
             $table->text('comment')->nullable();
             
-            $table->foreignId('suppliers_id')->constrained()->onDelete('cascade');
-            $table->foreignId('residents_id')->constrained()->onDelete('cascade');
+            $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
+            $table->foreignId('resident_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

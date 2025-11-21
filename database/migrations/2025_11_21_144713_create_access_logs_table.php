@@ -20,10 +20,10 @@ return new class extends Migration
             $table->text('notes')->nullable();
             
             // Referencias (Nullables porque un acceso puede ser de diferentes tipos de actores)
-            $table->foreignId('private_units_id')->nullable()->constrained();
-            $table->foreignId('users_id')->nullable()->constrained(); // Si fue un residente/guardia
-            $table->foreignId('visit_events_id')->nullable()->constrained(); // Si entró por evento
-            $table->foreignId('visits_id')->nullable()->constrained(); // Si fue una visita única
+            $table->foreignId('private_unit_id')->nullable()->constrained();
+            $table->foreignId('user_id')->nullable()->constrained(); // Si fue un residente/guardia
+            $table->foreignId('visit_event_id')->nullable()->constrained(); // Si entró por evento
+            $table->foreignId('visit_id')->nullable()->constrained(); // Si fue una visita única
             
             $table->timestamps();
         });

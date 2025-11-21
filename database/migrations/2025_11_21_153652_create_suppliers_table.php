@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('email', 100)->nullable();
             $table->string('category', 50)->nullable(); // Ej: Jardinería, Seguridad
             
-            $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

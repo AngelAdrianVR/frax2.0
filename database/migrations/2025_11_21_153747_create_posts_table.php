@@ -16,8 +16,8 @@ return new class extends Migration
             $table->text('description'); // El contenido del post
             $table->enum('type', ['General', 'Market', 'Noticia']); // Tipo de post
             
-            $table->foreignId('residents_id')->constrained()->onDelete('cascade'); // Autor
-            $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+            $table->foreignId('resident_id')->constrained()->onDelete('cascade'); // Autor
+            $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

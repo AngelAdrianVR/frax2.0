@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->boolean('primary')->default(false); // Booleano: Es rol principal?
             
-            $table->foreignId('users_id')->constrained()->onDelete('cascade');
-            $table->foreignId('roles_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('role_id')->constrained()->onDelete('cascade');
             
             $table->timestamps();
         });

@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('imagen_etiqueta_url', 255)->nullable();
             $table->enum('status', ['Recibido', 'Entregado', 'Regresado'])->default('Recibido');
             
-            $table->foreignId('private_units_id')->constrained()->onDelete('cascade'); // Destino
-            $table->foreignId('users_id')->constrained(); // Guardia que recibió
+            $table->foreignId('private_unit_id')->constrained()->onDelete('cascade'); // Destino
+            $table->foreignId('user_id')->constrained(); // Guardia que recibió
             $table->timestamps();
         });
     }

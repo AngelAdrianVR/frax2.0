@@ -22,7 +22,7 @@ return new class extends Migration
             // Quién invitó (Usuario existente)
             $table->foreignId('invited_by_user_id')->constrained('users');
             // A qué unidad pertenece la invitación (opcional)
-            $table->foreignId('private_units_id')->nullable()->constrained();
+            $table->foreignId('private_unit_id')->nullable()->constrained();
             
             $table->timestamps();
         });

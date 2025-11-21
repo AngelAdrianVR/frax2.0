@@ -19,8 +19,8 @@ return new class extends Migration
             $table->enum('payment_method', ['Transferencia', 'Efectivo', 'Tarjeta', 'Cheque']);
             
             // Relaciones según diagrama
-            $table->foreignId('billing_concepts_id')->constrained(); 
-            $table->foreignId('residents_id')->nullable()->constrained(); 
+            $table->foreignId('billing_concept_id')->constrained(); 
+            $table->foreignId('resident_id')->nullable()->constrained(); 
             // Sugerencia: Deberías considerar vincular esto a generated_fees en el futuro
             
             $table->timestamps();
