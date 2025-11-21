@@ -7,8 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class GeneratedFee extends Model
 {
     protected $fillable = [
-        'payment_reference', 'total_amount', 'amount_paid', 'expiration_date', 
-        'start_period', 'end_period', 'status', 'private_unit_id', 'billing_concept_id'
+        'payment_reference', 
+        'total_amount', 
+        'amount_paid', 
+        'expiration_date', 
+        'start_period', 
+        'end_period', 
+        'status', // 'Pendiente', 'Parcial', 'Pagado', 'Atrasada', 'Cancelado'
+        'private_unit_id', 
+        'billing_concept_id'
     ];
     protected $casts = [
         'total_amount' => 'decimal:2',

@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-    protected $fillable = ['description', 'type', 'resident_id', 'subdivision_id'];
+    protected $fillable = ['description', 
+        'type', // 'General', 'Market', 'Noticia'
+        'resident_id', 
+        'subdivision_id'
+];
     
     public function resident() { return $this->belongsTo(Resident::class, 'resident_id'); }
     

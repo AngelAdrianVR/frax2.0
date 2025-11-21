@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('exact_location', 150)->nullable();
             
             $table->foreignId('private_unit_id')->nullable()->constrained();
-            $table->foreignId('resident_id')->constrained();
+            $table->foreignId('resident_id')->nullable()->constrained(); // puede ser anónimo
             $table->timestamps();
         });
     }

@@ -14,7 +14,7 @@ class ParcelService extends Model
         'receipt_date', // Cuando llega a caseta
         'delivery_date', // Cuando el residente lo recoge
         'imagen_etiqueta_url', // Foto de la etiqueta para evidencia
-        'status', // Ej: 'received', 'delivered', 'returned'
+        'status', // 'Recibido', 'Entregado', 'Regresado'
         'private_unit_id', // A qué casa va dirigido
         'user_id' // El guardia/empleado que recibió el paquete en caseta
     ];

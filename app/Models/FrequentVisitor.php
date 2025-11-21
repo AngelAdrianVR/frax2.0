@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class FrequentVisitor extends Model
 {
     protected $fillable = [
-        'alias', 'name', 'default_reason', 'default_access_type', 
-        'default_plate', 'private_unit_id'
+        'alias', 
+        'name', 
+        'default_reason', 
+        'default_access_type', // Peatonal o Vehicular
+        'default_plate', 
+        'private_unit_id'
     ];
 
     public function privateUnit() 

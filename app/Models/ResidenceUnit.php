@@ -16,7 +16,7 @@ class ResidenceUnit extends Model
     protected $fillable = [
         'resident_id', 
         'private_unit_id',
-        'role_in_unit',
+        'role_in_unit', // 'Dueño', 'Inquilino'
         'responsible_for_payments', 
         'start_date', 
         'end_date', 

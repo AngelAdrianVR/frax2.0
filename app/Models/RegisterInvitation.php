@@ -7,8 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class RegisterInvitation extends Model
 {
     protected $fillable = [
-        'email', 'token', 'role_type', 'status', 
-        'expires_at', 'invited_by_user_id', 'private_unit_id'
+        'email', 
+        'token', 
+        'role_type', // 'Dueño', 'Familiar'
+        'status', // 'Pendiente', 'Aceptado', 'Expirado'
+        'expires_at', 
+        'invited_by_user_id', 
+        'private_unit_id'
     ];
 
     protected $casts = [

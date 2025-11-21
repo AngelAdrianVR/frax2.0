@@ -7,9 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class VisitEvent extends Model
 {
     protected $fillable = [
-        'name', 'qr_code', 'date_time_start', 'date_time_end', 
-        'guest_amount', 'max_qr_uses', 'current_use_count', 
-        'status', 'description', 'private_unit_id'
+        'name', 
+        'qr_code', 
+        'date_time_start', 
+        'date_time_end', 
+        'guest_amount', 
+        'max_qr_uses', 
+        'current_use_count', 
+        'status', // 'Activo', 'Inactivo', 'Cancelado'
+        'description', 
+        'private_unit_id'
     ];
 
     protected $casts = [

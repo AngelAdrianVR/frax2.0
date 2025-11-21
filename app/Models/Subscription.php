@@ -12,7 +12,7 @@ class Subscription extends Model
         'cost', 
         'start_date', 
         'current_expiration_date', 
-        'status', // Ej: 'active', 'expired', 'trial'
+        'status', // 'Prueba', 'Activo', 'Suspendido', 'Cancelado'
         'payment_details', // JSON con info de pasarela (Stripe/PayPal)
         'subdivision_id' // FK corregida a singular
     ];

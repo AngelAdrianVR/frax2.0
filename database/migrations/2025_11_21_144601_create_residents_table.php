@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('full_name', 150);
             $table->string('phone', 20)->nullable();
             $table->string('email', 100)->nullable();
-            $table->enum('person_type', ['Propietario', 'Inquilino', 'Empleado', 'miembro familiar'])->default('Inquilino');
+            $table->enum('person_type', ['Propietario', 'Inquilino', 'Empleado', 'Miembro familiar'])->default('Propietario');
             $table->boolean('is_emergency_contact')->default(false);
             $table->json('emergency_contact_info')->nullable();
             $table->boolean('is_slow_payer')->default(false); // Moroso

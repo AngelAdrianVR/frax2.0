@@ -10,8 +10,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PrivateUnit extends Model
 {
     protected $fillable = [
-        'lot_number', 'square_meters', 'unit_street', 'int_number', 
-        'status', 'access_block', 'subdivision_id'
+        'lot_number',
+        'square_meters', 
+        'unit_street', 
+        'int_number', 
+        'status', // 'Activo', 'Inactivo'
+        'access_block', 
+        'subdivision_id'
     ];
 
     protected $casts = [
