@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
         $table->string('name', 100);
         $table->decimal('base_amount', 10, 2); // Dinero: 10 dígitos, 2 decimales
-        $table->enum('recurrence_type', ['Mensual', 'Bimestral', 'Anual', 'Pago unico'])->default('Pago unico');
+        $table->enum('recurrence_type', ['Semanal', 'Quincenal', 'Mensual', 'Bimestral', 'Anual', 'Pago unico'])->default('Pago unico');
         $table->boolean('slow_payers_apply')->default(true); // Aplica a morosos?
         
         $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');

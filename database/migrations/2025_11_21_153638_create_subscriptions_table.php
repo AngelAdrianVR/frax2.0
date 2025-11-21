@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('cost', 10, 2);
             $table->date('start_date');
             $table->date('current_expiration_date');
-            $table->enum('status', ['Activo', 'Suspendido', 'Cancelado'])->default('Activo');
+            $table->enum('status', ['Prueba', 'Activo', 'Suspendido', 'Cancelado'])->default('Activo');
             $table->json('payment_details')->nullable(); // Info de tarjeta enmascarada o token
             
             $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name', 100); // nombre de la visita
             $table->string('identification', 50)->nullable();
             $table->string('default_reason', 100)->nullable();
-            $table->string('default_access_type', 20)->default('pedestrian');
+            $table->string('default_access_type', 20)->default('Peatonal'); // Peatonal o Vehicular
             $table->string('default_plate', 20)->nullable();
             
             $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');

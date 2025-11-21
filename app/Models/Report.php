@@ -12,11 +12,11 @@ class Report extends Model
     protected $fillable = [
         'title', 
         'description', 
-        'priority', // Ej: 'low', 'medium', 'high', 'urgent'
-        'status', // Ej: 'open', 'in_progress', 'resolved', 'closed'
+        'priority', // 'Baja', 'Alta', 'Critica'
+        'status', // 'Abierto', 'En progreso', 'Resuelto', 'Cerrada'
         'exact_location', // Coordenadas o descripción de dónde es el problema
         'private_unit_id', // (Opcional) Si el reporte es sobre una casa específica
-        'resident_id' // Quién reportó
+        'resident_id' // Quién reportó (puede ser anónimo: nullable)
     ];
 
     protected $casts = [

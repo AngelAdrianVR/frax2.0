@@ -11,9 +11,9 @@ class AccessLog extends Model
 
     protected $fillable = [
         'identifier', 
-        'movement_type', 
+        'movement_type', // 'Entrada', 'Salida'
         'date_time', 
-        'verification_method', 
+        'verification_method', // 'QR', 'RFID', 'Manual', 'Biometrico'
         'notes', 
         'foto_url', 
         'private_unit_id', 

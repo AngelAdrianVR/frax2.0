@@ -11,9 +11,9 @@ class BillingConcept extends Model
     protected $fillable = [
         'name', 
         'base_amount', 
-        'recurrence_type', // Ejemplo: 'monthly', 'yearly', 'one_time'
+        'recurrence_type', // 'Semanal', 'Quincenal', 'Mensual', 'Bimestral', 'Anual', 'Pago unico'
         'slow_payers_apply', // Si aplica recargos a morosos
-        'subdivision_id' // FK corregida a singular
+        'subdivision_id'
     ];
 
     protected $casts = [

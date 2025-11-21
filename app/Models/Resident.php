@@ -10,9 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Resident extends Model
 {
     protected $fillable = [
-        'full_name', 'phone', 'email', 'person_type', 
-        'is_emergency_contact', 'emergency_contact_info', 
-        'is_slow_payer', 'user_id'
+        'full_name', 
+        'phone', 
+        'email', 
+        'person_type', // 'Propietario', 'Inquilino', 'Empleado', 'Miembro familiar'
+        'is_emergency_contact', 
+        'emergency_contact_info', 
+        'is_slow_payer', 
+        'user_id'
     ];
 
     protected $casts = [

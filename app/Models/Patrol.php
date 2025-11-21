@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Patrol extends Model
 {
-    protected $fillable = ['start_time', 'end_time', 'status', 'scanned_points', 'user_id'];
+    protected $fillable = ['start_time', 
+        'end_time', 
+        'status',  // 'Activo', 'Terminado', 'Incidente'
+        'scanned_points', 
+        'user_id'
+];
 
     protected $casts = [
         'start_time' => 'datetime',

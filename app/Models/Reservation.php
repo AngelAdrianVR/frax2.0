@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reservation extends Model
 {
-    protected $fillable = ['start_date_time', 'end_date_time', 'total_cost', 'status', 'amenity_id', 'resident_id'];
+    protected $fillable = ['start_date_time', 
+        'end_date_time', 
+        'total_cost', 
+        'status', // 'Pendiente', 'Aprobada', 'Rechazada', 'Cancelada', 'Completada'
+        'amenity_id', 
+        'resident_id'
+    ];
+
     protected $casts = [
         'start_date_time' => 'datetime',
         'end_date_time' => 'datetime',

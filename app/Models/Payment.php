@@ -12,7 +12,7 @@ class Payment extends Model
         'transaction_folio', 
         'amount', 
         'payment_date', 
-        'payment_method', // Ej: 'transfer', 'cash', 'credit_card'
+        'payment_method', // 'Transferencia', 'Efectivo', 'Tarjeta', 'Cheque'
         'billing_concept_id', // FK: A qué concepto se abona
         'resident_id' // FK: Quién paga
     ];
