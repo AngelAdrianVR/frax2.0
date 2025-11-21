@@ -19,8 +19,8 @@ return new class extends Migration
             $table->enum('status', ['Abierto', 'En progreso', 'Resuelto', 'Cerrada'])->default('Abierto');
             $table->string('exact_location', 150)->nullable();
             
-            $table->foreignId('private_units_id')->nullable()->constrained();
-            $table->foreignId('residents_id')->constrained();
+            $table->foreignId('private_unit_id')->nullable()->constrained();
+            $table->foreignId('resident_id')->constrained();
             $table->timestamps();
         });
     }

@@ -18,7 +18,7 @@ return new class extends Migration
         $table->enum('recurrence_type', ['Mensual', 'Bimestral', 'Anual', 'Pago unico'])->default('Pago unico');
         $table->boolean('slow_payers_apply')->default(true); // Aplica a morosos?
         
-        $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+        $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
         $table->timestamps();
         });
     }

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('default_access_type', 20)->default('pedestrian');
             $table->string('default_plate', 20)->nullable();
             
-            $table->foreignId('private_units_id')->constrained()->onDelete('cascade');
+            $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
             
             $table->timestamps();
         });

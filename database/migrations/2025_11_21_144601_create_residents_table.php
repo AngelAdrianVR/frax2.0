@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('is_slow_payer')->default(false); // Moroso
             
             // Un residente puede tener un usuario de sistema asociado, o no.
-            $table->foreignId('users_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             
             $table->timestamps();
         });

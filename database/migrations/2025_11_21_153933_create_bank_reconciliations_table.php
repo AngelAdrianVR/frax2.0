@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('status', ['Pendiente', 'Conciliado', 'Error', 'Manual'])->default('Pendiente');
             $table->string('error_message', 255)->nullable();
             
-            $table->foreignId('payments_id')->unique()->constrained()->onDelete('cascade');
+            $table->foreignId('payment_id')->unique()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

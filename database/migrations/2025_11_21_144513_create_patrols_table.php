@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('status', ['Activo', 'Terminado', 'Incidente']);
             $table->integer('scanned_points')->default(0); // Contador entero
             
-            $table->foreignId('users_id')->constrained()->onDelete('cascade'); // Guardia que lo registra
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Guardia que lo registra
             
             $table->timestamps();
         });

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('status', ['Activo', 'Suspendido', 'Cancelado'])->default('Activo');
             $table->json('payment_details')->nullable(); // Info de tarjeta enmascarada o token
             
-            $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

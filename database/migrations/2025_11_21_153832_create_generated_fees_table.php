@@ -21,8 +21,8 @@ return new class extends Migration
             $table->date('end_period');   // Fin del periodo
             $table->enum('status', ['Pendiente', 'Parcial', 'Pagado', 'Atrasada', 'Cancelado'])->default('Pendiente');
             
-            $table->foreignId('private_units_id')->constrained()->onDelete('cascade');
-            $table->foreignId('billing_concepts_id')->constrained();
+            $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
+            $table->foreignId('billing_concept_id')->constrained();
             $table->timestamps();
         });
     }

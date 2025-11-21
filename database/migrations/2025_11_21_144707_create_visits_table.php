@@ -21,8 +21,8 @@ return new class extends Migration
             $table->enum('access_type', ['Peatonal', 'Vehicular']);
             $table->enum('status', ['Pendiente','Ingresado','Expirado','Cancelado'])->default('Pendiente');
             
-            $table->foreignId('private_units_id')->constrained()->onDelete('cascade');
-            $table->foreignId('visit_events_id')->nullable()->constrained()->onDelete('cascade'); // En caso de que sea parte de un evento
+            $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
+            $table->foreignId('visit_event_id')->nullable()->constrained()->onDelete('cascade'); // En caso de que sea parte de un evento
             
             $table->timestamps();
         });

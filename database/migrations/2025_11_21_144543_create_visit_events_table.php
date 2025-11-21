@@ -23,7 +23,7 @@ return new class extends Migration
             $table->enum('status', ['Activo', 'Inactivo', 'Cancelado'])->default('Activo');
             $table->text('description')->nullable(); // Renombrado de visit_eventscol para claridad
             
-            $table->foreignId('private_units_id')->constrained()->onDelete('cascade');
+            $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
             
             $table->timestamps();
         });

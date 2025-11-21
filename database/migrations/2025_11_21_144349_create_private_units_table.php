@@ -21,7 +21,7 @@ return new class extends Migration
             $table->boolean('access_block')->default(false); // Booleano: Bloqueado o no
             
             // Clave foránea
-            $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             
             $table->timestamps();
         });

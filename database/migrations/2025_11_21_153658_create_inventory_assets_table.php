@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedInteger('useful_life_in_hours')->nullable(); // Vida útil estimada
             $table->unsignedInteger('current_usage_hours')->default(0);
             
-            $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

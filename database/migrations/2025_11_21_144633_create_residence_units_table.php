@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('residence_units', function (Blueprint $table) {
            $table->id();
-            $table->foreignId('residents_id')->constrained()->onDelete('cascade');
-            $table->foreignId('private_units_id')->constrained()->onDelete('cascade');
+            $table->foreignId('resident_id')->constrained()->onDelete('cascade');
+            $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
             
             $table->enum('role_in_unit', ['Dueño', 'Inquilino'])->default('Dueño');
             $table->boolean('responsible_for_payments')->default(false);

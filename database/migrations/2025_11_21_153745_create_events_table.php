@@ -23,7 +23,7 @@ return new class extends Migration
             $table->unsignedInteger('capacity_per_resident')->nullable();
             $table->json('rules')->nullable();
             
-            $table->foreignId('subdivisions_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

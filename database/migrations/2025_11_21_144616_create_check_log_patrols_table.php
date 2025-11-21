@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->dateTime('scan_date_time');
             
-            $table->foreignId('patrols_id')->constrained()->onDelete('cascade');
-            $table->foreignId('checkpoints_id')->constrained()->onDelete('cascade');
+            $table->foreignId('patrol_id')->constrained()->onDelete('cascade');
+            $table->foreignId('checkpoint_id')->constrained()->onDelete('cascade');
             
             $table->timestamps();
         });
