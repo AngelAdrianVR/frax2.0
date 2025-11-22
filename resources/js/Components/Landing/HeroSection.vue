@@ -33,7 +33,7 @@ export default {
                         <span class="text-teal-500 font-bold tracking-widest text-sm uppercase">Tecnología Residencial</span>
                     </div>
 
-                    <h1 class="text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold text-white tracking-tight leading-[1.1] animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold text-white tracking-tight leading-[1.1] animate-fade-in-up pt-7" style="animation-delay: 0.2s;">
                         Gestión
                         <br>
                         <span class="relative inline-flex items-center align-middle mx-2 group cursor-pointer h-[60px] sm:h-[80px] w-[140px] sm:w-[180px] rounded-full overflow-hidden border-2 border-gray-700 hover:border-teal-400 transition-all duration-300" @click="$emit('open-video')">
