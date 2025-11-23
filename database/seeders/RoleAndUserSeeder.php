@@ -19,8 +19,8 @@ class RoleAndUserSeeder extends Seeder
         // ---------------------------------------------------------
         $roles = [
             ['name' => 'Admin', 'description' => 'Administrador General del Sistema'],
-            ['name' => 'Resident', 'description' => 'Residente o Propietario'],
-            ['name' => 'Employee', 'description' => 'Empleado (Guardia, Mantenimiento, etc.)'],
+            ['name' => 'Residente', 'description' => 'Residente o Propietario'],
+            ['name' => 'Empleado', 'description' => 'Empleado (Guardia, Mantenimiento, Jardinería etc.)'],
         ];
 
         foreach ($roles as $role) {
@@ -32,8 +32,8 @@ class RoleAndUserSeeder extends Seeder
 
         // Recuperamos los IDs para usarlos en la asignación
         $adminRoleId = DB::table('roles')->where('name', 'Admin')->value('id');
-        $residentRoleId = DB::table('roles')->where('name', 'Resident')->value('id');
-        $employeeRoleId = DB::table('roles')->where('name', 'Employee')->value('id');
+        $residentRoleId = DB::table('roles')->where('name', 'Residente')->value('id');
+        $employeeRoleId = DB::table('roles')->where('name', 'Empleado')->value('id');
 
         // ---------------------------------------------------------
         // 2. CREAR USUARIOS Y ASIGNAR ROLES
