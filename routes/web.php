@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+
 
 // Ruta Raíz: Muestra el estado de carga (animación)
 Route::get('/', function () {
@@ -25,3 +27,12 @@ Route::middleware([
     })->name('dashboard');
 });
 
+
+// Ejemplo de ruta para cambiar contexto
+Route::post('/switch-property', function (Request $request) {
+    // Validar que el usuario realmente pertenece a esa propiedad antes de cambiar
+    // ... lógica de validación ...
+    
+    session(['current_property_id' => $request->property_id]);
+    return back();
+});

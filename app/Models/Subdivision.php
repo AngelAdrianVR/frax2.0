@@ -31,7 +31,7 @@ class Subdivision extends Model
     /**
      * Un fraccionamiento tiene muchas unidades privativas (casas/lotes).
      */
-    public function privateUnits(): HasMany
+    public function residenceUnit(): HasMany
     {
         return $this->hasMany(PrivateUnit::class, 'subdivision_id');
     }

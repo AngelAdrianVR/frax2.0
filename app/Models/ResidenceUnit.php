@@ -2,21 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot; // CAMBIO: Usar Pivot en vez de Model
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ResidenceUnit extends Model
+class ResidenceUnit extends Pivot // CAMBIO: Extiende de Pivot
 {
-    // Al extender de Pivot y usarse con ->using(), habilita características extra
-    // NOTA: Si este modelo tiene lógica compleja independiente, es mejor usar Model normal en lugar de Pivot.
-    
-    protected $table = 'residence_units';
+    // Al tener un ID autoincremental en la tabla pivote, debemos indicarlo.
+    // Por defecto, Pivot asume que no hay ID autoincremental.
     public $incrementing = true; 
+
+    protected $table = 'residence_units';
 
     protected $fillable = [
         'resident_id', 
         'private_unit_id',
-        'role_in_unit', // 'Dueño', 'Inquilino'
+        'role_in_unit', 
         'responsible_for_payments', 
         'start_date', 
         'end_date', 
@@ -32,17 +32,18 @@ class ResidenceUnit extends Model
         'is_primary_owner' => 'boolean',
         'start_date' => 'date',
         'end_date' => 'date',
-        'permissions_level' => 'array', // JSON para permisos específicos
-        'role_in_unit' => 'integer',
+        'permissions_level' => 'array',
+        'role_in_unit' => 'string', // Ojo: En tu migración es un Enum/String ('Dueño', 'Inquilino'), no integer.
     ];
 
     /**
-     * Relación: Esta ocupación pertenece a un Usuario (Residente).
-     * Asumiendo que tus residentes están en la tabla 'users'.
+     * Relación: Esta ocupación pertenece a un Residente.
      */
     public function resident(): BelongsTo
     {
-        // Ajusta 'User::class' si tienes un modelo separado 'Resident::class'
+        // NOTA: Según tus migraciones, la tabla es 'residents', por lo que deberías
+        // apuntar al modelo Resident::class si existe, no a User::class.
+        // Si no tienes modelo Resident, déjalo como User, pero verifica tus llaves foráneas.
         return $this->belongsTo(User::class, 'resident_id');
     }
 

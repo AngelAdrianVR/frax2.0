@@ -3,7 +3,7 @@ import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 
-// Definición explícita de props para evitar errores de compilación
+// Definición explícita de props
 const props = defineProps({
     isOpen: {
         type: Boolean,
@@ -13,25 +13,45 @@ const props = defineProps({
 
 const emit = defineEmits(['toggleSidebar']);
 
+// Acceso a la página para obtener usuario y roles
+const page = usePage();
+
+// --- Lógica de Roles ---
+// Se asume que en tu base de datos el usuario tiene un campo 'role' con valores: 'Admin', 'Residente', 'Empleado'
+// Si tu estructura es diferente (ej. array de roles), ajusta esta línea.
+const userRole = computed(() => page.props.auth.user.role || 'Residente'); 
+
+const checkRole = (itemRoles) => {
+    // Si no se definen roles específicos para el ítem, todos pueden verlo
+    if (!itemRoles || itemRoles.length === 0) return true;
+    // El Admin siempre ve todo (Opcional, quita esta línea si quieres restringir al Admin también)
+    if (userRole.value === 'Admin') return true;
+    
+    return itemRoles.includes(userRole.value);
+};
+
 // --- Referencias y Lógica de Click Outside ---
 const sidebarRef = ref(null);
 
 // Función para cerrar categorías si se hace click fuera
 const handleClickOutside = (event) => {
-    // Solo aplica si el sidebar está cerrado (modo iconos)
+    // 1. Lógica para cerrar Dropdowns flotantes (Escritorio colapsado)
     if (!props.isOpen) {
-        // Verificar si el click fue dentro de un dropdown flotante (que ahora está en el body)
         const dropdowns = document.querySelectorAll('.sidebar-floating-dropdown');
         let clickedInsideDropdown = false;
-        
         dropdowns.forEach(el => {
             if (el.contains(event.target)) clickedInsideDropdown = true;
         });
 
-        // Si el click no fue en el sidebar ni en un dropdown, cerramos todo
         if (!clickedInsideDropdown && sidebarRef.value && !sidebarRef.value.contains(event.target)) {
             closeAllCategories();
         }
+    }
+    
+    // 2. Lógica para cerrar Sidebar en Móvil al hacer click fuera
+    // Si es móvil (pantalla pequeña) y está abierto, y el click no fue en el sidebar
+    if (window.innerWidth < 768 && props.isOpen && sidebarRef.value && !sidebarRef.value.contains(event.target)) {
+        emit('toggleSidebar');
     }
 };
 
@@ -55,7 +75,6 @@ const toggleTheme = () => {
 };
 
 onMounted(() => {
-    // Recuperar tema
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         isDark.value = true;
         document.documentElement.classList.add('dark');
@@ -63,10 +82,7 @@ onMounted(() => {
         isDark.value = false;
         document.documentElement.classList.remove('dark');
     }
-    
-    // Listeners globales
     document.addEventListener('click', handleClickOutside);
-    // Cerrar dropdowns al hacer scroll para evitar que se desfasen de su posición original
     window.addEventListener('scroll', closeAllCategories, true);
 });
 
@@ -76,48 +92,37 @@ onUnmounted(() => {
 });
 
 // --- Estado de Categorías y Posición del Dropdown ---
-const openCategories = ref({
-    inmobiliaria: false,
-    finanzas: false,
-    seguridad: false,
-    operaciones: false,
-});
-
-// Almacena la posición dinámica (top/left) para el menú flotante
+const openCategories = ref({});
 const dropdownPos = ref({ top: 0, left: 0 });
 
 const toggleCategory = (categoryKey, event) => {
-    // Lógica para cuando el sidebar está cerrado (Menú Flotante)
     if (!props.isOpen && event) {
-        // Obtenemos la posición del botón que fue clickeado
         const buttonRect = event.currentTarget.getBoundingClientRect();
-        
-        // Posicionamos el menú alineado al top del botón y a la derecha del sidebar
-        dropdownPos.value = {
-            top: buttonRect.top,
-            left: buttonRect.right
-        };
-
-        // Cerramos otras categorías para que actúe como un menú exclusivo
+        dropdownPos.value = { top: buttonRect.top, left: buttonRect.right };
         Object.keys(openCategories.value).forEach(key => {
             if (key !== categoryKey) openCategories.value[key] = false;
         });
     }
-
-    // Toggle normal
+    // Inicializar la categoría si no existe en el objeto reactivo
+    if (openCategories.value[categoryKey] === undefined) {
+        openCategories.value[categoryKey] = false;
+    }
     openCategories.value[categoryKey] = !openCategories.value[categoryKey];
 };
 
-// --- Datos del Menú ---
+// --- Datos del Menú con Roles ---
 const menuItems = [
     {
         category: 'Gestión Inmobiliaria',
         key: 'inmobiliaria',
         icon: 'M3 21h18M5 21V7l8-4 8 4v14M5 21h14', 
         items: [
-            { name: 'Residentes', route: 'residents.index' },
-            { name: 'Unidades Privadas', route: 'private_units.index' },
-            { name: 'Vehículos y Mascotas', route: 'vehicles.index' },
+            // Admin y Empleado pueden ver residentes y unidades
+            { name: 'Residentes', route: 'residents.index', allowedRoles: ['Admin', 'Empleado'] },
+            { name: 'Unidades Privadas', route: 'private_units.index', allowedRoles: ['Admin', 'Empleado'] },
+            // Todos pueden ver vehículos (ejemplo)
+            { name: 'Vehículos', route: 'vehicles.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
+            { name: 'Mascotas', route: 'vehicles.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
         ]
     },
     {
@@ -125,10 +130,11 @@ const menuItems = [
         key: 'finanzas',
         icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
         items: [
-            { name: 'Cuotas Generadas', route: 'fees.index' },
-            { name: 'Pagos Recibidos', route: 'payments.index' },
-            { name: 'Conciliación Bancaria', route: 'bank.reconciliations' },
-            { name: 'Morosos', route: 'slow.payers' },
+            // Solo residente ve sus cuotas, admin ve todo
+            { name: 'Mis Cuotas', route: 'fees.index', allowedRoles: ['Residente', 'Admin'] }, 
+            { name: 'Pagos Recibidos', route: 'payments.index', allowedRoles: ['Admin'] }, // Solo Admin
+            { name: 'Conciliación Bancaria', route: 'bank.reconciliations', allowedRoles: ['Admin'] },
+            { name: 'Morosos', route: 'slow.payers', allowedRoles: ['Admin', 'Empleado'] },
         ]
     },
     {
@@ -136,9 +142,9 @@ const menuItems = [
         key: 'seguridad',
         icon: 'M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z',
         items: [
-            { name: 'Bitácora de Accesos', route: 'access_log.index' },
-            { name: 'Visitas y QR', route: 'visits.index', badge: 5 }, 
-            { name: 'Rondines', route: 'patrols.index' },
+            { name: 'Bitácora de Accesos', route: 'access_log.index', allowedRoles: ['Admin', 'Empleado'] },
+            { name: 'Visitas y QR', route: 'visits.index', badge: 5, allowedRoles: ['Admin', 'Residente'] }, 
+            { name: 'Rondines', route: 'patrols.index', allowedRoles: ['Admin', 'Empleado'] },
         ]
     },
     {
@@ -146,34 +152,61 @@ const menuItems = [
         key: 'operaciones',
         icon: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z',
         items: [
-            { name: 'Amenidades', route: 'amenities.index' },
-            { name: 'Reservaciones', route: 'reservations.index' },
-            { name: 'Proveedores', route: 'suppliers.index' },
+            { name: 'Amenidades', route: 'amenities.index', allowedRoles: ['Admin', 'Residente'] },
+            { name: 'Reservaciones', route: 'reservations.index', allowedRoles: ['Admin', 'Residente'] },
+            { name: 'Proveedores', route: 'suppliers.index', allowedRoles: ['Admin'] },
         ]
     }
 ];
+
+// Computed Property para filtrar el menú completo
+const filteredMenuItems = computed(() => {
+    return menuItems.map(category => {
+        // Filtrar items dentro de la categoría
+        const filteredItems = category.items.filter(item => checkRole(item.allowedRoles));
+        
+        // Retornar nueva estructura de categoría solo con items permitidos
+        return {
+            ...category,
+            items: filteredItems
+        };
+    }).filter(category => category.items.length > 0); // Eliminar categorías vacías
+});
 
 // Lógica de Estatus de Pago
 const paymentStatus = ref('current');
 const statusText = computed(() => {
     switch(paymentStatus.value) {
-        case 'current': return 'Al corriente con los pagos';
+        case 'current': return 'Al corriente';
         case 'late': return 'Pagos atrasados';
-        case 'defaulter': return 'Deudas vencidas "Moroso"';
-        default: return 'Estado desconocido';
+        case 'defaulter': return 'Moroso';
+        default: return 'Desconocido';
     }
 });
 </script>
 
 <template>
+    <!-- Overlay Móvil (Fondo oscuro al abrir menú en móvil) -->
+    <div 
+        v-if="isOpen" 
+        class="fixed inset-0 bg-gray-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity"
+        @click="$emit('toggleSidebar')"
+    ></div>
+
     <aside 
         ref="sidebarRef"
         :class="[
-            'fixed top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out shadow-xl border-r flex flex-col',
-            isOpen ? 'w-72' : 'w-20',
-            // ESTILOS DE COLOR
+            'fixed top-0 left-0 z-50 h-screen transition-transform duration-300 ease-in-out shadow-xl border-r flex flex-col',
+            // --- MODIFICACIÓN VISIBILIDAD MÓVIL ---
+            // Móvil: Si isOpen es true, translate-0 (visible). Si false, -translate-x-full (oculto).
+            // Escritorio (md): Si isOpen es true, w-72. Si false, w-20 (modo iconos).
+            isOpen 
+                ? 'translate-x-0 w-72' 
+                : '-translate-x-full w-72 md:translate-x-0 md:w-20',
+            
+            // Estilos de color
             'bg-white border-gray-200',
-            'dark:bg-slate-700/50 dark:backdrop-blur-md dark:border-slate-700/50'
+            'dark:bg-zinc-800/30 dark:backdrop-blur-md dark:border-slate-700/50'
         ]"
     >
         <!-- 1. Header (FIXED TOP) -->
@@ -184,8 +217,8 @@ const statusText = computed(() => {
                     <ApplicationMark class="block h-8 w-auto text-blue-600 dark:text-blue-400" />
                 </Link>
                 <span v-if="isOpen" class="text-2xl font-bold tracking-tighter text-gray-900 dark:text-white">
-                        Frax<span class="text-blue-500">.</span>
-                    </span>
+                    Frax<span class="text-blue-500">.</span>
+                </span>
             </div>
             
             <!-- Toggle Button (Visible if open) -->
@@ -200,8 +233,8 @@ const statusText = computed(() => {
             </button>
         </div>
 
-        <!-- Toggle Button (Visible if closed - Centered) -->
-        <div v-if="!isOpen" class="w-full flex-none flex justify-center mb-4">
+        <!-- Toggle Button (Visible if closed - Centered - Solo Desktop) -->
+        <div v-if="!isOpen" class="w-full flex-none hidden md:flex justify-center mb-4">
              <button @click="$emit('toggleSidebar')" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-slate-400">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -220,24 +253,16 @@ const statusText = computed(() => {
                 <div class="flex items-center gap-4" :class="{'justify-center w-full': !isOpen}">
                     <!-- Avatar -->
                     <div class="relative flex-shrink-0">
-                        <img class="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-sm group-hover:border-blue-200 transition-colors" 
-                                :src="$page.props.auth.user.profile_photo_url" 
+                        <img class="h-10 w-10 md:h-14 md:w-14 rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-sm group-hover:border-blue-200 transition-colors" 
+                                :src="$page.props.auth.user.avatar" 
                                 :alt="$page.props.auth.user.name">
                         
-                        <!-- Semáforo con Tooltip -->
-                        <div class="group/tooltip absolute -top-1 -right-1 cursor-help">
+                        <!-- Semáforo -->
+                        <div class="group/tooltip absolute -top-4 -right-0 md:right-2 cursor-help">
                             <div class="flex gap-0.5 bg-white dark:bg-slate-900 rounded-full px-1 py-0.5 shadow-sm border border-gray-100 dark:border-slate-700">
-                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'current' ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.8)] scale-110' : 'bg-gray-300 dark:bg-slate-700'"></div>
-                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'late' ? 'bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)] scale-110' : 'bg-gray-300 dark:bg-slate-700'"></div>
-                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'defaulter' ? 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)] scale-110' : 'bg-gray-300 dark:bg-slate-700'"></div>
-                            </div>
-                            
-                            <!-- Tooltip Body -->
-                            <div class="absolute left-full top-0 ml-2 w-max max-w-[150px] invisible opacity-0 group-hover/tooltip:visible group-hover/tooltip:opacity-100 transition-all duration-200 z-50">
-                                <div class="bg-gray-900 text-white text-xs rounded py-1 px-2 shadow-lg relative">
-                                    {{ statusText }}
-                                    <div class="absolute top-2 -left-1 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                                </div>
+                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'current' ? 'bg-green-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
+                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'late' ? 'bg-amber-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
+                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'defaulter' ? 'bg-red-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
                             </div>
                         </div>
                     </div>
@@ -248,7 +273,7 @@ const statusText = computed(() => {
                             {{ $page.props.auth.user.name }}
                         </p>
                         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                            Ver Perfil
+                            {{ userRole }} <!-- Muestra el rol actual para debug -->
                         </p>
                     </div>
                 </div>
@@ -278,9 +303,9 @@ const statusText = computed(() => {
                 <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Módulos</p>
             </div>
 
-            <!-- Categorías -->
-            <div v-for="(category, index) in menuItems" :key="index" class="relative group">
-                <!-- Botón de Categoría: Pasamos el evento $event para calcular posición -->
+            <!-- Categorías (Usando filteredMenuItems) -->
+            <div v-for="(category, index) in filteredMenuItems" :key="index" class="relative group">
+                <!-- Botón de Categoría -->
                 <button 
                     @click="(e) => toggleCategory(category.key, e)"
                     :class="[
@@ -302,9 +327,9 @@ const statusText = computed(() => {
                     </div>
                 </button>
 
-                <!-- DROPDOWN FLOTANTE (TELEPORT AL BODY) -->
-                <!-- Esto saca el menú del sidebar para evitar que se corte o cause scroll -->
+                <!-- --- MODIFICACIÓN DROPDOWN FLOTANTE --- -->
                 <Teleport to="body">
+                    <!-- Agregamos min-w-[200px] para asegurar ancho, y z-[9999] -->
                     <div v-if="!isOpen && openCategories[category.key]" 
                         class="fixed z-[9999] bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 w-56 animate-fade-in-up sidebar-floating-dropdown"
                         :style="{ top: `${dropdownPos.top}px`, left: `${dropdownPos.left + 12}px` }"
@@ -312,10 +337,15 @@ const statusText = computed(() => {
                          <div class="px-4 py-2 border-b border-gray-100 dark:border-slate-700 mb-1">
                             <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ category.category }}</span>
                          </div>
+                         <!-- 
+                             CORRECCIÓN: Se eliminó v-if="route().has(item.route)" del Link principal.
+                             Si la ruta no existe, Inertia lanzará advertencia en consola, pero el elemento SE VERÁ. 
+                             Para producción, puedes envolverlo en <template v-if="route().has(...)">, 
+                             pero para desarrollo esto asegura que el menú no salga vacío.
+                         -->
                          <template v-for="item in category.items" :key="item.name">
                             <Link 
-                                v-if="route().has(item.route)" 
-                                :href="route(item.route)" 
+                                :href="route().has(item.route) ? route(item.route) : '#'" 
                                 class="flex items-center justify-between px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mx-2 rounded-lg"
                             >
                                 <span>{{ item.name }}</span>
@@ -339,11 +369,10 @@ const statusText = computed(() => {
                     <div v-if="isOpen && openCategories[category.key]" class="pl-11 pr-2 space-y-1 pb-2 pt-1">
                         <template v-for="item in category.items" :key="item.name">
                             <Link 
-                                v-if="route().has(item.route)" 
-                                :href="route(item.route)" 
+                                :href="route().has(item.route) ? route(item.route) : '#'" 
                                 :class="[
                                     'flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors border-l-2',
-                                    route().current(item.route) 
+                                    route().has(item.route) && route().current(item.route) 
                                         ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/10 font-medium' 
                                         : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/30'
                                 ]"
@@ -353,29 +382,27 @@ const statusText = computed(() => {
                                     {{ item.badge }}
                                 </span>
                             </Link>
-                            <span v-else class="block px-3 py-2 text-xs text-gray-400">{{ item.name }}</span>
                         </template>
                     </div>
                 </transition>
             </div>
         </nav>
 
-        <!-- 4. Footer (FIXED BOTTOM) -->
+        <!-- 4. Footer -->
         <div class="flex-none p-4 border-t border-gray-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md z-10">
              
              <!-- Toggle Theme -->
              <button 
                 @click="toggleTheme" 
                 class="w-full flex items-center justify-center gap-2 p-2 mb-2 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
-                :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
             >
                 <div v-if="isDark" class="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-yellow-400"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
-                    <span v-if="isOpen" class="text-sm">Modo Claro</span>
+                    <span v-if="isOpen" class="text-sm">Claro</span>
                 </div>
                 <div v-else class="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-indigo-500"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
-                    <span v-if="isOpen" class="text-sm">Modo Oscuro</span>
+                    <span v-if="isOpen" class="text-sm">Oscuro</span>
                 </div>
              </button>
 
@@ -384,7 +411,7 @@ const statusText = computed(() => {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 flex-shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
                 </svg>
-                <span v-if="isOpen" class="text-sm font-medium">Cerrar Sesión</span>
+                <span v-if="isOpen" class="text-sm font-medium">Salir</span>
             </Link>
         </div>
     </aside>
