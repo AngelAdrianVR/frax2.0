@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import Banner from '@/Components/Banner.vue';
 import Sidebar from '@/Components/MyComponents/Sidebar.vue';
 
@@ -8,18 +8,49 @@ defineProps({
     title: String,
 });
 
-// --- Control del Sidebar ---
+const page = usePage();
+
+// --- 1. Lógica Multi-propiedad (Context Switcher) ---
+
+// Mapeo directo a la estructura de HandleInertiaRequests.php
+const availableUnits = computed(() => page.props.auth.properties || []); 
+const currentUnit = computed(() => page.props.auth.current_property || null);
+
+const showUnitDropdown = ref(false);
+
+const switchUnit = (unit) => {
+    showUnitDropdown.value = false;
+    
+    // Si no hay unidad actual o seleccionamos la misma, no hacemos nada
+    if (currentUnit.value && unit.property_id === currentUnit.value.property_id) return;
+
+    // Enviamos el ID de la propiedad privada (private_units.id)
+    router.post(route('context.switch'), { property_id: unit.property_id }, {
+        preserveState: false, // Recargamos estado para limpiar datos viejos de la vista
+        preserveScroll: true,
+        onSuccess: () => {
+            // Opcional: Notificación visual
+        }
+    });
+};
+
+// Helper para mostrar nombre completo en dropdown
+const getUnitDisplayName = (unit) => {
+    return `${unit.subdivision_name} - ${unit.unit_number}`;
+};
+
+// --- 2. Control del Sidebar ---
 const isSidebarOpen = ref(true);
 const isMobile = ref(false);
 
 const checkScreenSize = () => {
-    isMobile.value = window.innerWidth < 1024;
+    isMobile.value = window.innerWidth < 768;
+    
     if (isMobile.value) {
         isSidebarOpen.value = false;
     } else {
-        // Recuperar preferencia de tamaño en desktop
         const savedState = localStorage.getItem('sidebar-state');
-        isSidebarOpen.value = savedState === 'true';
+        isSidebarOpen.value = savedState === null ? true : savedState === 'true';
     }
 };
 
@@ -30,25 +61,37 @@ const toggleSidebar = () => {
     }
 };
 
+const closeDropdowns = (e) => {
+    if (showUnitDropdown.value && !e.target.closest('#unit-selector')) {
+        showUnitDropdown.value = false;
+    }
+};
+
 onMounted(() => {
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
+    document.addEventListener('click', closeDropdowns);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkScreenSize);
+    document.removeEventListener('click', closeDropdowns);
 });
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
+    <div class="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300 font-sans">
         <Head :title="title" />
         <Banner />
 
-        <!-- Overlay para Móvil -->
+        <!-- Overlay Móvil -->
         <div 
             v-if="isMobile && isSidebarOpen" 
-            @click="isSidebarOpen = false"
-            class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            @click="toggleSidebar"
+            class="fixed inset-0 z-30 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         ></div>
 
-        <!-- Componente Sidebar Extraído -->
+        <!-- Sidebar -->
         <Sidebar 
             :isOpen="isSidebarOpen" 
             @toggleSidebar="toggleSidebar"
@@ -58,36 +101,137 @@ onMounted(() => {
         <div 
             :class="[
                 'min-h-screen flex flex-col transition-all duration-300 ease-in-out', 
-                // Ajuste de margen basado en el estado del sidebar
-                isSidebarOpen && !isMobile ? 'ml-72' : (isMobile ? 'ml-0' : 'ml-20')
+                !isMobile ? (isSidebarOpen ? 'ml-72' : 'ml-20') : 'ml-0'
             ]"
         >
-            <!-- Navbar Superior (Visible en Móvil o como barra auxiliar) -->
-            <nav class="bg-white dark:bg-slate-900/80 sticky top-0 z-20 h-16 flex items-center px-4 justify-between lg:justify-end border-b border-gray-200 dark:border-slate-800 backdrop-blur-sm">
+            <!-- Navbar Superior -->
+            <nav class="bg-white dark:bg-slate-800/90 sticky top-0 z-20 h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-slate-700 backdrop-blur-sm shadow-sm">
                 
-                <!-- Toggle Móvil -->
-                <button v-if="isMobile" @click="toggleSidebar" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800">
-                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                    </svg>
-                </button>
-
-                <!-- Barra Superior Derecha -->
+                <!-- IZQUIERDA -->
                 <div class="flex items-center gap-4">
-                     <!-- Aquí puedes poner notificaciones o el nombre del equipo actual -->
-                     <div class="hidden md:flex flex-col items-end mr-2">
-                        <span class="text-xs text-gray-400 dark:text-slate-500 uppercase font-bold">Equipo</span>
-                        <span class="text-sm font-medium text-gray-700 dark:text-slate-300">
-                            {{ $page.props.auth.user.current_team?.name || 'General' }}
+                    <button 
+                        v-if="isMobile" 
+                        @click.stop="toggleSidebar" 
+                        class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    
+                    <h1 class="hidden sm:block text-xl font-semibold text-gray-800 dark:text-white tracking-tight">
+                        {{ title }}
+                    </h1>
+                </div>
+
+                <!-- DERECHA: Selector de Propiedad -->
+                <div class="flex items-center gap-3 md:gap-6">
+                    
+                    <!-- === SELECTOR DE PROPIEDAD === -->
+                    <div class="relative" id="unit-selector" v-if="currentUnit">
+                        <button 
+                            @click="showUnitDropdown = !showUnitDropdown"
+                            class="flex items-center gap-2 md:gap-3 pl-3 pr-2 py-1.5 rounded-full border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm group"
+                        >
+                            <!-- Icono Casa -->
+                            <div class="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                                 </svg>                                  
+                            </div>
+
+                            <!-- Texto Propiedad (Estructura del middleware) -->
+                            <div class="text-left hidden md:block">
+                                <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 leading-none truncate max-w-[140px]">
+                                    {{ currentUnit.subdivision_name || 'Fraccionamiento' }}
+                                </p>
+                                <p class="text-sm font-bold text-gray-700 dark:text-slate-200 leading-tight truncate max-w-[140px]" :title="currentUnit.unit_number">
+                                    {{ currentUnit.unit_number }}
+                                </p>
+                            </div>
+                            
+                            <!-- Flecha -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" :class="['w-4 h-4 text-gray-400 transition-transform duration-200', showUnitDropdown ? 'rotate-180' : '']">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <transition
+                            enter-active-class="transition ease-out duration-100"
+                            enter-from-class="transform opacity-0 scale-95"
+                            enter-to-class="transform opacity-100 scale-100"
+                            leave-active-class="transition ease-in duration-75"
+                            leave-from-class="transform opacity-100 scale-100"
+                            leave-to-class="transform opacity-0 scale-95"
+                        >
+                            <div 
+                                v-if="showUnitDropdown" 
+                                class="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 z-50 origin-top-right ring-1 ring-black ring-opacity-5"
+                            >
+                                <div class="px-4 py-2 border-b border-gray-100 dark:border-slate-700">
+                                    <p class="text-xs font-semibold text-gray-400 uppercase">Cambiar Propiedad</p>
+                                </div>
+                                
+                                <div class="max-h-60 overflow-y-auto custom-scrollbar">
+                                    <template v-if="availableUnits.length > 0">
+                                        <button 
+                                            v-for="unit in availableUnits" 
+                                            :key="unit.property_id"
+                                            @click="switchUnit(unit)"
+                                            class="w-full text-left px-4 py-3 text-sm hover:bg-blue-50 dark:hover:bg-slate-700 flex items-center justify-between group transition-colors border-l-4"
+                                            :class="unit.property_id === currentUnit.property_id ? 'bg-blue-50/50 dark:bg-slate-700/30 border-blue-500' : 'border-transparent'"
+                                        >
+                                            <div class="flex flex-col">
+                                                <span class="text-xs text-gray-500 dark:text-slate-400 font-medium uppercase">
+                                                    {{ unit.subdivision_name }}
+                                                </span>
+                                                <span :class="unit.property_id === currentUnit.property_id ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-700 dark:text-slate-300 font-semibold'">
+                                                    {{ unit.unit_number }}
+                                                </span>
+                                            </div>
+                                            
+                                            <!-- Check activo -->
+                                            <svg v-if="unit.property_id === currentUnit.property_id" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-blue-600 dark:text-blue-400">
+                                                <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <div v-else class="px-4 py-3 text-sm text-gray-500 italic text-center">
+                                        No hay propiedades asignadas.
+                                    </div>
+                                </div>
+                                
+                                <div class="border-t border-gray-100 dark:border-slate-700 mt-1 pt-1">
+                                    <Link :href="route('profile.show')" class="block px-4 py-2 text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline text-center">
+                                        Gestionar mis residencias
+                                    </Link>
+                                </div>
+                            </div>
+                        </transition>
+                    </div>
+
+                    <!-- Datos de Rol en la Unidad Actual -->
+                    <div class="hidden lg:flex flex-col items-end border-l border-gray-200 dark:border-slate-700 pl-4 h-8 justify-center">
+                        <span class="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-bold tracking-wider">ROL ACTUAL</span>
+                        <span class="text-xs font-bold text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">
+                            {{ $page.props.auth.user.role || 'Residente' }}
                         </span>
                      </div>
+
                 </div>
             </nav>
 
-            <!-- Contenido -->
-            <main class="flex-1 p-6 bg-gray-50 dark:bg-slate-900">
+            <!-- Contenido Dinámico -->
+            <main class="flex-1 p-4 md:p-8 overflow-x-hidden">
                 <slot />
             </main>
         </div>
     </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(156, 163, 175, 0.5); border-radius: 20px; }
+</style>

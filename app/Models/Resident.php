@@ -36,7 +36,7 @@ class Resident extends Model
     /**
      * Unidades donde reside o es dueño.
      */
-    public function privateUnits(): BelongsToMany
+    public function residenceUnit(): BelongsToMany
     {
         // Nota: Corregí 'resident_id' en el pivote, asegúrate que tu migración
         // use el singular (resident_id) y no el plural (residents_id) como en el diagrama.
@@ -114,5 +114,26 @@ class Resident extends Model
     public function reactions(): HasMany
     {
         return $this->hasMany(Reaction::class, 'resident_id');
+    }
+
+     /**
+     * Las unidades privadas (casas/lotes) que tiene este residente.
+     * Relación N:M usando el pivote personalizado ResidenceUnit.
+     * * ESTA ES LA FUNCIÓN QUE TE FALTABA O TENÍA OTRO NOMBRE
+     */
+    public function privateUnits(): BelongsToMany
+    {
+        return $this->belongsToMany(PrivateUnit::class, 'residence_units', 'resident_id', 'private_unit_id')
+                    ->using(ResidenceUnit::class) // Importante: Usar el modelo Pivot
+                    ->withPivot([
+                        'role_in_unit', 
+                        'responsible_for_payments', 
+                        'start_date', 
+                        'end_date', 
+                        'primary', 
+                        'is_primary_owner', 
+                        'alias'
+                    ])
+                    ->withTimestamps();
     }
 }

@@ -79,6 +79,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Todos los perfiles de residente asociados al usuario.
+     * Relación 1:N según diagrama 'estructura inmobiliaria'.
+     * Vital para sistemas multi-propiedad donde un usuario puede ser residente en varios contextos.
+     */
+    public function residents(): HasMany
+    {
+        return $this->hasMany(Resident::class, 'user_id');
+    }
+
+    /**
      * Perfil de residente asociado al usuario (si aplica).
      */
     public function resident(): HasOne
