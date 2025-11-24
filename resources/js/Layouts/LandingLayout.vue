@@ -215,19 +215,7 @@ export default {
                 <p class="text-gray-400 leading-relaxed">
                     Desarrollando experiencias personalizadas para incrementar la plusvalía y seguridad de tu comunidad. Reconocidos por líderes de la industria.
                 </p>
-
-                <!-- Search -->
-                <div>
-                    <h4 class="text-lg font-bold text-white mb-4">Buscar en Frax</h4>
-                    <div class="relative">
-                        <input type="text" placeholder="¿Qué estás buscando?" 
-                            class="w-full bg-gray-900 border border-gray-700 text-white px-4 py-3 pr-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                        <button class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-400 p-2">
-                            <i class="pi pi-search text-lg"></i>
-                        </button>
-                    </div>
-                </div>
-
+                
                 <!-- Contact Info -->
                 <div>
                     <h4 class="text-lg font-bold text-white mb-6">Contacto</h4>

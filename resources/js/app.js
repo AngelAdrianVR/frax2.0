@@ -31,7 +31,7 @@ createInertiaApp({
                     preset: Aura,
                     options: {
                         // Conecta el modo oscuro de PrimeVue con el de Tailwind CSS
-                        darkModeSelector: '.dark',
+                        // darkModeSelector: '.dark',
                     }
                 }
             })

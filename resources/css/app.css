@@ -32,15 +32,15 @@ html:hover {
 
 /* 1. El contenedor de la barra */
 ::-webkit-scrollbar {
-    width: 8px;  /* Ancho vertical elegante (ni muy fino ni muy grueso) */
-    height: 8px; /* Alto horizontal */
+    width: 3px;  /* Ancho vertical elegante (ni muy fino ni muy grueso) */
+    height: 3px; /* Alto horizontal */
 }
 
 /* 2. El carril (Track) - Siempre transparente para efecto flotante */
 ::-webkit-scrollbar-track {
     background: transparent; 
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 /* 3. La barra (Thumb) - Estado INVISIBLE por defecto */
