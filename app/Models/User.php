@@ -128,4 +128,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(AccessLog::class, 'user_id');
     }
+
+    public function getCurrentPropertyId()
+    {
+        // 1. Intentar sacar de sesión
+        if (session()->has('current_property_id')) {
+            return session('current_property_id');
+        }
+
+        // 2. Si no hay sesión, retornar la primera propiedad (misma lógica que tu middleware)
+        // Nota: Optimiza esta consulta según tus necesidades para no cargar todo siempre
+        $firstUnit = $this->residents->flatMap->privateUnits->first();
+        
+        return $firstUnit ? $firstUnit->id : null;
+    }
 }

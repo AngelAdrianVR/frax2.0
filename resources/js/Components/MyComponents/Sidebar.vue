@@ -122,7 +122,7 @@ const menuItems = [
             { name: 'Unidades Privadas', route: 'private_units.index', allowedRoles: ['Admin', 'Empleado'] },
             // Todos pueden ver vehículos (ejemplo)
             { name: 'Vehículos', route: 'vehicles.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
-            { name: 'Mascotas', route: 'vehicles.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
+            { name: 'Mascotas', route: 'pets.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
         ]
     },
     {
@@ -189,7 +189,7 @@ const statusText = computed(() => {
     <!-- Overlay Móvil (Fondo oscuro al abrir menú en móvil) -->
     <div 
         v-if="isOpen" 
-        class="fixed inset-0 bg-gray-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity"
+        class="fixed inset-0 bg-gray-900/50 z-40 md:hidden transition-opacity"
         @click="$emit('toggleSidebar')"
     ></div>
 
@@ -206,7 +206,7 @@ const statusText = computed(() => {
             
             // Estilos de color
             'bg-white border-gray-200',
-            'dark:bg-zinc-800/30 dark:backdrop-blur-md dark:border-slate-700/50'
+            'dark:bg-zinc-800/30 dark:border-slate-700/50'
         ]"
     >
         <!-- 1. Header (FIXED TOP) -->

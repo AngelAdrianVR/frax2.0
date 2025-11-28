@@ -9,6 +9,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 // Importa PrimeVue y su configuración
 import PrimeVue from 'primevue/config';
 import Accordion from 'primevue/accordion';
+import ConfirmationService from 'primevue/confirmationservice';
 // import AccordionTab from 'primevue/accordiontab';
 import ToastService from 'primevue/toastservice';
 // import Chart from 'primevue/chart';
@@ -31,11 +32,12 @@ createInertiaApp({
                     preset: Aura,
                     options: {
                         // Conecta el modo oscuro de PrimeVue con el de Tailwind CSS
-                        // darkModeSelector: '.dark',
+                        darkModeSelector: '.dark',
                     }
                 }
             })
             .component('Accordion', Accordion)
+            .use(ConfirmationService)
             // .component('AccordionTab', AccordionTab)
             // .component('Chart', Chart)
             .use(ToastService)
