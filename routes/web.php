@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\PetController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -28,11 +30,33 @@ Route::middleware([
 });
 
 
-// Ejemplo de ruta para cambiar contexto
+// ruta para cambiar contexto de propiedad (multiples propiedades)
+// Se cambia la sesion en el handleinertiaRequest y se obtiene el id de la propiedad seleccionada
 Route::post('/switch-property', function (Request $request) {
-    // Validar que el usuario realmente pertenece a esa propiedad antes de cambiar
-    // ... lógica de validación ...
+    $request->validate(['property_id' => 'required|integer']);
+
+    $user = $request->user();
+    
+    // Verificar si el usuario tiene acceso a esta propiedad a través de alguna de sus residencias
+    $hasAccess = $user->residents->flatMap->privateUnits->contains('id', $request->property_id);
+
+    if (!$hasAccess) {
+        abort(403, 'No tienes acceso a esta propiedad.');
+    }
     
     session(['current_property_id' => $request->property_id]);
+    
     return back();
-});
+})->name('context.switch');
+
+
+
+
+// Vehiculos ==================================================================================
+// ==========================================================================================
+Route::resource('vehicles', VehicleController::class)->except(['show', 'edit'])->middleware('auth');
+
+
+// Mascotas ==================================================================================
+// ==========================================================================================
+Route::resource('pets', PetController::class)->middleware('auth');

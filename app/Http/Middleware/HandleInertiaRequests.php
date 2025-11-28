@@ -57,7 +57,7 @@ class HandleInertiaRequests extends Middleware
                 // CORRECCIÓN 1: Cargar la relación correcta 'privateUnits' y su 'subdivision'.
                 // Asumimos que en tu modelo Resident la relación se llama 'privateUnits' (BelongsToMany).
                 // Si en tu modelo Resident se llama 'residenceUnit', cambia 'privateUnits' por ese nombre aquí abajo.
-                $user->load(['residents.privateUnits.subdivision']);
+                $user->load(['resident.privateUnits.subdivision']);
 
                 // 1. Construimos la lista de todas las propiedades disponibles para este usuario
                 $availableProperties = $user->residents->flatMap(function ($resident) {
@@ -99,6 +99,7 @@ class HandleInertiaRequests extends Middleware
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
+                        'resident_id' => $user->resident->id,
                         'avatar' => $user->profile_photo_url ?? null,
                         'role' => $user->roles->first()->name ?? 'Residente',
                     ],
