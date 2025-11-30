@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PetController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -51,12 +52,23 @@ Route::post('/switch-property', function (Request $request) {
 
 
 
+// Roles y permisos (Solo para admins) =================================================================
+// ==========================================================================================
+// CRUD de Roles (Resource estándar)
+Route::resource('roles', RoleController::class)->middleware('auth');
 
-// Vehiculos ==================================================================================
+// CRUD de Permisos (Métodos personalizados en RoleController)
+Route::post('/permissions', [RoleController::class, 'storePermission'])->name('permissions.store')->middleware('auth');
+Route::put('/permissions/{permission}', [RoleController::class, 'updatePermission'])->name('permissions.update')->middleware('auth');
+Route::delete('/permissions/{permission}', [RoleController::class, 'destroyPermission'])->name('permissions.destroy')->middleware('auth');
+
+
+
+// Vehiculos ================================================================================
 // ==========================================================================================
 Route::resource('vehicles', VehicleController::class)->except(['show', 'edit'])->middleware('auth');
 
 
-// Mascotas ==================================================================================
+// Mascotas =================================================================================
 // ==========================================================================================
 Route::resource('pets', PetController::class)->middleware('auth');

@@ -17,23 +17,17 @@ const emit = defineEmits(['toggleSidebar']);
 const page = usePage();
 
 // --- Lógica de Roles ---
-// Se asume que en tu base de datos el usuario tiene un campo 'role' con valores: 'Admin', 'Residente', 'Empleado'
-// Si tu estructura es diferente (ej. array de roles), ajusta esta línea.
 const userRole = computed(() => page.props.auth.user.role || 'Residente'); 
 
 const checkRole = (itemRoles) => {
-    // Si no se definen roles específicos para el ítem, todos pueden verlo
     if (!itemRoles || itemRoles.length === 0) return true;
-    // El Admin siempre ve todo (Opcional, quita esta línea si quieres restringir al Admin también)
     if (userRole.value === 'Admin') return true;
-    
     return itemRoles.includes(userRole.value);
 };
 
 // --- Referencias y Lógica de Click Outside ---
 const sidebarRef = ref(null);
 
-// Función para cerrar categorías si se hace click fuera
 const handleClickOutside = (event) => {
     // 1. Lógica para cerrar Dropdowns flotantes (Escritorio colapsado)
     if (!props.isOpen) {
@@ -49,7 +43,6 @@ const handleClickOutside = (event) => {
     }
     
     // 2. Lógica para cerrar Sidebar en Móvil al hacer click fuera
-    // Si es móvil (pantalla pequeña) y está abierto, y el click no fue en el sidebar
     if (window.innerWidth < 768 && props.isOpen && sidebarRef.value && !sidebarRef.value.contains(event.target)) {
         emit('toggleSidebar');
     }
@@ -103,24 +96,53 @@ const toggleCategory = (categoryKey, event) => {
             if (key !== categoryKey) openCategories.value[key] = false;
         });
     }
-    // Inicializar la categoría si no existe en el objeto reactivo
     if (openCategories.value[categoryKey] === undefined) {
         openCategories.value[categoryKey] = false;
     }
     openCategories.value[categoryKey] = !openCategories.value[categoryKey];
 };
 
+// --- Helper para saber si una categoría tiene hijos activos ---
+const isCategoryActive = (items) => {
+    // Verifica si alguna de las rutas hijas es la ruta actual
+    return items.some(item => route().has(item.route) && route().current(item.route));
+};
+
+// --- Lógica para Tooltips Flotantes (fuera del sidebar) ---
+const hoveredTooltip = ref(null);
+const tooltipPos = ref({ top: 0, left: 0 });
+
+const showTooltip = (text, event) => {
+    if (props.isOpen) return; // Solo mostrar si el sidebar está cerrado
+    const rect = event.currentTarget.getBoundingClientRect();
+    hoveredTooltip.value = text;
+    tooltipPos.value = {
+        top: rect.top + (rect.height / 2), // Centrar verticalmente
+        left: rect.right + 10 // Un poco a la derecha del sidebar
+    };
+};
+
+const hideTooltip = () => {
+    hoveredTooltip.value = null;
+};
+
 // --- Datos del Menú con Roles ---
 const menuItems = [
+    {
+        category: 'Administración',
+        key: 'admin',
+        icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.212 1.281c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z',
+        items: [
+            { name: 'Roles y Permisos', route: 'roles.index', allowedRoles: ['Admin'] },
+        ]
+    },
     {
         category: 'Gestión Inmobiliaria',
         key: 'inmobiliaria',
         icon: 'M3 21h18M5 21V7l8-4 8 4v14M5 21h14', 
         items: [
-            // Admin y Empleado pueden ver residentes y unidades
             { name: 'Residentes', route: 'residents.index', allowedRoles: ['Admin', 'Empleado'] },
             { name: 'Unidades Privadas', route: 'private_units.index', allowedRoles: ['Admin', 'Empleado'] },
-            // Todos pueden ver vehículos (ejemplo)
             { name: 'Vehículos', route: 'vehicles.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
             { name: 'Mascotas', route: 'pets.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
         ]
@@ -130,9 +152,8 @@ const menuItems = [
         key: 'finanzas',
         icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
         items: [
-            // Solo residente ve sus cuotas, admin ve todo
             { name: 'Mis Cuotas', route: 'fees.index', allowedRoles: ['Residente', 'Admin'] }, 
-            { name: 'Pagos Recibidos', route: 'payments.index', allowedRoles: ['Admin'] }, // Solo Admin
+            { name: 'Pagos Recibidos', route: 'payments.index', allowedRoles: ['Admin'] }, 
             { name: 'Conciliación Bancaria', route: 'bank.reconciliations', allowedRoles: ['Admin'] },
             { name: 'Morosos', route: 'slow.payers', allowedRoles: ['Admin', 'Empleado'] },
         ]
@@ -159,34 +180,32 @@ const menuItems = [
     }
 ];
 
-// Computed Property para filtrar el menú completo
 const filteredMenuItems = computed(() => {
     return menuItems.map(category => {
-        // Filtrar items dentro de la categoría
         const filteredItems = category.items.filter(item => checkRole(item.allowedRoles));
-        
-        // Retornar nueva estructura de categoría solo con items permitidos
         return {
             ...category,
             items: filteredItems
         };
-    }).filter(category => category.items.length > 0); // Eliminar categorías vacías
+    }).filter(category => category.items.length > 0);
 });
 
 // Lógica de Estatus de Pago
 const paymentStatus = ref('current');
-const statusText = computed(() => {
-    switch(paymentStatus.value) {
-        case 'current': return 'Al corriente';
-        case 'late': return 'Pagos atrasados';
-        case 'defaulter': return 'Moroso';
-        default: return 'Desconocido';
+
+// Tooltip dinámico para el semáforo
+const paymentStatusText = computed(() => {
+    switch (paymentStatus.value) {
+        case 'current': return 'Al corriente con los pagos';
+        case 'late': return 'Pago(s) retrasados';
+        case 'defaulter': return 'Pago(s) vencido(s). Moroso';
+        default: return '';
     }
 });
 </script>
 
 <template>
-    <!-- Overlay Móvil (Fondo oscuro al abrir menú en móvil) -->
+    <!-- Overlay Móvil -->
     <div 
         v-if="isOpen" 
         class="fixed inset-0 bg-gray-900/50 z-40 md:hidden transition-opacity"
@@ -197,14 +216,9 @@ const statusText = computed(() => {
         ref="sidebarRef"
         :class="[
             'fixed top-0 left-0 z-50 h-screen transition-transform duration-300 ease-in-out shadow-xl border-r flex flex-col',
-            // --- MODIFICACIÓN VISIBILIDAD MÓVIL ---
-            // Móvil: Si isOpen es true, translate-0 (visible). Si false, -translate-x-full (oculto).
-            // Escritorio (md): Si isOpen es true, w-72. Si false, w-20 (modo iconos).
             isOpen 
                 ? 'translate-x-0 w-72' 
                 : '-translate-x-full w-72 md:translate-x-0 md:w-20',
-            
-            // Estilos de color
             'bg-white border-gray-200',
             'dark:bg-zinc-800/30 dark:border-slate-700/50'
         ]"
@@ -257,8 +271,10 @@ const statusText = computed(() => {
                                 :src="$page.props.auth.user.avatar" 
                                 :alt="$page.props.auth.user.name">
                         
-                        <!-- Semáforo -->
-                        <div class="group/tooltip absolute -top-4 -right-0 md:right-2 cursor-help">
+                        <!-- Semáforo (Solo Residentes) -->
+                        <div v-if="userRole === 'Residente'" 
+                             class="group/tooltip absolute -top-4 -right-0 md:right-2 cursor-help"
+                             :title="paymentStatusText">
                             <div class="flex gap-0.5 bg-white dark:bg-slate-900 rounded-full px-1 py-0.5 shadow-sm border border-gray-100 dark:border-slate-700">
                                 <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'current' ? 'bg-green-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
                                 <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'late' ? 'bg-amber-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
@@ -273,7 +289,7 @@ const statusText = computed(() => {
                             {{ $page.props.auth.user.name }}
                         </p>
                         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                            {{ userRole }} <!-- Muestra el rol actual para debug -->
+                            {{ userRole }}
                         </p>
                     </div>
                 </div>
@@ -285,13 +301,14 @@ const statusText = computed(() => {
             <!-- Dashboard Link -->
             <Link 
                 :href="route('dashboard')"
+                @mouseenter="showTooltip('Dashboard', $event)"
+                @mouseleave="hideTooltip"
                 :class="[
-                    'flex items-center p-3 rounded-xl transition-all duration-200 mb-4',
+                    'flex items-center p-3 rounded-xl transition-all duration-200 mb-4 group relative',
                     route().current('dashboard')
                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                 ]"
-                :title="!isOpen ? 'Dashboard' : ''"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 flex-shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
@@ -303,15 +320,18 @@ const statusText = computed(() => {
                 <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Módulos</p>
             </div>
 
-            <!-- Categorías (Usando filteredMenuItems) -->
+            <!-- Categorías -->
             <div v-for="(category, index) in filteredMenuItems" :key="index" class="relative group">
                 <!-- Botón de Categoría -->
                 <button 
                     @click="(e) => toggleCategory(category.key, e)"
+                    @mouseenter="showTooltip(category.category, $event)"
+                    @mouseleave="hideTooltip"
                     :class="[
                         'w-full flex items-center p-3 rounded-xl transition-all duration-200',
-                        openCategories[category.key]
-                            ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-900 dark:text-white' 
+                        // Lógica de ESTILO ACTIVO: Si está abierto O si tiene hijos activos
+                        openCategories[category.key] || isCategoryActive(category.items)
+                            ? 'bg-slate-100 dark:bg-slate-800/60 text-blue-600 dark:text-blue-400' 
                             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/30'
                     ]"
                 >
@@ -327,9 +347,8 @@ const statusText = computed(() => {
                     </div>
                 </button>
 
-                <!-- --- MODIFICACIÓN DROPDOWN FLOTANTE --- -->
+                <!-- DROPDOWN FLOTANTE -->
                 <Teleport to="body">
-                    <!-- Agregamos min-w-[200px] para asegurar ancho, y z-[9999] -->
                     <div v-if="!isOpen && openCategories[category.key]" 
                         class="fixed z-[9999] bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 w-56 animate-fade-in-up sidebar-floating-dropdown"
                         :style="{ top: `${dropdownPos.top}px`, left: `${dropdownPos.left + 12}px` }"
@@ -337,16 +356,15 @@ const statusText = computed(() => {
                          <div class="px-4 py-2 border-b border-gray-100 dark:border-slate-700 mb-1">
                             <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ category.category }}</span>
                          </div>
-                         <!-- 
-                             CORRECCIÓN: Se eliminó v-if="route().has(item.route)" del Link principal.
-                             Si la ruta no existe, Inertia lanzará advertencia en consola, pero el elemento SE VERÁ. 
-                             Para producción, puedes envolverlo en <template v-if="route().has(...)">, 
-                             pero para desarrollo esto asegura que el menú no salga vacío.
-                         -->
                          <template v-for="item in category.items" :key="item.name">
                             <Link 
                                 :href="route().has(item.route) ? route(item.route) : '#'" 
-                                class="flex items-center justify-between px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mx-2 rounded-lg"
+                                :class="[
+                                    'flex items-center justify-between px-4 py-2 text-sm transition-colors mx-2 rounded-lg',
+                                    route().has(item.route) && route().current(item.route)
+                                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                        : 'text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400'
+                                ]"
                             >
                                 <span>{{ item.name }}</span>
                                 <span v-if="item.badge" class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm shadow-red-500/30">
@@ -415,6 +433,19 @@ const statusText = computed(() => {
             </Link>
         </div>
     </aside>
+
+    <!-- TELEPORT TOOLTIP (Ahora fuera del sidebar para evitar clipping) -->
+    <Teleport to="body">
+        <transition name="fade">
+            <div 
+                v-if="hoveredTooltip && !isOpen"
+                class="fixed z-[10000] px-2 py-1 text-xs font-medium text-white bg-slate-900 rounded shadow-lg pointer-events-none transform -translate-y-1/2 whitespace-nowrap"
+                :style="{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }"
+            >
+                {{ hoveredTooltip }}
+            </div>
+        </transition>
+    </Teleport>
 </template>
 
 <style scoped>
@@ -424,4 +455,15 @@ const statusText = computed(() => {
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.3); border-radius: 20px; }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.6); }
+
+/* Animación simple para el tooltip */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

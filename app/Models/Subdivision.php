@@ -28,6 +28,13 @@ class Subdivision extends Model
 
     // --- Estructura Inmobiliaria ---
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class)
+                    ->withPivot('role_in_subdivision', 'is_current')
+                    ->withTimestamps();
+    }
+
     /**
      * Un fraccionamiento tiene muchas unidades privativas (casas/lotes).
      */

@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndUserSeeder extends Seeder
 {
@@ -15,26 +17,68 @@ class RoleAndUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // ---------------------------------------------------------
-        // 0. PREPARACIÓN: LIMPIAR TABLAS (OPCIONAL, PERO RECOMENDADO EN DEV)
-        // ---------------------------------------------------------
-        // DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        // DB::table('residence_units')->truncate();
-        // DB::table('residents')->truncate();
-        // DB::table('private_units')->truncate();
-        // DB::table('amenities')->truncate();
-        // DB::table('subdivisions')->truncate();
-        // DB::table('role_user')->truncate();
-        // DB::table('users')->truncate();
-        // DB::table('roles')->truncate();
-        // DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // Limpiar caché de permisos
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // ---------------------------------------------------------
-        // 1. CREAR DATOS DEL ENTORNO (FRACCIONAMIENTO, AMENIDADES, UNIDADES)
+        // 1. DEFINIR ESTRUCTURA DE PERMISOS AGRUPADOS
         // ---------------------------------------------------------
-        
-        // 1.1 Crear Fraccionamiento
-        $subdivisionId = DB::table('subdivisions')->insertGetId([
+        $permissionStructure = [
+            'Seguridad y Accesos' => [
+                'Escanear QR de Acceso',
+                'Gestionar Bitácora de Accesos',
+                'Crear Rondin',
+                'Gestionar Puntos de Control', // Checkpoints
+                'Ver Historial de Patrullaje',
+            ],
+            'Residentes y Visitas' => [
+                'Gestionar Residentes',
+                'Crear Invitaciones de Visita',
+                'Aprobar Visitas',
+                'Gestionar Mascotas',
+                'Gestionar Vehículos',
+            ],
+            'Amenidades y Reservas' => [
+                'Crear Amenidades',
+                'Editar Amenidades',
+                'Reservar Amenidades',
+                'Aprobar Reservas',
+                'Gestionar Reglas de Amenidades',
+            ],
+            'Finanzas y Pagos' => [
+                'Ver Finanzas y Reportes',
+                'Gestionar Conceptos de Cobro', // Billing Concepts
+                'Generar Cuotas',               // Generated Fees
+                'Registrar Pagos',              // Payments
+                'Conciliar Bancos',             // Bank Reconciliations
+                'Gestionar Proveedores',
+            ],
+            'Comunicación y Comunidad' => [
+                'Publicar Avisos',              // Posts
+                'Crear Eventos Comunitarios',   // Events
+                'Gestionar Incidentes/Reportes',
+                'Moderar Comentarios',
+            ],
+            'Administración General' => [
+                'Gestionar Usuarios',           // Crear guardias, admins
+                'Configurar Fraccionamiento',   // Theme, Notifications
+                'Gestionar Paquetería',
+            ]
+        ];
+
+        // Aplanar permisos para creación masiva
+        $allPermissions = [];
+        foreach ($permissionStructure as $group => $perms) {
+            foreach ($perms as $permName) {
+                Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
+                $allPermissions[] = $permName;
+            }
+        }
+
+        // =========================================================
+        // FRACCIONAMIENTO 1: RESIDENCIAL LAS CUMBRES
+        // =========================================================
+        $subdivisionId1 = DB::table('subdivisions')->insertGetId([
             'name' => 'Residencial Las Cumbres',
             'slug' => 'residencial-las-cumbres',
             'address' => 'Av. Principal 123',
@@ -45,171 +89,190 @@ class RoleAndUserSeeder extends Seeder
             'post_code' => '45000',
             'houses_amount' => 100,
             'configuration' => json_encode(['theme' => 'dark', 'notifications' => true]),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => now(), 'updated_at' => now(),
         ]);
 
-        $this->command->info("Fraccionamiento creado: ID $subdivisionId");
+        $this->command->info("Fraccionamiento 1 (Las Cumbres) creado.");
 
-        // 1.2 Crear Amenidades
-        $amenities = [
-            [
-                'name' => 'Casa Club',
-                'description' => 'Salón de eventos principal con aire acondicionado',
-                'reservation_cost' => 1500.00,
-                'subdivision_id' => $subdivisionId,
-                'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'name' => 'Alberca General',
-                'description' => 'Alberca templada de uso común',
-                'reservation_cost' => 0.00,
-                'subdivision_id' => $subdivisionId,
-                'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'name' => 'Cancha de Tenis',
-                'description' => 'Cancha profesional de concreto',
-                'reservation_cost' => 200.00,
-                'subdivision_id' => $subdivisionId,
-                'created_at' => now(), 'updated_at' => now()
-            ]
+        // Crear Roles Sub 1
+        $rolesSub1 = [
+            'Admin' => Role::create(['name' => 'Admin', 'team_id' => $subdivisionId1, 'guard_name' => 'web']),
+            'Residente' => Role::create(['name' => 'Residente', 'team_id' => $subdivisionId1, 'guard_name' => 'web']),
+            'Empleado' => Role::create(['name' => 'Empleado', 'team_id' => $subdivisionId1, 'guard_name' => 'web']),
+            'Guardia' => Role::create(['name' => 'Guardia', 'team_id' => $subdivisionId1, 'guard_name' => 'web']),
         ];
-        DB::table('amenities')->insert($amenities);
 
-        // 1.3 Crear Unidades Privadas (Lotes/Casas)
-        // Creamos 10 unidades de prueba
-        $privateUnitIds = [];
-        for ($i = 1; $i <= 10; $i++) {
-            $privateUnitIds[] = DB::table('private_units')->insertGetId([
-                'lot_number' => 'L-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+        // Asignar permisos Sub 1
+        $rolesSub1['Admin']->givePermissionTo($allPermissions);
+        
+        $rolesSub1['Residente']->givePermissionTo([
+            'Crear Invitaciones de Visita', 'Reservar Amenidades', 'Gestionar Mascotas', 
+            'Gestionar Vehículos', 'Ver Finanzas y Reportes', 'Publicar Avisos', 
+            'Gestionar Incidentes/Reportes'
+        ]);
+        
+        $rolesSub1['Guardia']->givePermissionTo([
+            'Escanear QR de Acceso', 'Gestionar Bitácora de Accesos', 'Crear Rondin', 
+            'Gestionar Incidentes/Reportes', // Corregido
+            'Gestionar Paquetería'
+        ]);
+
+        $rolesSub1['Empleado']->givePermissionTo([
+            'Ver Finanzas y Reportes', 'Registrar Pagos', 'Gestionar Residentes', 
+            'Aprobar Reservas', 'Publicar Avisos'
+        ]);
+
+        // Unidades Privadas Sub 1
+        $unitsSub1 = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $unitsSub1[] = DB::table('private_units')->insertGetId([
+                'lot_number' => 'CUMBRES-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'square_meters' => rand(120, 300),
                 'unit_street' => 'Calle Roble',
                 'int_number' => (string)$i,
                 'status' => 'Activo',
-                'access_block' => false,
-                'subdivision_id' => $subdivisionId,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'subdivision_id' => $subdivisionId1,
+                'created_at' => now(), 'updated_at' => now(),
             ]);
         }
 
-        // ---------------------------------------------------------
-        // 2. CREAR ROLES
-        // ---------------------------------------------------------
-        $roles = [
-            ['name' => 'Admin', 'description' => 'Administrador General del Sistema'],
-            ['name' => 'Residente', 'description' => 'Residente o Propietario'],
-            ['name' => 'Empleado', 'description' => 'Empleado (Guardia, Mantenimiento, etc.)'],
+        // =========================================================
+        // FRACCIONAMIENTO 2: RESIDENCIAL LOS OLIVOS
+        // =========================================================
+        $subdivisionId2 = DB::table('subdivisions')->insertGetId([
+            'name' => 'Residencial Los Olivos',
+            'slug' => 'residencial-los-olivos',
+            'address' => 'Av. Vallarta 555',
+            'exterior_number' => '100',
+            'suburb' => 'Jardines Vallarta',
+            'town' => 'Zapopan',
+            'federal_state' => 'Jalisco',
+            'post_code' => '45020',
+            'houses_amount' => 50,
+            'configuration' => json_encode(['theme' => 'light', 'notifications' => true]),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $this->command->info("Fraccionamiento 2 (Los Olivos) creado.");
+
+        // Crear Roles Sub 2
+        $rolesSub2 = [
+            'Admin' => Role::create(['name' => 'Admin', 'team_id' => $subdivisionId2, 'guard_name' => 'web']),
+            'Residente' => Role::create(['name' => 'Residente', 'team_id' => $subdivisionId2, 'guard_name' => 'web']),
+            'Guardia' => Role::create(['name' => 'Guardia', 'team_id' => $subdivisionId2, 'guard_name' => 'web']),
         ];
 
-        foreach ($roles as $role) {
-            DB::table('roles')->updateOrInsert(
-                ['name' => $role['name']], 
-                ['description' => $role['description'], 'updated_at' => now()]
-            );
+        // Asignar permisos Sub 2 (Igual lógica)
+        $rolesSub2['Admin']->givePermissionTo($allPermissions);
+        $rolesSub2['Residente']->givePermissionTo([
+            'Crear Invitaciones de Visita', 'Reservar Amenidades', 'Gestionar Mascotas', 
+            'Gestionar Vehículos', 'Ver Finanzas y Reportes', 'Publicar Avisos', 
+            'Gestionar Incidentes/Reportes'
+        ]);
+        $rolesSub2['Guardia']->givePermissionTo([
+            'Escanear QR de Acceso', 'Gestionar Bitácora de Accesos', 'Crear Rondin', 
+            'Gestionar Incidentes/Reportes', 'Gestionar Paquetería'
+        ]);
+
+        // Unidades Privadas Sub 2
+        $unitsSub2 = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $unitsSub2[] = DB::table('private_units')->insertGetId([
+                'lot_number' => 'OLIVOS-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'square_meters' => rand(90, 200),
+                'unit_street' => 'Calle Olivo',
+                'int_number' => (string)$i,
+                'status' => 'Activo',
+                'subdivision_id' => $subdivisionId2,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
         }
 
-        $adminRoleId = DB::table('roles')->where('name', 'Admin')->value('id');
-        $residentRoleId = DB::table('roles')->where('name', 'Residente')->value('id');
-        $employeeRoleId = DB::table('roles')->where('name', 'Empleado')->value('id');
+        // =========================================================
+        // CREAR USUARIOS
+        // =========================================================
 
-        // ---------------------------------------------------------
-        // 3. CREAR USUARIOS Y ASIGNAR ROLES + RESIDENCIAS
-        // ---------------------------------------------------------
-        $usersData = [
-            [
-                'name' => 'Super Admin',
-                'email' => 'angel@gmail.com',
-                'password' => '321321321',
-                'role_id' => $adminRoleId,
-                'primary' => 1
-            ],
-            [
-                'name' => 'Juan Residente',
-                'email' => 'residente@gmail.com',
-                'password' => '321321321',
-                'role_id' => $residentRoleId,
-                'primary' => 0
-            ],
-            [
-                'name' => 'Pedro Guardia',
-                'email' => 'empleado@gmail.com',
-                'password' => '321321321',
-                'role_id' => $employeeRoleId,
-                'primary' => 0
-            ]
-        ];
+        // 1. Super Admin (Solo en Sub 1 para pruebas básicas)
+        $adminUser = User::firstOrCreate(
+            ['email' => 'angel@gmail.com'],
+            ['name' => 'Angel Admin', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
+        );
+        setPermissionsTeamId($subdivisionId1); 
+        $adminUser->assignRole($rolesSub1['Admin']);
+        DB::table('subdivision_user')->updateOrInsert(
+            ['user_id' => $adminUser->id, 'subdivision_id' => $subdivisionId1],
+            ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
+        );
 
-        foreach ($usersData as $userData) {
-            // A. Crear Usuario
-            $user = User::firstOrCreate(
-                ['email' => $userData['email']],
-                [
-                    'name' => $userData['name'],
-                    'password' => Hash::make($userData['password']),
-                    'email_verified_at' => now(),
-                ]
-            );
+        // 2. Guardia (Solo en Sub 1)
+        $guardUser = User::firstOrCreate(
+            ['email' => 'guardia@gmail.com'],
+            ['name' => 'Pedro Guardia', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
+        );
+        setPermissionsTeamId($subdivisionId1);
+        $guardUser->assignRole($rolesSub1['Guardia']);
+        DB::table('subdivision_user')->updateOrInsert(
+            ['user_id' => $guardUser->id, 'subdivision_id' => $subdivisionId1],
+            ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
+        );
 
-            // B. Vincular Rol
-            DB::table('role_user')->updateOrInsert(
-                [
-                    'user_id' => $user->id,
-                    'role_id' => $userData['role_id']
-                ],
-                [
-                    'primary' => $userData['primary']
-                ]
-            );
+        // 3. Residente Multi-Tenancy (En AMBOS fraccionamientos)
+        $residentUser = User::firstOrCreate(
+            ['email' => 'residente@gmail.com'],
+            ['name' => 'Juan Residente', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
+        );
 
-            // C. LÓGICA ESPECÍFICA PARA RESIDENTES
-            // Si el usuario tiene rol de Residente, le creamos perfil y asignamos casas
-            if ($userData['role_id'] == $residentRoleId) {
-                
-                // 1. Crear Perfil en tabla 'residents'
-                // Usamos updateOrInsert para no duplicar si corres el seeder dos veces
-                $residentId = DB::table('residents')->where('user_id', $user->id)->value('id');
+        // A) Asignar a Sub 1
+        setPermissionsTeamId($subdivisionId1);
+        $residentUser->assignRole($rolesSub1['Residente']);
+        DB::table('subdivision_user')->updateOrInsert(
+            ['user_id' => $residentUser->id, 'subdivision_id' => $subdivisionId1],
+            ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
+        );
 
-                if (!$residentId) {
-                    $residentId = DB::table('residents')->insertGetId([
-                        'full_name' => $user->name,
-                        'phone' => '555-123-4567',
-                        'email' => $user->email,
-                        'person_type' => 'Propietario',
-                        'is_emergency_contact' => true,
-                        'is_slow_payer' => false,
-                        'user_id' => $user->id,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+        // B) Asignar a Sub 2 (Nota: is_current false para que inicie en el 1 por defecto)
+        setPermissionsTeamId($subdivisionId2);
+        $residentUser->assignRole($rolesSub2['Residente']);
+        DB::table('subdivision_user')->updateOrInsert(
+            ['user_id' => $residentUser->id, 'subdivision_id' => $subdivisionId2],
+            ['is_current' => false, 'created_at' => now(), 'updated_at' => now()]
+        );
 
-                // 2. Asignar 2 Propiedades (Unidades) a este residente
-                // Tomamos las primeras 2 unidades creadas (índices 0 y 1)
-                $unitsToAssign = array_slice($privateUnitIds, 0, 2);
+        // =========================================================
+        // PERFIL DE RESIDENTE Y ASIGNACIÓN DE UNIDADES
+        // =========================================================
+        
+        // Crear perfil de residente único (O uno por sub si tu lógica lo requiere, aquí asumo uno global)
+        $residentId = DB::table('residents')->insertGetId([
+            'full_name' => $residentUser->name,
+            'email' => $residentUser->email,
+            'user_id' => $residentUser->id,
+            'person_type' => 'Propietario',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
 
-                foreach ($unitsToAssign as $index => $unitId) {
-                    DB::table('residence_units')->updateOrInsert(
-                        [
-                            'resident_id' => $residentId,
-                            'private_unit_id' => $unitId
-                        ],
-                        [
-                            'role_in_unit' => 'Dueño',
-                            'responsible_for_payments' => true,
-                            'start_date' => now(),
-                            'primary' => ($index === 0), // La primera es la principal
-                            'is_primary_owner' => true,
-                            'alias' => ($index === 0) ? 'Casa Principal' : 'Casa de Renta',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]
-                    );
-                }
-                
-                $this->command->info("Usuario {$user->name} configurado como Residente con 2 propiedades.");
-            }
+        // Asignar Casa en Sub 1 (Las Cumbres)
+        if (isset($unitsSub1[0])) {
+            DB::table('residence_units')->insert([
+                'resident_id' => $residentId,
+                'private_unit_id' => $unitsSub1[0],
+                'role_in_unit' => 'Dueño',
+                'primary' => true, // Casa principal
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
         }
+
+        // Asignar Casa en Sub 2 (Los Olivos)
+        if (isset($unitsSub2[0])) {
+            DB::table('residence_units')->insert([
+                'resident_id' => $residentId,
+                'private_unit_id' => $unitsSub2[0],
+                'role_in_unit' => 'Dueño',
+                'primary' => false, // Casa secundaria
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        $this->command->info("Seed completo: Usuario Residente configurado con propiedades en 2 fraccionamientos.");
     }
 }

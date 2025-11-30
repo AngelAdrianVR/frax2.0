@@ -4,6 +4,6 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 
 <template>
     <AppLayout title="Dashboard">
-        
+        {{ $page.props.auth }}
     </AppLayout>
 </template>

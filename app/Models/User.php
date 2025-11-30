@@ -12,10 +12,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     use HasApiTokens;
+    use HasRoles; // Permite asignar roles y permisos al usuario
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
@@ -68,14 +70,19 @@ class User extends Authenticatable
         ];
     }
 
-    // --- Relaciones ---
-
-    /**
-     * Roles asignados al usuario.
-     */
-    public function roles(): BelongsToMany
+    // --- Relaciones ------------------------------------
+    public function subdivisions()
     {
-        return $this->belongsToMany(Role::class)->withPivot('primary')->withTimestamps();
+        // Relación muchos a muchos
+        return $this->belongsToMany(Subdivision::class)
+                    ->withPivot('role_in_subdivision', 'is_current')
+                    ->withTimestamps();
+    }
+
+    // Helper para obtener el fraccionamiento actual donde está navegando
+    public function currentSubdivision()
+    {
+        return $this->subdivisions()->wherePivot('is_current', true)->first();
     }
 
     /**
