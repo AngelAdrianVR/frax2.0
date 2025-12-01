@@ -126,8 +126,8 @@ const hideTooltip = () => {
     hoveredTooltip.value = null;
 };
 
-// --- Datos del Menú con Roles ---
-const menuItems = [
+// --- Datos del Menú con Roles (AHORA ES COMPUTED PARA REACCIONAR AL ROL) ---
+const menuItems = computed(() => [
     {
         category: 'Administración',
         key: 'admin',
@@ -143,8 +143,13 @@ const menuItems = [
         items: [
             { name: 'Residentes', route: 'residents.index', allowedRoles: ['Admin', 'Empleado'] },
             { name: 'Unidades Privadas', route: 'private_units.index', allowedRoles: ['Admin', 'Empleado'] },
-            { name: 'Vehículos', route: 'vehicles.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
-            { name: 'Mascotas', route: 'pets.index', allowedRoles: ['Admin', 'Residente', 'Empleado'] },
+            // === CAMBIO AQUÍ: Ruta dinámica según rol ===
+            { 
+                name: 'Vehículos', 
+                route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.vehicles.index' : 'vehicles.index', 
+                allowedRoles: ['Residente', 'Empleado'] // Admin entra por bypass en checkRole
+            },
+            { name: 'Mascotas', route: 'pets.index', allowedRoles: ['Residente', 'Empleado'] },
         ]
     },
     {
@@ -178,10 +183,11 @@ const menuItems = [
             { name: 'Proveedores', route: 'suppliers.index', allowedRoles: ['Admin'] },
         ]
     }
-];
+]);
 
 const filteredMenuItems = computed(() => {
-    return menuItems.map(category => {
+    // Usamos menuItems.value porque ahora es un ref computado
+    return menuItems.value.map(category => {
         const filteredItems = category.items.filter(item => checkRole(item.allowedRoles));
         return {
             ...category,

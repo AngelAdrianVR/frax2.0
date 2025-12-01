@@ -138,8 +138,9 @@ onUnmounted(() => {
                                 <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 leading-none truncate max-w-[140px]">
                                     {{ currentUnit.subdivision_name || 'Fraccionamiento' }}
                                 </p>
-                                <p class="text-sm font-bold text-gray-700 dark:text-slate-200 leading-tight truncate max-w-[140px]" :title="currentUnit.unit_number">
-                                    {{ currentUnit.unit_number }}
+                                <!-- MODIFICADO: Usamos address_label (Calle + #) -->
+                                <p class="text-sm font-bold text-gray-700 dark:text-slate-200 leading-tight truncate max-w-[140px]" :title="currentUnit.address_label || currentUnit.unit_number">
+                                    {{ currentUnit.address_label || currentUnit.unit_number }}
                                 </p>
                             </div>
                             
@@ -179,17 +180,16 @@ onUnmounted(() => {
                                                 <span class="text-xs text-gray-500 dark:text-slate-400 font-medium uppercase">
                                                     {{ unit.subdivision_name }}
                                                 </span>
+                                                <!-- MODIFICADO: Usamos address_label -->
                                                 <span :class="unit.property_id === currentUnit.property_id ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-700 dark:text-slate-300 font-semibold'">
-                                                    {{ unit.unit_number }}
+                                                    {{ unit.address_label || unit.unit_number }}
                                                 </span>
                                                 
-                                                <!-- LÓGICA DE ROL: Muestra Rol Sistema (Admin) + Rol Habitacional (Dueño) -->
+                                                <!-- LÓGICA DE ROL -->
                                                 <div class="flex items-center gap-2 mt-1">
-                                                    <!-- Priorizamos el Community Role (Admin, Empleado, etc) -->
                                                     <span v-if="unit.community_role" class="text-[10px] text-white bg-blue-500 dark:bg-blue-600 px-1.5 py-0.5 rounded font-bold">
                                                         {{ unit.community_role }}
                                                     </span>
-                                                    <!-- Mostramos el rol habitacional (Dueño) si existe y es diferente a Staff -->
                                                     <span v-if="unit.role_in_unit && unit.role_in_unit !== 'Staff'" class="text-[10px] text-gray-400 bg-gray-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">
                                                         {{ unit.role_in_unit }}
                                                     </span>

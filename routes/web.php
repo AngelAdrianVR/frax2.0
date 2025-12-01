@@ -66,7 +66,15 @@ Route::delete('/permissions/{permission}', [RoleController::class, 'destroyPermi
 
 // Vehiculos ================================================================================
 // ==========================================================================================
-Route::resource('vehicles', VehicleController::class)->except(['show', 'edit'])->middleware('auth');
+// Ruta específica para ADMIN (debe ir antes del resource para evitar conflictos o usar un prefijo)
+Route::get('/admin/vehicles', [VehicleController::class, 'adminIndex'])
+    ->name('admin.vehicles.index')
+    ->middleware('auth');
+
+// CRUD Estándar (usado por Residentes y por Admin para update/destroy)
+Route::resource('vehicles', VehicleController::class)
+    ->except(['show', 'edit'])
+    ->middleware('auth');
 
 
 // Mascotas =================================================================================
