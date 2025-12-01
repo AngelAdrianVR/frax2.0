@@ -4,39 +4,32 @@ import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import Banner from '@/Components/Banner.vue';
 import Sidebar from '@/Components/MyComponents/Sidebar.vue';
 
-defineProps({
-    title: String,
-});
+// CORRECCIÓN: Usamos sintaxis de array para evitar errores de compilación con objetos
+const props = defineProps(['title']);
 
 const page = usePage();
 
 // --- 1. Lógica Multi-propiedad (Context Switcher) ---
 
-// Mapeo directo a la estructura de HandleInertiaRequests.php
+// Mapeo a la estructura de HandleInertiaRequests.php
 const availableUnits = computed(() => page.props.auth.properties || []); 
 const currentUnit = computed(() => page.props.auth.current_property || null);
+
+// Rol Actual: Viene calculado desde el Middleware (HandleInertiaRequests)
+const currentRole = computed(() => page.props.auth.user.role || 'Usuario');
 
 const showUnitDropdown = ref(false);
 
 const switchUnit = (unit) => {
     showUnitDropdown.value = false;
     
-    // Si no hay unidad actual o seleccionamos la misma, no hacemos nada
+    // Evitar recarga si es la misma unidad
     if (currentUnit.value && unit.property_id === currentUnit.value.property_id) return;
 
-    // Enviamos el ID de la propiedad privada (private_units.id)
     router.post(route('context.switch'), { property_id: unit.property_id }, {
-        preserveState: false, // Recargamos estado para limpiar datos viejos de la vista
+        preserveState: false, // Recargar para actualizar permisos (Spatie)
         preserveScroll: true,
-        onSuccess: () => {
-            // Opcional: Notificación visual
-        }
     });
-};
-
-// Helper para mostrar nombre completo en dropdown
-const getUnitDisplayName = (unit) => {
-    return `${unit.subdivision_name} - ${unit.unit_number}`;
 };
 
 // --- 2. Control del Sidebar ---
@@ -140,13 +133,14 @@ onUnmounted(() => {
                                  </svg>                                  
                             </div>
 
-                            <!-- Texto Propiedad (Estructura del middleware) -->
+                            <!-- Texto Propiedad -->
                             <div class="text-left hidden md:block">
                                 <p class="text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 leading-none truncate max-w-[140px]">
                                     {{ currentUnit.subdivision_name || 'Fraccionamiento' }}
                                 </p>
-                                <p class="text-sm font-bold text-gray-700 dark:text-slate-200 leading-tight truncate max-w-[140px]" :title="currentUnit.unit_number">
-                                    {{ currentUnit.unit_number }}
+                                <!-- MODIFICADO: Usamos address_label (Calle + #) -->
+                                <p class="text-sm font-bold text-gray-700 dark:text-slate-200 leading-tight truncate max-w-[140px]" :title="currentUnit.address_label || currentUnit.unit_number">
+                                    {{ currentUnit.address_label || currentUnit.unit_number }}
                                 </p>
                             </div>
                             
@@ -186,9 +180,20 @@ onUnmounted(() => {
                                                 <span class="text-xs text-gray-500 dark:text-slate-400 font-medium uppercase">
                                                     {{ unit.subdivision_name }}
                                                 </span>
+                                                <!-- MODIFICADO: Usamos address_label -->
                                                 <span :class="unit.property_id === currentUnit.property_id ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-700 dark:text-slate-300 font-semibold'">
-                                                    {{ unit.unit_number }}
+                                                    {{ unit.address_label || unit.unit_number }}
                                                 </span>
+                                                
+                                                <!-- LÓGICA DE ROL -->
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <span v-if="unit.community_role" class="text-[10px] text-white bg-blue-500 dark:bg-blue-600 px-1.5 py-0.5 rounded font-bold">
+                                                        {{ unit.community_role }}
+                                                    </span>
+                                                    <span v-if="unit.role_in_unit && unit.role_in_unit !== 'Staff'" class="text-[10px] text-gray-400 bg-gray-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">
+                                                        {{ unit.role_in_unit }}
+                                                    </span>
+                                                </div>
                                             </div>
                                             
                                             <!-- Check activo -->
@@ -215,7 +220,7 @@ onUnmounted(() => {
                     <div class="hidden lg:flex flex-col items-end border-l border-gray-200 dark:border-slate-700 pl-4 h-8 justify-center">
                         <span class="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-bold tracking-wider">ROL ACTUAL</span>
                         <span class="text-xs font-bold text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">
-                            {{ $page.props.auth.user.role || 'Residente' }}
+                            {{ currentRole }}
                         </span>
                      </div>
 

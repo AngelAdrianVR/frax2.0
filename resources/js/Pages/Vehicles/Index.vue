@@ -204,12 +204,12 @@
                 </div>
 
                 <!-- Modal Body (Formulario) -->
-                <div class="p-6 space-y-6">
+                <div class="p-5 space-y-5">
                     
                     <!-- Previsualización de Imagen -->
                     <div class="flex justify-center">
                         <div class="relative group">
-                            <div class="h-32 w-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                            <div class="h-40 w-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                                 <img 
                                     v-if="photoPreview || form.photo_url" 
                                     :src="photoPreview || form.photo_url" 
