@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('square_meters', 10, 2)->nullable(); // Decimal: 120.50 m2
             $table->string('unit_street', 100)->nullable();
             $table->string('int_number', 20)->nullable();
+            $table->string('exterior_number', 20)->nullable(); // es el numero de la casa, puede ser alfanumerico
             $table->enum('status', ['Activo', 'Inactivo'])->default('Activo');
             $table->boolean('access_block')->default(false); // Booleano: Bloqueado o no
             

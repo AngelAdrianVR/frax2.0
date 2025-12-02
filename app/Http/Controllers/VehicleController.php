@@ -150,19 +150,22 @@ class VehicleController extends Controller
     {
         $user = $request->user();
         
-        // USAMOS EL HELPER MANUAL
         $isAdmin = $this->checkAdminRole($user);
         
         $privateUnits = [];
 
         if ($isAdmin) {
-            $privateUnits = PrivateUnit::select('id', 'lot_number', 'unit_street', 'int_number')
+            // CORRECCIÓN: Se agrega 'exterior_number' al select para poder usarlo en el map
+            $privateUnits = PrivateUnit::select('id', 'lot_number', 'unit_street', 'int_number', 'exterior_number')
                 ->get()
                 ->map(function ($unit) {
                     $label = "Lote: {$unit->lot_number}";
+                    
+                    // Se usa exterior_number para la fachada
                     if ($unit->unit_street) {
                         $label .= " - {$unit->unit_street} #{$unit->exterior_number}";
                     }
+                    
                     if ($unit->int_number) {
                         $label .= " Int. {$unit->int_number}";
                     }
@@ -183,7 +186,6 @@ class VehicleController extends Controller
     {
         $user = $request->user();
         
-        // USAMOS EL HELPER MANUAL
         $isAdmin = $this->checkAdminRole($user);
 
         $validated = $request->validate([
@@ -193,7 +195,8 @@ class VehicleController extends Controller
             'color' => 'required|string|max:30',
             'tag_access' => 'nullable|string|max:50',
             'photo' => 'nullable|image|max:5120',
-            'private_unit_id' => [Rule::requiredIf($isAdmin), 'exists:private_units,id'],
+            // CORRECCIÓN: Se agrega 'nullable' para que no falle cuando un Residente envía el formulario
+            'private_unit_id' => ['nullable', Rule::requiredIf($isAdmin), 'exists:private_units,id'],
         ]);
 
         if ($isAdmin) {
@@ -246,7 +249,6 @@ class VehicleController extends Controller
     {
         $user = $request->user();
         
-        // USAMOS EL HELPER MANUAL
         $isAdmin = $this->checkAdminRole($user);
 
         $validated = $request->validate([

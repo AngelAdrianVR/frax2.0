@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
@@ -136,6 +137,22 @@ class User extends Authenticatable
         return $this->hasMany(AccessLog::class, 'user_id');
     }
 
+
+    // // Este metodo recupero el id de la casa seleccionada (pero no el fraccionamiento para administrador)
+    // public function getCurrentPropertyId()
+    // {
+    //     // 1. Intentar sacar de sesión
+    //     if (session()->has('current_property_id')) {
+    //         return session('current_property_id');
+    //     }
+
+    //     // 2. Si no hay sesión, retornar la primera propiedad (misma lógica que tu middleware)
+    //     // Nota: Optimiza esta consulta según tus necesidades para no cargar todo siempre
+    //     $firstUnit = $this->residents->flatMap->privateUnits->first();
+        
+    //     return $firstUnit ? $firstUnit->id : null;
+    // }
+
     public function getCurrentPropertyId()
     {
         // 1. Intentar sacar de sesión
@@ -143,10 +160,51 @@ class User extends Authenticatable
             return session('current_property_id');
         }
 
-        // 2. Si no hay sesión, retornar la primera propiedad (misma lógica que tu middleware)
-        // Nota: Optimiza esta consulta según tus necesidades para no cargar todo siempre
+        // 2. Si no hay sesión, intentar obtener la primera propiedad de RESIDENTE
         $firstUnit = $this->residents->flatMap->privateUnits->first();
-        
-        return $firstUnit ? $firstUnit->id : null;
+        if ($firstUnit) {
+            return $firstUnit->id;
+        }
+
+        // 3. Si no es residente, buscar si es ADMIN de algún fraccionamiento
+        // Buscamos en la tabla de roles si tiene algún rol asociado a un team_id
+        $tableNames = config('permission.table_names');
+        $firstAdminTeam = DB::table($tableNames['model_has_roles'])
+            ->where('model_id', $this->id)
+            ->where('model_type', get_class($this))
+            ->whereNotNull('team_id')
+            ->value('team_id'); // Obtiene el primer team_id
+
+        if ($firstAdminTeam) {
+            return 'admin_' . $firstAdminTeam;
+        }
+
+        return null;
+    }
+
+    /**
+     * Helper para obtener el ID del fraccionamiento (Team ID) basado en la propiedad actual.
+     * Útil para controllers de Admin.
+     */
+    public function getCurrentSubdivisionId()
+    {
+        // Si ya está explícito en sesión
+        if (session()->has('current_subdivision_id')) {
+            return session('current_subdivision_id');
+        }
+
+        $propertyId = $this->getCurrentPropertyId();
+
+        if (!$propertyId) return null;
+
+        // Caso A: Es modo Admin (ej. "admin_2")
+        if (is_string($propertyId) && str_starts_with($propertyId, 'admin_')) {
+            return (int) str_replace('admin_', '', $propertyId);
+        }
+
+        // Caso B: Es una unidad privada (ID numérico)
+        // Buscamos a qué fraccionamiento pertenece esa unidad
+        $unit = PrivateUnit::find($propertyId);
+        return $unit ? $unit->subdivision_id : null;
     }
 }

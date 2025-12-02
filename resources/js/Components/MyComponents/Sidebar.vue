@@ -149,7 +149,11 @@ const menuItems = computed(() => [
                 route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.vehicles.index' : 'vehicles.index', 
                 allowedRoles: ['Residente', 'Empleado'] // Admin entra por bypass en checkRole
             },
-            { name: 'Mascotas', route: 'pets.index', allowedRoles: ['Residente', 'Empleado'] },
+            { 
+                name: 'Mascotas', 
+                route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.pets.index' : 'pets.index', 
+                allowedRoles: ['Residente', 'Empleado'] // Admin entra por bypass en checkRole
+            },
         ]
     },
     {
