@@ -1,100 +1,142 @@
 <template>
     <AppLayout :title="'Registrar mascota'">
         <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-4 sm:p-8 transition-colors duration-300">
-            <!-- Toast para notificaciones -->
             <Toast position="top-right" />
 
-            <div class="max-w-3xl mx-auto">
-                <!-- Encabezado con Botón de Regreso -->
+            <div class="max-w-4xl mx-auto">
+                <!-- Encabezado -->
                 <div class="mb-8 flex items-center justify-between">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
                             Nueva Mascota
                         </h1>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            Registra una nueva mascota asignada a tu unidad privativa.
+                            Registra una nueva mascota y su documentación.
                         </p>
                     </div>
                     <Link 
-                        :href="route('pets.index')" 
+                        :href="isAdmin ? route('admin.pets.index') : route('pets.index')" 
                         class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors flex items-center gap-2 text-sm font-medium"
                     >
                         <i class="pi pi-arrow-left text-xs"></i> Volver
                     </Link>
                 </div>
 
-                <!-- Card del Formulario -->
+                <!-- Formulario -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <form @submit.prevent="submit" class="p-6 sm:p-8 space-y-6">
+                    <form @submit.prevent="submit" class="p-6 sm:p-8 space-y-8">
                         
-                        <!-- Grid de Inputs -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 1. INFORMACIÓN BÁSICA -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                                <i class="pi pi-id-card text-blue-500"></i> Información Básica
+                            </h3>
                             
-                            <!-- Nombre -->
-                            <div class="flex flex-col gap-2">
-                                <label for="name" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                    Nombre de la mascota <span class="text-red-500">*</span>
+                            <!-- Admin Selector -->
+                            <div v-if="isAdmin && privateUnits.length > 0" class="p-4 mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                                <label for="private_unit" class="text-sm font-bold text-blue-800 dark:text-blue-300 block mb-2">
+                                    Asignar a Propiedad (Modo Admin) <span class="text-red-500">*</span>
                                 </label>
-                                <InputText 
-                                    id="name" 
-                                    v-model="form.name" 
-                                    placeholder="Ej. Firulais" 
-                                    :class="{'p-invalid': form.errors.name}"
+                                <Dropdown
+                                    id="private_unit"
+                                    v-model="form.private_unit_id"
+                                    :options="privateUnits"
+                                    optionLabel="label"
+                                    optionValue="id"
+                                    filter
+                                    placeholder="Buscar calle, número o lote..."
                                     class="w-full"
+                                    :class="{'p-invalid': form.errors.private_unit_id}"
                                 />
-                                <small v-if="form.errors.name" class="text-red-500 text-xs mt-1">
-                                    {{ form.errors.name }}
+                                <small v-if="form.errors.private_unit_id" class="text-red-500 text-xs mt-1">
+                                    {{ form.errors.private_unit_id }}
                                 </small>
                             </div>
 
-                            <!-- Especie (Dropdown) -->
-                            <div class="flex flex-col gap-2">
-                                <label for="species" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                    Especie <span class="text-red-500">*</span>
-                                </label>
-                                <Dropdown 
-                                    id="species"
-                                    v-model="form.species" 
-                                    :options="speciesOptions" 
-                                    placeholder="Seleccionar..." 
-                                    :class="{'p-invalid': form.errors.species}"
-                                    class="w-full"
-                                />
-                                <small v-if="form.errors.species" class="text-red-500 text-xs mt-1">
-                                    {{ form.errors.species }}
-                                </small>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Nombre -->
+                                <div class="flex flex-col gap-2">
+                                    <label for="name" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        Nombre <span class="text-red-500">*</span>
+                                    </label>
+                                    <InputText id="name" v-model="form.name" placeholder="Ej. Firulais" :class="{'p-invalid': form.errors.name}" class="w-full" />
+                                    <small v-if="form.errors.name" class="text-red-500 text-xs mt-1">{{ form.errors.name }}</small>
+                                </div>
+
+                                <!-- Especie -->
+                                <div class="flex flex-col gap-2">
+                                    <label for="species" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        Especie <span class="text-red-500">*</span>
+                                    </label>
+                                    <Dropdown id="species" v-model="form.species" :options="speciesOptions" placeholder="Seleccionar..." :class="{'p-invalid': form.errors.species}" class="w-full" />
+                                    <small v-if="form.errors.species" class="text-red-500 text-xs mt-1">{{ form.errors.species }}</small>
+                                </div>
+
+                                <!-- Raza -->
+                                <div class="flex flex-col gap-2">
+                                    <label for="race" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Raza</label>
+                                    <InputText id="race" v-model="form.race" placeholder="Ej. Labrador" :class="{'p-invalid': form.errors.race}" class="w-full" />
+                                </div>
+
+                                <!-- Chip ID (Nuevo) -->
+                                <div class="flex flex-col gap-2">
+                                    <label for="chip_id" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        No. de Chip / Identificación
+                                    </label>
+                                    <InputText id="chip_id" v-model="form.additionals.chip_id" placeholder="Opcional" class="w-full" />
+                                </div>
                             </div>
-
-                            <!-- Raza -->
-                            <div class="flex flex-col gap-2">
-                                <label for="race" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                    Raza
-                                </label>
-                                <InputText 
-                                    id="race" 
-                                    v-model="form.race" 
-                                    placeholder="Ej. Labrador, Siamés..." 
-                                    :class="{'p-invalid': form.errors.race}"
-                                    class="w-full"
-                                />
-                                <small v-if="form.errors.race" class="text-red-500 text-xs mt-1">
-                                    {{ form.errors.race }}
-                                </small>
-                            </div>
-
-                            <!-- Campo dummy para mantener el grid alineado si quieres, o dejar vacío -->
-                            <div class="hidden md:block"></div>
-
                         </div>
 
-                        <!-- Sección de Imagen (Spatie Media Library) -->
-                        <div class="border-t border-gray-100 dark:border-gray-700 pt-6 mt-2">
-                            <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                                Fotografía (opcional)
-                            </label>
+                        <hr class="border-gray-100 dark:border-gray-700">
+
+                        <!-- 2. DETALLES ADICIONALES -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                                <i class="pi pi-heart text-red-500"></i> Salud y Registro
+                            </h3>
                             
-                            <div class="flex items-start gap-4">
-                                <div class="flex-1">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                <!-- Pedigree -->
+                                <div class="flex flex-col gap-2">
+                                    <label for="pedigree" class="text-sm font-semibold text-gray-700 dark:text-gray-300">No. Pedigree / Registro</label>
+                                    <InputText id="pedigree" v-model="form.additionals.pedigree" placeholder="Opcional" class="w-full" />
+                                </div>
+
+                                <!-- Checkboxes de estado -->
+                                <div class="flex flex-col gap-3 justify-center">
+                                    <div class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                                        <Checkbox v-model="form.additionals.sterilized" :binary="true" inputId="sterilized" />
+                                        <label for="sterilized" class="text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer select-none">
+                                            Mascota Esterilizada
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                                        <Checkbox v-model="form.additionals.vaccinated" :binary="true" inputId="vaccinated" />
+                                        <label for="vaccinated" class="text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer select-none">
+                                            Esquema de Vacunación Completo
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notas / Observaciones -->
+                            <div class="flex flex-col gap-2">
+                                <label for="notes" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Observaciones / Alergias</label>
+                                <Textarea id="notes" v-model="form.additionals.notes" rows="3" placeholder="Detalles médicos relevantes, comportamiento, etc." class="w-full" autoResize />
+                            </div>
+                        </div>
+
+                        <hr class="border-gray-100 dark:border-gray-700">
+
+                        <!-- 3. DOCUMENTOS Y FOTOS -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Foto de Perfil -->
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                                    <i class="pi pi-camera text-green-500"></i> Fotografía
+                                </h3>
+                                <div class="flex flex-col gap-4">
                                     <FileUpload 
                                         mode="basic" 
                                         name="photo" 
@@ -102,43 +144,63 @@
                                         :maxFileSize="5000000"
                                         customUpload
                                         auto 
-                                        chooseLabel="Seleccionar Imagen"
-                                        class="p-button-outlined p-button-secondary w-full sm:w-auto"
-                                        @select="onFileSelect"
+                                        chooseLabel="Elegir Foto"
+                                        class="p-button-outlined p-button-secondary w-full"
+                                        @select="onPhotoSelect"
                                     />
-                                    <small class="text-gray-500 block mt-2">
-                                        Formatos: JPG, PNG. Máx 5MB.
-                                    </small>
-                                    <small v-if="form.errors.photo" class="text-red-500 text-xs mt-1 block">
-                                        {{ form.errors.photo }}
-                                    </small>
+                                    <div v-if="photoPreview" class="relative group w-32 h-32">
+                                        <img :src="photoPreview" class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm" />
+                                        <button type="button" @click="removePhoto" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                                            <i class="pi pi-times text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <small v-if="form.errors.photo" class="text-red-500">{{ form.errors.photo }}</small>
                                 </div>
-                                
-                                <div v-if="photoPreview" class="relative group">
-                                    <img :src="photoPreview" alt="Preview" class="h-24 w-24 object-cover rounded-lg border border-gray-200 shadow-sm" />
-                                    <button 
-                                        type="button"
-                                        @click="removePhoto"
-                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
-                                        title="Quitar imagen"
+                            </div>
+
+                            <!-- Documentos -->
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                                    <i class="pi pi-folder-open text-yellow-500"></i> Documentación
+                                </h3>
+                                <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                                    <FileUpload 
+                                        name="documents[]" 
+                                        mode="advanced" 
+                                        :multiple="true"
+                                        accept="image/*,.pdf" 
+                                        :maxFileSize="10000000"
+                                        :showUploadButton="false"
+                                        :showCancelButton="false"
+                                        chooseLabel="Agregar Archivos"
+                                        @select="onDocumentsSelect"
+                                        @remove="onRemoveDocument"
                                     >
-                                        <i class="pi pi-times text-xs"></i>
-                                    </button>
+                                        <template #empty>
+                                            <div class="flex flex-col items-center justify-center p-4 text-center">
+                                                <i class="pi pi-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                                                <p class="text-sm text-gray-500">Arrastra aquí cartillas de vacunación, certificados o PDFs.</p>
+                                            </div>
+                                        </template>
+                                    </FileUpload>
+                                    <small class="text-gray-500 block mt-2 text-xs">
+                                        Soporta PDF, JPG, PNG. Máx 10MB por archivo.
+                                    </small>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Botones de Acción -->
+                        <!-- Botones -->
                         <div class="border-t border-gray-100 dark:border-gray-700 pt-6 flex justify-end gap-3">
                             <Link 
-                                :href="route('pets.index')" 
+                                :href="isAdmin ? route('admin.pets.index') : route('pets.index')" 
                                 class="px-5 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium transition-colors text-sm"
                             >
                                 Cancelar
                             </Link>
                             <Button 
                                 type="submit" 
-                                label="Guardar Mascota" 
+                                label="Guardar Registro Completo" 
                                 icon="pi pi-check" 
                                 :loading="form.processing" 
                                 class="p-button-primary"
@@ -154,24 +216,22 @@
 <script>
 import { Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
 import Button from 'primevue/button';
 import FileUpload from 'primevue/fileupload';
 import Toast from 'primevue/toast';
 import Dropdown from 'primevue/dropdown';
+import Checkbox from 'primevue/checkbox';
 
 export default {
     name: 'PetsCreate',
     components: {
-        Link,
-        Toast,
-        Button,
-        Dropdown,
-        InputText,
-        AppLayout,
-        FileUpload,
-        PrimaryButton,
+        Link, Toast, Button, Dropdown, InputText, Textarea, Checkbox, AppLayout, FileUpload
+    },
+    props: {
+        privateUnits: { type: Array, default: () => [] },
+        isAdmin: { type: Boolean, default: false }
     },
     data() {
         return {
@@ -180,14 +240,25 @@ export default {
                 species: '',
                 race: '',
                 photo: null, 
-                private_unit_id: this.$page.props.auth.current_property.property_id,
+                private_unit_id: this.isAdmin ? null : this.$page.props.auth.current_property?.property_id,
+                
+                // Campos Adicionales
+                additionals: {
+                    chip_id: '',
+                    pedigree: '',
+                    sterilized: false,
+                    vaccinated: false,
+                    notes: ''
+                },
+                // Array para múltiples documentos
+                documents: []
             }),
             photoPreview: null,
             speciesOptions: ['Perro', 'Gato', 'Ave', 'Reptil', 'Otro']
         }
     },
     methods: {
-        onFileSelect(event) {
+        onPhotoSelect(event) {
             const file = event.files[0];
             if (file) {
                 this.form.photo = file;
@@ -198,19 +269,30 @@ export default {
             this.form.photo = null;
             this.photoPreview = null;
         },
+        // Manejo de documentos múltiples con PrimeVue Advanced FileUpload
+        onDocumentsSelect(event) {
+            // event.files contiene los archivos seleccionados en esa acción
+            // PrimeVue mantiene una lista interna, pero para Inertia necesitamos asignarlos manualmente si queremos control total,
+            // o simplemente tomar todos los archivos del componente al enviar.
+            // Para simplificar sync con Inertia useForm:
+            this.form.documents = event.files;
+        },
+        onRemoveDocument(event) {
+            // Actualizar la lista al remover
+            this.form.documents = event.files;
+        },
         submit() {
             this.form.post(route('pets.store'), {
                 onSuccess: () => {
                     this.form.reset();
                     this.photoPreview = null;
+                    if (!this.isAdmin) {
+                        this.form.private_unit_id = this.$page.props.auth.current_property?.property_id;
+                    }
+                    this.$toast.add({ severity: 'success', summary: 'Éxito', detail: 'Mascota registrada.', life: 3000 });
                 },
                 onError: () => {
-                    this.$toast.add({
-                        severity: 'error', 
-                        summary: 'Error', 
-                        detail: 'Por favor verifica los campos obligatorios.', 
-                        life: 3000
-                    });
+                    this.$toast.add({ severity: 'error', summary: 'Error', detail: 'Verifica los campos.', life: 3000 });
                 }
             });
         }
@@ -218,50 +300,52 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 /* SOBRESCRIBIR VARIABLES CSS DE PRIMEVUE */
 :deep(*) {
     --primary-color: #0f7bc1;
     --primary-color-text: #ffffff;
-    --primary-500: #0f7bc1;
-    --primary-600: #0d6ca8;
-    --primary-700: #0b5c8f;
-    
-    /* Focus rings */
     --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #0f7bc1;
 }
 
-/* Ajustes de compatibilidad PrimeVue + Tailwind */
-:deep(.p-inputtext), :deep(.p-dropdown) {
+:deep(.p-inputtext), :deep(.p-dropdown), :deep(.p-inputtextarea) {
     @apply border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white w-full;
 }
-:deep(.p-inputtext:enabled:focus), :deep(.p-dropdown.p-focus) {
+:deep(.p-inputtext:enabled:focus), :deep(.p-dropdown.p-focus), :deep(.p-inputtextarea:enabled:focus) {
     @apply ring-2 border-[#0f7bc1];
     --tw-ring-color: #0f7bc1; 
 }
-:deep(.p-inputtext.p-invalid), :deep(.p-dropdown.p-invalid) {
-    @apply border-red-500 ring-red-500;
+
+/* ESTILOS DEL CHECKBOX */
+:deep(.p-checkbox .p-checkbox-box) {
+    @apply border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 transition-colors duration-200;
 }
 
-/* Forzar estilo del botón primario */
-:deep(.p-button.p-button-primary) {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-}
-:deep(.p-button.p-button-primary:enabled:hover) {
-    background: var(--primary-600);
-    border-color: var(--primary-600);
+/* Estado Check (Seleccionado) */
+:deep(.p-checkbox .p-checkbox-box.p-highlight) {
+    @apply bg-[#0f7bc1] border-[#0f7bc1];
 }
 
-/* Ajuste del panel del dropdown en modo oscuro */
-:deep(.p-dropdown-panel) {
-    @apply bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700;
+/* CORRECCIÓN: Forzar color blanco del icono (palomita) 
+   Esto asegura que en Light Mode y Dark Mode la palomita sea blanca sobre el fondo azul
+*/
+:deep(.p-checkbox .p-checkbox-box.p-highlight .p-checkbox-icon) {
+    @apply text-white;
+    color: #ffffff !important; /* Refuerzo con important por si acaso */
 }
-:deep(.p-dropdown-item) {
-    @apply text-gray-700 dark:text-gray-200;
+
+/* FileUpload Advanced Customization */
+:deep(.p-fileupload-advanced) {
+    @apply border-0;
 }
-:deep(.p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus), 
-:deep(.p-dropdown-item:not(.p-highlight):not(.p-disabled):hover) {
-    @apply bg-gray-100 dark:bg-gray-700;
+:deep(.p-fileupload-content) {
+    @apply border-0 bg-transparent p-0;
+}
+:deep(.p-fileupload-buttonbar) {
+    @apply bg-transparent border-0 p-0 mb-4 hidden; /* Ocultamos toolbar default si queremos control custom, o la dejamos simple */
+}
+/* Forzamos mostrar botón choose customizado y ocultamos el header default feo */
+:deep(.p-fileupload .p-fileupload-buttonbar) {
+    @apply bg-transparent border-0 p-0 pb-2;
 }
 </style>

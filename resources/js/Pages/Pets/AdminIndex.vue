@@ -1,50 +1,69 @@
 <template>
-    <AppLayout :title="'Mis Mascotas'">
+    <AppLayout :title="'Control de Mascotas'">
         <ConfirmDialog></ConfirmDialog>
 
         <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-4 sm:p-8 transition-colors duration-300">
             
-            <!-- Encabezado -->
-            <div class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <!-- Encabezado Admin -->
+            <div class="max-w-7xl mx-auto mb-1 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-                        Mis Mascotas
+                        Administración de Mascotas
                     </h1>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Gestiona el perfil, historial médico y documentación de tus mascotas.
+                        Gestión global e historial clínico.
                     </p>
                 </div>
                 
+                <!-- Buscador -->
+                <div class="w-full md:w-auto relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="pi pi-search text-gray-400"></i>
+                    </span>
+                    <input 
+                        v-model="search" 
+                        type="text" 
+                        placeholder="Buscar nombre, raza, chip..." 
+                        class="pl-10 pr-4 py-2 w-full md:w-80 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                    >
+                </div>
+            </div>
+
+            <!-- Botón de registro -->
+            <div class="flex justify-end mt-4 max-w-7xl mx-auto">
                 <PrimaryButton @click="$inertia.visit(route('pets.create'))">
                     <i class="pi pi-plus mr-2"></i> Registrar Mascota
                 </PrimaryButton>
             </div>
 
-            <div class="max-w-7xl mx-auto">
+            <div class="max-w-7xl mx-auto mt-4">
                 
                 <!-- ESTADO VACÍO -->
                 <div v-if="pets.data.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-dashed border-gray-300 dark:border-gray-700">
                     <div class="mx-auto h-12 w-12 text-gray-400">
-                        <i class="pi pi-briefcase text-4xl"></i>
+                        <i class="pi pi-search" style="font-size: 2rem"></i>
                     </div>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay mascotas registradas</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Comienza registrando a tu compañero.</p>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No se encontraron mascotas</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Intenta con otros términos de búsqueda.</p>
                 </div>
 
                 <div v-else>
-                    <!-- VISTA DESKTOP (Tabla) -->
+                    <!-- TABLA ADMIN (Desktop) -->
                     <div class="hidden md:block overflow-hidden rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Mascota
+                                        Mascota / Foto
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Detalles & Especie
+                                        Ubicación (Casa)
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Salud & Documentos
+                                        Detalles y Salud
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Docs
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Acciones
@@ -60,11 +79,11 @@
                                 >
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-12 w-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 relative">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 relative">
                                                 <img 
                                                     v-if="pet.photo_url" 
                                                     :src="pet.photo_url" 
-                                                    alt="Foto mascota" 
+                                                    alt="Foto" 
                                                     class="h-full w-full object-cover"
                                                 >
                                                 <div v-else class="h-full w-full flex items-center justify-center text-indigo-400 dark:text-indigo-300">
@@ -72,46 +91,61 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                <div class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                                                     {{ pet.name }}
                                                 </div>
                                                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                    Alta: {{ formatDate(pet.created_at) }}
+                                                    {{ pet.species }} - {{ pet.race }}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
+                                    
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 dark:text-white font-medium">{{ pet.race || 'Sin raza' }}</div>
-                                        <span class="text-xs text-gray-500 capitalize">{{ pet.species }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex flex-col gap-1.5">
-                                            <div class="flex gap-2">
-                                                <!-- Badges Salud -->
-                                                <span 
-                                                    v-if="pet.additionals?.sterilized" 
-                                                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-                                                    title="Esterilizado"
-                                                >
-                                                    Est.
-                                                </span>
-                                                <span 
-                                                    v-if="pet.additionals?.vaccinated" 
-                                                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                                    title="Vacunado"
-                                                >
-                                                    Vac.
-                                                </span>
-                                            </div>
-                                            <!-- Indicador Docs -->
-                                            <span v-if="pet.documents && pet.documents.length > 0" class="flex items-center text-xs text-blue-600 dark:text-blue-400">
-                                                <i class="pi pi-file mr-1"></i> {{ pet.documents.length }} docs
-                                            </span>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                            <i class="pi pi-home mr-1 text-gray-400"></i>
+                                            {{ pet.house_info }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                            Residente: {{ pet.resident_name }}
                                         </div>
                                     </td>
+
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <!-- Badges de Salud -->
+                                            <span 
+                                                v-if="pet.additionals?.sterilized" 
+                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                                                title="Esterilizado"
+                                            >
+                                                <i class="pi pi-check-circle mr-1 text-[10px]"></i> Est.
+                                            </span>
+                                            <span 
+                                                v-if="pet.additionals?.vaccinated" 
+                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                title="Vacunado"
+                                            >
+                                                <i class="pi pi-shield mr-1 text-[10px]"></i> Vac.
+                                            </span>
+                                            <span v-if="!pet.additionals?.sterilized && !pet.additionals?.vaccinated" class="text-xs text-gray-400">
+                                                -
+                                            </span>
+                                        </div>
+                                        <div v-if="pet.additionals?.chip_id" class="text-xs text-gray-500 mt-1">
+                                            Chip: {{ pet.additionals.chip_id }}
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span v-if="pet.documents && pet.documents.length > 0" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            {{ pet.documents.length }} Archivos
+                                        </span>
+                                        <span v-else class="text-gray-400 text-xs">Sin docs</span>
+                                    </td>
+
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                        <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
                                             <i class="pi pi-pencil"></i>
                                         </button>
                                     </td>
@@ -120,38 +154,38 @@
                         </table>
                     </div>
 
-                    <!-- VISTA MÓVIL (Tarjetas) -->
+                    <!-- VISTA MÓVIL (Cards) -->
                     <div class="md:hidden grid grid-cols-1 gap-4">
                         <div 
                             v-for="pet in pets.data" 
                             :key="pet.id" 
                             @click="openModal(pet)"
-                            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer active:scale-[0.98] transition-transform"
+                            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700"
                         >
-                            <div class="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                                <div class="flex items-center gap-3">
-                                    <div class="h-10 w-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex items-center justify-center border border-gray-300 dark:border-gray-500">
-                                        <img v-if="pet.photo_url" :src="pet.photo_url" class="h-full w-full object-cover">
-                                        <i v-else class="pi pi-github text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <span class="block font-bold text-gray-800 dark:text-white text-base">{{ pet.name }}</span>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ pet.species }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex gap-1">
-                                    <i v-if="pet.additionals?.vaccinated" class="pi pi-shield text-green-500" title="Vacunado"></i>
-                                    <i v-if="pet.additionals?.sterilized" class="pi pi-heart text-purple-500" title="Esterilizado"></i>
-                                </div>
+                            <div class="bg-indigo-50 dark:bg-gray-700/50 px-4 py-2 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                <span class="font-bold text-gray-800 dark:text-white text-lg">{{ pet.name }}</span>
+                                <span class="text-xs bg-white dark:bg-gray-600 px-2 py-1 rounded shadow-sm">
+                                    {{ pet.house_info }}
+                                </span>
                             </div>
-                            <div class="p-4 flex justify-between items-end">
-                                <div class="text-sm text-gray-600 dark:text-gray-300">
-                                    <p class="mb-1"><span class="font-semibold">Raza:</span> {{ pet.race || 'N/A' }}</p>
-                                    <p v-if="pet.documents?.length" class="text-blue-500 text-xs">
-                                        <i class="pi pi-paperclip"></i> {{ pet.documents.length }} Documentos
-                                    </p>
+                            <div class="p-4 flex gap-4">
+                                <div class="h-16 w-16 flex-shrink-0 rounded-lg bg-gray-200 overflow-hidden relative">
+                                     <img v-if="pet.photo_url" :src="pet.photo_url" class="h-full w-full object-cover">
+                                     <div v-else class="h-full w-full flex items-center justify-center text-gray-400"><i class="pi pi-image text-2xl"></i></div>
                                 </div>
-                                <span class="text-xs text-indigo-500 font-medium">Editar <i class="pi pi-chevron-right ml-1"></i></span>
+                                <div class="flex-1 space-y-1">
+                                    <div class="flex justify-between">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ pet.race }}</p>
+                                        <div class="flex gap-1">
+                                            <i v-if="pet.additionals?.vaccinated" class="pi pi-shield text-green-500 text-xs" title="Vacunado"></i>
+                                            <i v-if="pet.additionals?.sterilized" class="pi pi-check-circle text-purple-500 text-xs" title="Esterilizado"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Prop: {{ pet.resident_name }}</p>
+                                    <div v-if="pet.documents && pet.documents.length > 0" class="text-xs text-blue-500">
+                                        <i class="pi pi-file"></i> {{ pet.documents.length }} docs
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -176,28 +210,26 @@
             </div>
         </div>
 
-        <!-- MODAL COMPLETO DE EDICIÓN -->
+        <!-- MODAL DE EDICIÓN -->
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <div @click="closeModal" class="absolute inset-0 bg-gray-900/75 transition-opacity backdrop-blur-sm"></div>
-            
             <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
                 
-                <!-- Header -->
+                <!-- Header Modal -->
                 <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 z-10">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-                        Editar Perfil: {{ form.name }}
+                        {{ form.name || 'Editar Mascota' }}
                     </h3>
-                    <button @click="closeModal" class="text-gray-400 hover:text-gray-500">
+                    <button @click="closeModal" class="text-gray-400 hover:text-gray-500 transition-colors">
                         <i class="pi pi-times text-lg"></i>
                     </button>
                 </div>
-
-                <!-- Body (Scrollable) -->
-                <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+                
+                <!-- Body Modal (Scrollable) -->
+                <div class="p-6 overflow-y-auto custom-scrollbar space-y-6 flex-1">
                     
-                    <!-- Sección Principal -->
                     <div class="flex flex-col sm:flex-row gap-6">
-                        <!-- Foto -->
+                        <!-- Columna Izquierda: Foto -->
                         <div class="flex flex-col items-center space-y-3">
                             <div class="relative group">
                                 <div class="h-40 w-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
@@ -209,18 +241,19 @@
                                     <input type="file" class="hidden" @change="updatePhotoPreview" accept="image/*">
                                 </label>
                             </div>
+                            <span class="text-xs text-gray-400">Click para cambiar foto</span>
                         </div>
 
-                        <!-- Inputs Básicos -->
+                        <!-- Columna Derecha: Campos Principales -->
                         <div class="flex-1 grid grid-cols-1 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre</label>
-                                <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                                <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm text-sm">
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Especie</label>
-                                    <select v-model="form.species" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                                    <select v-model="form.species" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm text-sm">
                                         <option value="Perro">Perro</option>
                                         <option value="Gato">Gato</option>
                                         <option value="Ave">Ave</option>
@@ -229,7 +262,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Raza</label>
-                                    <input v-model="form.race" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                                    <input v-model="form.race" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-indigo-500 text-sm">
                                 </div>
                             </div>
                         </div>
@@ -237,10 +270,10 @@
 
                     <hr class="border-gray-100 dark:border-gray-700">
 
-                    <!-- ADICIONALES -->
+                    <!-- SECCIÓN: ADICIONALES -->
                     <div>
                         <h4 class="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center">
-                            <i class="pi pi-heart mr-2"></i> Salud e Identificación
+                            <i class="pi pi-id-card mr-2"></i> Identificación y Salud
                         </h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
@@ -260,49 +293,49 @@
                             </label>
                             <label class="inline-flex items-center cursor-pointer">
                                 <input type="checkbox" v-model="form.additionals.vaccinated" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Vacunado (Completo)</span>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Vacunado (Esquema completo)</span>
                             </label>
                         </div>
 
                         <div class="mt-4">
-                            <label class="block text-xs text-gray-500 mb-1">Notas Médicas / Alergias</label>
-                            <textarea v-model="form.additionals.notes" rows="2" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" placeholder="Detalles importantes..."></textarea>
+                            <label class="block text-xs text-gray-500 mb-1">Notas / Observaciones</label>
+                            <textarea v-model="form.additionals.notes" rows="2" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" placeholder="Alergias, comportamiento, etc."></textarea>
                         </div>
                     </div>
 
                     <hr class="border-gray-100 dark:border-gray-700">
 
-                    <!-- DOCUMENTOS -->
+                    <!-- SECCIÓN: DOCUMENTOS -->
                     <div>
                         <h4 class="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center">
-                            <i class="pi pi-folder-open mr-2"></i> Documentación Digital
+                            <i class="pi pi-folder mr-2"></i> Documentación
                         </h4>
                         
-                        <!-- Lista Existente -->
-                        <div v-if="form.existing_documents && form.existing_documents.length > 0" class="mb-4 grid grid-cols-1 gap-2">
+                        <!-- Lista de documentos existentes -->
+                        <div v-if="form.existing_documents && form.existing_documents.length > 0" class="mb-4 space-y-2">
                             <div v-for="doc in form.existing_documents" :key="doc.id" class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
-                                <div class="flex items-center overflow-hidden gap-2">
-                                    <i class="pi pi-file-pdf text-red-500" v-if="doc.mime_type === 'application/pdf'"></i>
-                                    <i class="pi pi-image text-blue-500" v-else></i>
-                                    <a :href="doc.url" target="_blank" class="text-sm text-blue-600 hover:underline truncate max-w-[200px]">
+                                <div class="flex items-center overflow-hidden">
+                                    <i class="pi pi-file-pdf text-red-500 mr-2" v-if="doc.mime_type === 'application/pdf'"></i>
+                                    <i class="pi pi-image text-blue-500 mr-2" v-else></i>
+                                    <a :href="doc.url" target="_blank" class="text-sm text-blue-600 hover:underline truncate block max-w-[150px] sm:max-w-xs">
                                         {{ doc.name }}
                                     </a>
                                 </div>
-                                <span class="text-xs text-gray-400"><i class="pi pi-check"></i></span>
+                                <span class="text-xs text-gray-400">Guardado</span>
                             </div>
                         </div>
-                        <div v-else class="text-xs text-gray-400 italic mb-3">No has subido documentos aún.</div>
+                        <div v-else class="text-sm text-gray-400 italic mb-3">No hay documentos adjuntos.</div>
 
                         <!-- Subir nuevos -->
-                        <div class="mt-2 bg-indigo-50 dark:bg-indigo-900/10 p-3 rounded-lg border border-dashed border-indigo-200 dark:border-indigo-800">
-                            <label class="block text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-1">Subir Cartilla o Certificados (PDF/Img)</label>
-                            <input type="file" multiple @change="handleFileUpload" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 dark:file:bg-indigo-900 dark:file:text-indigo-300">
+                        <div class="mt-2">
+                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Agregar nuevos archivos:</label>
+                            <input type="file" multiple @change="handleFileUpload" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-300">
                         </div>
                     </div>
 
                 </div>
-
-                <!-- Footer -->
+                
+                <!-- Footer Modal -->
                 <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:justify-between gap-3 sticky bottom-0 z-10">
                     <button 
                         @click="deletePet"
@@ -321,34 +354,33 @@
                 </div>
             </div>
         </div>
+
     </AppLayout>
 </template>
 
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Link, router } from '@inertiajs/vue3';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useConfirm } from "primevue/useconfirm";
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import debounce from 'lodash/debounce';
 
 export default {
-    name: 'PetsIndex',
-    components: {
-        Link,
-        AppLayout,
-        PrimaryButton,
-        ConfirmDialog,
-    },
+    name: 'AdminPetsIndex',
+    components: { Link, AppLayout, ConfirmDialog, PrimaryButton },
     setup() {
         const confirm = useConfirm();
         return { confirm };
     },
     props: {
-        pets: { type: Object, required: true },
+        pets: Object,
+        filters: Object,
         errors: Object
     },
     data() {
         return {
+            search: this.filters.search || '',
             showModal: false,
             processing: false,
             photoPreview: null,
@@ -368,44 +400,49 @@ export default {
                     vaccinated: false,
                     notes: ''
                 },
-                documents: [], // Para subida
-                existing_documents: [], // Para visualización
+                documents: [], // Nuevos archivos a subir
+                existing_documents: [], // Solo para visualizar
                 
                 _method: 'PUT'
-            },
+            }
         }
     },
+    watch: {
+        search: debounce(function(value) {
+            router.get(route('admin.pets.index'), { search: value }, {
+                preserveState: true,
+                replace: true,
+                preserveScroll: true
+            });
+        }, 500)
+    },
     methods: {
-        formatDate(dateString) {
-            if (!dateString) return '';
-            return new Date(dateString).toLocaleDateString('es-MX', { year: '2-digit', month: 'short', day: 'numeric' });
-        },
         openModal(pet) {
+            // console.log('Abriendo modal para mascota:', pet);
             this.photoPreview = null;
-            // Inicializamos additionals si viene nulo
+            
+            // Inicializamos form asegurando que additionals sea un objeto si viene null
             const additionals = pet.additionals || {
-                chip_id: '', pedigree: '', sterilized: false, vaccinated: false, notes: ''
+                chip_id: '',
+                pedigree: '',
+                sterilized: !! pet.additionals?.sterilized,
+                vaccinated: !! pet.additionals?.vaccinated,
+                notes: ''
             };
 
-            this.form = {
-                id: pet.id,
-                name: pet.name,
-                species: pet.species,
-                race: pet.race,
-                photo_url: pet.photo_url,
-                photo: null,
-                
+            this.form = { 
+                ...pet, 
                 additionals: additionals,
-                documents: [],
+                photo: null, 
+                documents: [], // Reset uploads
                 existing_documents: pet.documents || [],
-                
-                _method: 'PUT'
-            };
+                _method: 'PUT' 
+            }; 
+            
             this.showModal = true;
         },
         closeModal() {
             this.showModal = false;
-            this.photoPreview = null;
         },
         updatePhotoPreview(e) {
             const file = e.target.files[0];
@@ -416,38 +453,35 @@ export default {
             reader.readAsDataURL(file);
         },
         handleFileUpload(e) {
+            // Convertir FileList a Array
             this.form.documents = Array.from(e.target.files);
         },
         submitUpdate() {
             this.processing = true;
-            // forceFormData es vital para enviar archivos con Inertia usando PUT (spoofing)
+            
+            // Usamos router.post con forceFormData para manejar archivos + PUT method fake
             router.post(route('pets.update', this.form.id), this.form, {
                 preserveScroll: true,
-                forceFormData: true, 
-                onSuccess: () => {
-                    this.processing = false;
-                    this.closeModal();
+                forceFormData: true, // Importante para subir archivos
+                onSuccess: () => { 
+                    this.processing = false; 
+                    this.closeModal(); 
                 },
                 onError: () => this.processing = false
             });
         },
         deletePet() {
-            this.confirm.require({
-                message: '¿Estás seguro de que deseas eliminar esta mascota? Se perderán todos sus documentos.',
+             this.confirm.require({
+                message: '¿Estás seguro de eliminar esta mascota? Esta acción no se puede deshacer.',
                 header: 'Confirmar Eliminación',
                 icon: 'pi pi-exclamation-triangle',
-                rejectLabel: 'Cancelar',
                 acceptLabel: 'Eliminar',
+                rejectLabel: 'Cancelar',
                 acceptClass: 'p-button-danger',
                 accept: () => {
                     this.processing = true;
                     router.delete(route('pets.destroy', this.form.id), {
-                        preserveScroll: true,
-                        onSuccess: () => {
-                            this.processing = false;
-                            this.closeModal();
-                        },
-                        onFinish: () => this.processing = false
+                        onSuccess: () => { this.processing = false; this.closeModal(); }
                     });
                 }
             });

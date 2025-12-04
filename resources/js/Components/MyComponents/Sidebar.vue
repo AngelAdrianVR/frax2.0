@@ -141,15 +141,18 @@ const menuItems = computed(() => [
         key: 'inmobiliaria',
         icon: 'M3 21h18M5 21V7l8-4 8 4v14M5 21h14', 
         items: [
-            { name: 'Residentes', route: 'residents.index', allowedRoles: ['Admin', 'Empleado'] },
-            { name: 'Unidades Privadas', route: 'private_units.index', allowedRoles: ['Admin', 'Empleado'] },
-            // === CAMBIO AQUÍ: Ruta dinámica según rol ===
+            // { name: 'Residentes', route: 'residents.index', allowedRoles: ['Admin', 'Empleado'] },
+            { name: 'Unidades Privadas', route: 'admin.private-units.index', allowedRoles: ['Admin', 'Empleado'] },
             { 
                 name: 'Vehículos', 
                 route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.vehicles.index' : 'vehicles.index', 
                 allowedRoles: ['Residente', 'Empleado'] // Admin entra por bypass en checkRole
             },
-            { name: 'Mascotas', route: 'pets.index', allowedRoles: ['Residente', 'Empleado'] },
+            { 
+                name: 'Mascotas', 
+                route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.pets.index' : 'pets.index', 
+                allowedRoles: ['Residente', 'Empleado'] // Admin entra por bypass en checkRole
+            },
         ]
     },
     {

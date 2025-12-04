@@ -129,7 +129,8 @@ class RoleAndUserSeeder extends Seeder
                 'lot_number' => 'CUMBRES-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'square_meters' => rand(120, 300),
                 'unit_street' => 'Calle Roble',
-                'int_number' => (string)$i,
+                'exterior_number' => (string)$i, // CAMBIO: Usar exterior_number para la fachada
+                'int_number' => null,            // CAMBIO: Interior nulo (o ponle 'A', 'B' si aplica)
                 'status' => 'Activo',
                 'subdivision_id' => $subdivisionId1,
                 'created_at' => now(), 'updated_at' => now(),
@@ -181,7 +182,8 @@ class RoleAndUserSeeder extends Seeder
                 'lot_number' => 'OLIVOS-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'square_meters' => rand(90, 200),
                 'unit_street' => 'Calle Olivo',
-                'int_number' => (string)$i,
+                'exterior_number' => (string)$i, // CAMBIO: Usar exterior_number para la fachada
+                'int_number' => null,            // CAMBIO: Interior nulo
                 'status' => 'Activo',
                 'subdivision_id' => $subdivisionId2,
                 'created_at' => now(), 'updated_at' => now(),
@@ -192,16 +194,26 @@ class RoleAndUserSeeder extends Seeder
         // CREAR USUARIOS
         // =========================================================
 
-        // 1. Super Admin (Solo en Sub 1 para pruebas básicas)
+        // 1. Super Admin (CAMBIO: Asignado a AMBOS fraccionamientos)
         $adminUser = User::firstOrCreate(
             ['email' => 'angel@gmail.com'],
             ['name' => 'Angel Admin', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
         );
+        
+        // A) Asignar a Sub 1 (Principal)
         setPermissionsTeamId($subdivisionId1); 
         $adminUser->assignRole($rolesSub1['Admin']);
         DB::table('subdivision_user')->updateOrInsert(
             ['user_id' => $adminUser->id, 'subdivision_id' => $subdivisionId1],
             ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
+        );
+
+        // B) Asignar a Sub 2 (Secundario para pruebas)
+        setPermissionsTeamId($subdivisionId2);
+        $adminUser->assignRole($rolesSub2['Admin']);
+        DB::table('subdivision_user')->updateOrInsert(
+            ['user_id' => $adminUser->id, 'subdivision_id' => $subdivisionId2],
+            ['is_current' => false, 'created_at' => now(), 'updated_at' => now()]
         );
 
         // 2. Guardia (Solo en Sub 1)
@@ -242,7 +254,7 @@ class RoleAndUserSeeder extends Seeder
         // PERFIL DE RESIDENTE Y ASIGNACIÓN DE UNIDADES
         // =========================================================
         
-        // Crear perfil de residente único (O uno por sub si tu lógica lo requiere, aquí asumo uno global)
+        // Crear perfil de residente único
         $residentId = DB::table('residents')->insertGetId([
             'full_name' => $residentUser->name,
             'email' => $residentUser->email,
@@ -273,6 +285,6 @@ class RoleAndUserSeeder extends Seeder
             ]);
         }
 
-        $this->command->info("Seed completo: Usuario Residente configurado con propiedades en 2 fraccionamientos.");
+        $this->command->info("Seed completo: Admin y Residente configurados en múltiples fraccionamientos.");
     }
 }

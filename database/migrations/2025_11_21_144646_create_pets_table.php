@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 50);
             $table->string('species', 50); // Perro, Gato
             $table->string('race', 50)->nullable();
-            $table->json('additionals')->nullable(); // Vacunas, foto, etc.
+            $table->json('additionals')->nullable(); // Vacunas, pedigree, papeles, documentacion, etc.
             
             // $table->foreignId('resident_id')->constrained()->onDelete('cascade');
             $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
