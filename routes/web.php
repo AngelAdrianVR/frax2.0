@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\PetController;
+use App\Http\Controllers\PrivateUnitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\VehicleController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -87,16 +88,23 @@ Route::post('/switch-property', function (Request $request) {
 
 
 
-// Roles y permisos (Solo para admins) =================================================================
+// Roles y permisos (Solo para admins) ======================================================
 // ==========================================================================================
 // CRUD de Roles (Resource estándar)
 Route::resource('roles', RoleController::class)->middleware('auth');
+
 
 // CRUD de Permisos (Métodos personalizados en RoleController)
 Route::post('/permissions', [RoleController::class, 'storePermission'])->name('permissions.store')->middleware('auth');
 Route::put('/permissions/{permission}', [RoleController::class, 'updatePermission'])->name('permissions.update')->middleware('auth');
 Route::delete('/permissions/{permission}', [RoleController::class, 'destroyPermission'])->name('permissions.destroy')->middleware('auth');
 
+
+// Unidades privativas (casas) ==============================================================
+// ==========================================================================================
+Route::resource('/admin/private-units', PrivateUnitController::class)->names('admin.private-units')->middleware('auth');
+// Ruta extra para inactivación rápida (Toggle)
+Route::patch('/admin/private-units/{privateUnit}/toggle-status', [PrivateUnitController::class, 'toggleStatus'])->name('admin.private-units.toggle-status')->middleware('auth');
 
 
 // Vehiculos ================================================================================
@@ -111,3 +119,8 @@ Route::resource('vehicles', VehicleController::class)->except(['show', 'edit'])-
 // ==========================================================================================
 Route::get('/admin/pets', [PetController::class, 'adminIndex'])->name('admin.pets.index')->middleware('auth');
 Route::resource('pets', PetController::class)->middleware('auth');
+
+
+// Amenidades ===============================================================================
+// ==========================================================================================
+Route::resource('amenities', AmenityController::class)->middleware('auth');

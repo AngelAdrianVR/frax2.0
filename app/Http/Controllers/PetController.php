@@ -40,11 +40,18 @@ class PetController extends Controller
                     'name' => $pet->name,
                     'species' => $pet->species,
                     'race' => $pet->race,
-                    'additionals' => $pet->additionals, // Data JSON
+                    'additionals' => $pet->additionals,
                     'private_unit_id' => $pet->private_unit_id,
                     'photo_url' => $pet->getFirstMediaUrl('pets') ?: null,
-                    // Retornamos también si tiene documentos
-                    'has_documents' => $pet->getMedia('documents')->count() > 0,
+                    // ACTUALIZADO: Ahora retornamos la colección completa de documentos, igual que en admin
+                    'documents' => $pet->getMedia('documents')->map(function($media) {
+                        return [
+                            'id' => $media->id,
+                            'url' => $media->getUrl(),
+                            'name' => $media->file_name,
+                            'mime_type' => $media->mime_type
+                        ];
+                    }),
                     'created_at' => $pet->created_at,
                 ];
             });
@@ -107,7 +114,6 @@ class PetController extends Controller
                     ($pet->privateUnit->unit_street . ' ' . $pet->privateUnit->exterior_number . ' ' . ($pet->privateUnit->int_number ? 'Int ' . $pet->privateUnit->int_number : '')) 
                     : 'Sin Asignar',
                 
-                // DATOS NUEVOS PARA EL ADMIN
                 'additionals' => $pet->additionals ?? [],
                 'documents' => $pet->getMedia('documents')->map(function($media) {
                     return [
@@ -166,20 +172,15 @@ class PetController extends Controller
             'name' => 'required|string|max:255',
             'species' => 'required|string|max:50',
             'race' => 'nullable|string|max:100',
-            'photo' => 'nullable|image|max:5120', // 5MB Max
-            
-            // Validación de Datos Adicionales (JSON)
+            'photo' => 'nullable|image|max:5120',
             'additionals' => 'nullable|array',
             'additionals.chip_id' => 'nullable|string|max:50',
             'additionals.pedigree' => 'nullable|string|max:50',
             'additionals.sterilized' => 'nullable|boolean',
             'additionals.vaccinated' => 'nullable|boolean',
             'additionals.notes' => 'nullable|string|max:500',
-            
-            // Validación de Documentos (Múltiples archivos)
             'documents' => 'nullable|array',
-            'documents.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240', // 10MB max por doc
-
+            'documents.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240',
             'private_unit_id' => [Rule::requiredIf($isAdmin), 'exists:private_units,id'],
         ]);
 
@@ -194,16 +195,13 @@ class PetController extends Controller
             'species' => $validated['species'],
             'race' => $validated['race'],
             'private_unit_id' => $targetUnitId,
-            // Guardamos el array de additionals directamente, Laravel lo convierte a JSON automáticamente
             'additionals' => $validated['additionals'] ?? null,
         ]);
 
-        // Guardar Foto de Perfil
         if ($request->hasFile('photo')) {
             $pet->addMediaFromRequest('photo')->toMediaCollection('pets');
         }
 
-        // Guardar Documentos Adicionales (Iterar array)
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
                 $pet->addMedia($file)->toMediaCollection('documents');
@@ -212,7 +210,7 @@ class PetController extends Controller
 
         $route = $isAdmin ? 'admin.pets.index' : 'pets.index';
 
-        return Redirect::route($route)->with('success', 'Mascota registrada correctamente con sus datos adicionales.');
+        return Redirect::route($route)->with('success', 'Mascota registrada correctamente.');
     }
 
     public function update(Request $request, Pet $pet)
@@ -230,7 +228,6 @@ class PetController extends Controller
             'additionals.vaccinated' => 'nullable|boolean',
             'additionals.notes' => 'nullable|string|max:500',
 
-            // Para update, a veces se envían documentos nuevos para agregar
             'documents' => 'nullable|array',
             'documents.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
@@ -239,8 +236,6 @@ class PetController extends Controller
             'name' => $validated['name'],
             'species' => $validated['species'],
             'race' => $validated['race'],
-            // Hacemos merge con lo que ya existía o sobrescribimos según tu lógica de negocio
-            // Aquí sobrescribimos los datos adicionales
             'additionals' => $validated['additionals'] ?? null,
         ]);
 
@@ -249,7 +244,6 @@ class PetController extends Controller
             $pet->addMediaFromRequest('photo')->toMediaCollection('pets');
         }
 
-        // Agregar nuevos documentos sin borrar los anteriores
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
                 $pet->addMedia($file)->toMediaCollection('documents');

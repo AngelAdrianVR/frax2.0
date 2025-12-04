@@ -1,27 +1,22 @@
 <template>
     <AppLayout :title="'Mis Mascotas'">
-        <!-- Componente de Diálogo de Confirmación (PrimeVue) -->
         <ConfirmDialog></ConfirmDialog>
 
-        <!-- Contenedor Principal -->
         <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-4 sm:p-8 transition-colors duration-300">
             
             <!-- Encabezado -->
             <div class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-                        Mascotas Registradas
+                        Mis Mascotas
                     </h1>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Gestiona las mascotas del fraccionamiento. Haz clic para ver detalles o editar.
+                        Gestiona el perfil, historial médico y documentación de tus mascotas.
                     </p>
                 </div>
                 
                 <PrimaryButton @click="$inertia.visit(route('pets.create'))">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Registrar Mascota
+                    <i class="pi pi-plus mr-2"></i> Registrar Mascota
                 </PrimaryButton>
             </div>
 
@@ -30,13 +25,10 @@
                 <!-- ESTADO VACÍO -->
                 <div v-if="pets.data.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-dashed border-gray-300 dark:border-gray-700">
                     <div class="mx-auto h-12 w-12 text-gray-400">
-                        <!-- Icono de Huella vacía -->
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
-                        </svg>
+                        <i class="pi pi-briefcase text-4xl"></i>
                     </div>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay mascotas</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Comienza registrando la primera mascota.</p>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay mascotas registradas</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Comienza registrando a tu compañero.</p>
                 </div>
 
                 <div v-else>
@@ -46,13 +38,13 @@
                             <thead class="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Mascota / Nombre
+                                        Mascota
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Detalles (Raza)
+                                        Detalles & Especie
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Especie
+                                        Salud & Documentos
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Acciones
@@ -68,7 +60,6 @@
                                 >
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <!-- Imagen o Icono -->
                                             <div class="flex-shrink-0 h-12 w-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 relative">
                                                 <img 
                                                     v-if="pet.photo_url" 
@@ -85,25 +76,43 @@
                                                     {{ pet.name }}
                                                 </div>
                                                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                    Registrado: {{ formatDate(pet.created_at) }}
+                                                    Alta: {{ formatDate(pet.created_at) }}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 dark:text-white font-medium">{{ pet.race || 'Sin raza especificada' }}</div>
+                                        <div class="text-sm text-gray-900 dark:text-white font-medium">{{ pet.race || 'Sin raza' }}</div>
+                                        <span class="text-xs text-gray-500 capitalize">{{ pet.species }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center gap-2">
-                                            <!-- Indicador de Color según especie -->
-                                            <span class="text-sm text-gray-500 dark:text-gray-400 capitalize">{{ pet.species }}</span>
+                                        <div class="flex flex-col gap-1.5">
+                                            <div class="flex gap-2">
+                                                <!-- Badges Salud -->
+                                                <span 
+                                                    v-if="pet.additionals?.sterilized" 
+                                                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                                                    title="Esterilizado"
+                                                >
+                                                    Est.
+                                                </span>
+                                                <span 
+                                                    v-if="pet.additionals?.vaccinated" 
+                                                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                    title="Vacunado"
+                                                >
+                                                    Vac.
+                                                </span>
+                                            </div>
+                                            <!-- Indicador Docs -->
+                                            <span v-if="pet.documents && pet.documents.length > 0" class="flex items-center text-xs text-blue-600 dark:text-blue-400">
+                                                <i class="pi pi-file mr-1"></i> {{ pet.documents.length }} docs
+                                            </span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            </svg>
+                                            <i class="pi pi-pencil"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -117,38 +126,32 @@
                             v-for="pet in pets.data" 
                             :key="pet.id" 
                             @click="openModal(pet)"
-                            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer active:scale-95 transition-transform"
+                            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer active:scale-[0.98] transition-transform"
                         >
-                            <!-- Header Tarjeta -->
                             <div class="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                 <div class="flex items-center gap-3">
-                                    <!-- Imagen Pequeña -->
-                                    <div class="h-10 w-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                                    <div class="h-10 w-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex items-center justify-center border border-gray-300 dark:border-gray-500">
                                         <img v-if="pet.photo_url" :src="pet.photo_url" class="h-full w-full object-cover">
-                                        <i v-else class="fa-solid fa-paw"></i>
+                                        <i v-else class="pi pi-github text-lg"></i>
                                     </div>
-                                    <span class="font-bold text-gray-800 dark:text-white text-lg">{{ pet.name }}</span>
+                                    <div>
+                                        <span class="block font-bold text-gray-800 dark:text-white text-base">{{ pet.name }}</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ pet.species }}</span>
+                                    </div>
                                 </div>
-                                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded capitalize">
-                                    {{ pet.species }}
-                                </span>
+                                <div class="flex gap-1">
+                                    <i v-if="pet.additionals?.vaccinated" class="pi pi-shield text-green-500" title="Vacunado"></i>
+                                    <i v-if="pet.additionals?.sterilized" class="pi pi-heart text-purple-500" title="Esterilizado"></i>
+                                </div>
                             </div>
-
-                            <!-- Cuerpo Tarjeta -->
-                            <div class="p-4 space-y-2">
-                                <p class="text-sm text-gray-600 dark:text-gray-300">
-                                    Raza: {{ pet.race }}
-                                </p>
-                                <div class="flex items-center gap-2">
-                                    <span 
-                                        class="w-4 h-4 rounded-full border border-gray-300"
-                                        :style="{ backgroundColor: getSpeciesColor(pet.species) }"
-                                    ></span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">Tipo de mascota</span>
+                            <div class="p-4 flex justify-between items-end">
+                                <div class="text-sm text-gray-600 dark:text-gray-300">
+                                    <p class="mb-1"><span class="font-semibold">Raza:</span> {{ pet.race || 'N/A' }}</p>
+                                    <p v-if="pet.documents?.length" class="text-blue-500 text-xs">
+                                        <i class="pi pi-paperclip"></i> {{ pet.documents.length }} Documentos
+                                    </p>
                                 </div>
-                                <div class="pt-2 text-right">
-                                    <span class="text-xs text-indigo-500 font-medium">Toca para editar</span>
-                                </div>
+                                <span class="text-xs text-indigo-500 font-medium">Editar <i class="pi pi-chevron-right ml-1"></i></span>
                             </div>
                         </div>
                     </div>
@@ -163,7 +166,7 @@
                                     class="px-4 py-2 text-sm border rounded-md transition-colors"
                                     :class="link.active 
                                         ? 'bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-500' 
-                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'"
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'"
                                     v-html="link.label" 
                                 />
                             </template>
@@ -173,112 +176,151 @@
             </div>
         </div>
 
-        <!-- MODAL DE EDICIÓN / DETALLES -->
+        <!-- MODAL COMPLETO DE EDICIÓN -->
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-            <!-- Backdrop -->
-            <div @click="closeModal" class="absolute inset-0 bg-gray-900/75 transition-opacity"></div>
+            <div @click="closeModal" class="absolute inset-0 bg-gray-900/75 transition-opacity backdrop-blur-sm"></div>
             
-            <!-- Modal Content -->
-            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all max-h-[90vh] overflow-y-auto">
+            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
                 
-                <!-- Modal Header -->
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md">
+                <!-- Header -->
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 z-10">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-                        Editar Mascota
+                        Editar Perfil: {{ form.name }}
                     </h3>
-                    <button @click="closeModal" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                    <button @click="closeModal" class="text-gray-400 hover:text-gray-500">
+                        <i class="pi pi-times text-lg"></i>
                     </button>
                 </div>
 
-                <!-- Modal Body (Formulario) -->
-                <div class="p-6 space-y-6">
+                <!-- Body (Scrollable) -->
+                <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
                     
-                    <!-- Previsualización de Imagen -->
-                    <div class="flex justify-center">
-                        <div class="relative group">
-                            <div class="h-32 w-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-                                <img 
-                                    v-if="photoPreview || form.photo_url" 
-                                    :src="photoPreview || form.photo_url" 
-                                    class="h-full w-full object-cover"
-                                >
-                                <i v-else class="fa-solid fa-paw text-4xl text-gray-300"></i>
+                    <!-- Sección Principal -->
+                    <div class="flex flex-col sm:flex-row gap-6">
+                        <!-- Foto -->
+                        <div class="flex flex-col items-center space-y-3">
+                            <div class="relative group">
+                                <div class="h-40 w-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                                    <img v-if="photoPreview || form.photo_url" :src="photoPreview || form.photo_url" class="h-full w-full object-cover">
+                                    <i v-else class="pi pi-camera text-4xl text-gray-300"></i>
+                                </div>
+                                <label class="absolute bottom-0 right-0 bg-indigo-600 text-white py-2 px-3 rounded-full shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
+                                    <i class="pi pi-pencil text-xs"></i>
+                                    <input type="file" class="hidden" @change="updatePhotoPreview" accept="image/*">
+                                </label>
                             </div>
-                            <!-- Botón para subir foto -->
-                            <label class="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <input type="file" class="hidden" @change="updatePhotoPreview" accept="image/*">
+                        </div>
+
+                        <!-- Inputs Básicos -->
+                        <div class="flex-1 grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre</label>
+                                <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Especie</label>
+                                    <select v-model="form.species" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                                        <option value="Perro">Perro</option>
+                                        <option value="Gato">Gato</option>
+                                        <option value="Ave">Ave</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Raza</label>
+                                    <input v-model="form.race" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-gray-100 dark:border-gray-700">
+
+                    <!-- ADICIONALES -->
+                    <div>
+                        <h4 class="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center">
+                            <i class="pi pi-heart mr-2"></i> Salud e Identificación
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">No. Chip</label>
+                                <input v-model="form.additionals.chip_id" type="text" placeholder="Opcional" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Pedigree / Reg.</label>
+                                <input v-model="form.additionals.pedigree" type="text" placeholder="Opcional" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex flex-wrap gap-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" v-model="form.additionals.sterilized" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Esterilizado</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" v-model="form.additionals.vaccinated" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Vacunado (Completo)</span>
                             </label>
                         </div>
+
+                        <div class="mt-4">
+                            <label class="block text-xs text-gray-500 mb-1">Notas Médicas / Alergias</label>
+                            <textarea v-model="form.additionals.notes" rows="2" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm" placeholder="Detalles importantes..."></textarea>
+                        </div>
                     </div>
 
-                    <!-- Campos -->
-                    <div class="grid grid-cols-1 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
-                            <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Ej: Firulais">
-                            <p v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
+                    <hr class="border-gray-100 dark:border-gray-700">
+
+                    <!-- DOCUMENTOS -->
+                    <div>
+                        <h4 class="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center">
+                            <i class="pi pi-folder-open mr-2"></i> Documentación Digital
+                        </h4>
+                        
+                        <!-- Lista Existente -->
+                        <div v-if="form.existing_documents && form.existing_documents.length > 0" class="mb-4 grid grid-cols-1 gap-2">
+                            <div v-for="doc in form.existing_documents" :key="doc.id" class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
+                                <div class="flex items-center overflow-hidden gap-2">
+                                    <i class="pi pi-file-pdf text-red-500" v-if="doc.mime_type === 'application/pdf'"></i>
+                                    <i class="pi pi-image text-blue-500" v-else></i>
+                                    <a :href="doc.url" target="_blank" class="text-sm text-blue-600 hover:underline truncate max-w-[200px]">
+                                        {{ doc.name }}
+                                    </a>
+                                </div>
+                                <span class="text-xs text-gray-400"><i class="pi pi-check"></i></span>
+                            </div>
                         </div>
+                        <div v-else class="text-xs text-gray-400 italic mb-3">No has subido documentos aún.</div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Especie</label>
-                                <select v-model="form.species" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                                    <option value="">Seleccionar...</option>
-                                    <option value="Perro">Perro</option>
-                                    <option value="Gato">Gato</option>
-                                    <option value="Ave">Ave</option>
-                                    <option value="Otro">Otro</option>
-                                </select>
-                                <p v-if="errors.species" class="text-red-500 text-xs mt-1">{{ errors.species }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Raza</label>
-                                <input v-model="form.race" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Ej: Labrador">
-                                <p v-if="errors.race" class="text-red-500 text-xs mt-1">{{ errors.race }}</p>
-                            </div>
+                        <!-- Subir nuevos -->
+                        <div class="mt-2 bg-indigo-50 dark:bg-indigo-900/10 p-3 rounded-lg border border-dashed border-indigo-200 dark:border-indigo-800">
+                            <label class="block text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-1">Subir Cartilla o Certificados (PDF/Img)</label>
+                            <input type="file" multiple @change="handleFileUpload" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 dark:file:bg-indigo-900 dark:file:text-indigo-300">
                         </div>
                     </div>
 
                 </div>
 
-                <!-- Modal Footer -->
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex flex-col-reverse sm:flex-row sm:justify-between gap-3 sticky bottom-0 z-10">
                     <button 
                         @click="deletePet"
-                        class="w-full sm:w-auto px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        class="w-full sm:w-auto px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                         :disabled="processing"
                     >
-                        Eliminar Mascota
+                        <i class="pi pi-trash"></i> Eliminar
                     </button>
-
-                    <div class="flex gap-3 w-full sm:w-auto">
-                        <button 
-                            @click="closeModal"
-                            class="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button 
-                            @click="submitUpdate"
-                            class="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-md transition-colors flex items-center justify-center"
-                            :disabled="processing"
-                        >
-                            <span v-if="processing">Guardando...</span>
-                            <span v-else>Guardar Cambios</span>
+                    <div class="flex gap-3 w-full sm:w-auto justify-end">
+                        <button @click="closeModal" class="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 text-sm">Cancelar</button>
+                        <button @click="submitUpdate" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md text-sm font-medium transition-colors flex items-center gap-2" :disabled="processing">
+                            <i v-if="processing" class="pi pi-spin pi-spinner"></i>
+                            {{ processing ? 'Guardando...' : 'Guardar Cambios' }}
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-
     </AppLayout>
 </template>
 
@@ -286,8 +328,6 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Link, router } from '@inertiajs/vue3';
-
-// Importaciones de PrimeVue
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useConfirm } from "primevue/useconfirm";
 
@@ -304,10 +344,7 @@ export default {
         return { confirm };
     },
     props: {
-        pets: {
-            type: Object,
-            required: true
-        },
+        pets: { type: Object, required: true },
         errors: Object
     },
     data() {
@@ -322,6 +359,18 @@ export default {
                 race: '',
                 photo: null,
                 photo_url: null,
+                
+                // Campos nuevos
+                additionals: {
+                    chip_id: '',
+                    pedigree: '',
+                    sterilized: false,
+                    vaccinated: false,
+                    notes: ''
+                },
+                documents: [], // Para subida
+                existing_documents: [], // Para visualización
+                
                 _method: 'PUT'
             },
         }
@@ -329,29 +378,15 @@ export default {
     methods: {
         formatDate(dateString) {
             if (!dateString) return '';
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString('es-MX', options);
-        },
-        // MÉTODO: Colores por especie para mantener la estética del index de vehículos
-        getSpeciesColor(species) {
-            if (!species) return '#cccccc';
-            const s = species.toLowerCase().trim();
-            
-            const map = {
-                'perro': '#3b82f6',    // Azul
-                'dog': '#3b82f6',
-                'gato': '#f97316',     // Naranja
-                'cat': '#f97316',
-                'ave': '#eab308',      // Amarillo
-                'pájaro': '#eab308',
-                'reptil': '#22c55e',   // Verde
-                'otro': '#6b7280'      // Gris
-            };
-            
-            return map[s] || '#6b7280';
+            return new Date(dateString).toLocaleDateString('es-MX', { year: '2-digit', month: 'short', day: 'numeric' });
         },
         openModal(pet) {
             this.photoPreview = null;
+            // Inicializamos additionals si viene nulo
+            const additionals = pet.additionals || {
+                chip_id: '', pedigree: '', sterilized: false, vaccinated: false, notes: ''
+            };
+
             this.form = {
                 id: pet.id,
                 name: pet.name,
@@ -359,6 +394,11 @@ export default {
                 race: pet.race,
                 photo_url: pet.photo_url,
                 photo: null,
+                
+                additionals: additionals,
+                documents: [],
+                existing_documents: pet.documents || [],
+                
                 _method: 'PUT'
             };
             this.showModal = true;
@@ -370,37 +410,35 @@ export default {
         updatePhotoPreview(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             this.form.photo = file;
             const reader = new FileReader();
-            reader.onload = (e) => {
-                this.photoPreview = e.target.result;
-            };
+            reader.onload = (e) => this.photoPreview = e.target.result;
             reader.readAsDataURL(file);
+        },
+        handleFileUpload(e) {
+            this.form.documents = Array.from(e.target.files);
         },
         submitUpdate() {
             this.processing = true;
+            // forceFormData es vital para enviar archivos con Inertia usando PUT (spoofing)
             router.post(route('pets.update', this.form.id), this.form, {
                 preserveScroll: true,
+                forceFormData: true, 
                 onSuccess: () => {
                     this.processing = false;
                     this.closeModal();
                 },
-                onError: () => {
-                    this.processing = false;
-                }
+                onError: () => this.processing = false
             });
         },
         deletePet() {
             this.confirm.require({
-                message: '¿Estás seguro de que deseas eliminar esta mascota? Esta acción no se puede deshacer.',
+                message: '¿Estás seguro de que deseas eliminar esta mascota? Se perderán todos sus documentos.',
                 header: 'Confirmar Eliminación',
                 icon: 'pi pi-exclamation-triangle',
                 rejectLabel: 'Cancelar',
                 acceptLabel: 'Eliminar',
-                rejectClass: 'bg-white text-gray-800 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-200 transition-colors mr-2',
-                acceptClass: 'bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 transition-colors border-none',
-                
+                acceptClass: 'p-button-danger',
                 accept: () => {
                     this.processing = true;
                     router.delete(route('pets.destroy', this.form.id), {
@@ -409,9 +447,7 @@ export default {
                             this.processing = false;
                             this.closeModal();
                         },
-                        onFinish: () => {
-                            this.processing = false;
-                        }
+                        onFinish: () => this.processing = false
                     });
                 }
             });
@@ -421,7 +457,18 @@ export default {
 </script>
 
 <style scoped>
-tr {
-    transition: all 0.15s ease-in-out;
+/* Scrollbar personalizado para el modal */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 20px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.8);
 }
 </style>

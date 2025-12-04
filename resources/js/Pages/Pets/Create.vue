@@ -300,7 +300,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 /* SOBRESCRIBIR VARIABLES CSS DE PRIMEVUE */
 :deep(*) {
     --primary-color: #0f7bc1;
@@ -315,11 +315,23 @@ export default {
     @apply ring-2 border-[#0f7bc1];
     --tw-ring-color: #0f7bc1; 
 }
+
+/* ESTILOS DEL CHECKBOX */
 :deep(.p-checkbox .p-checkbox-box) {
-    @apply border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700;
+    @apply border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 transition-colors duration-200;
 }
+
+/* Estado Check (Seleccionado) */
 :deep(.p-checkbox .p-checkbox-box.p-highlight) {
     @apply bg-[#0f7bc1] border-[#0f7bc1];
+}
+
+/* CORRECCIÓN: Forzar color blanco del icono (palomita) 
+   Esto asegura que en Light Mode y Dark Mode la palomita sea blanca sobre el fondo azul
+*/
+:deep(.p-checkbox .p-checkbox-box.p-highlight .p-checkbox-icon) {
+    @apply text-white;
+    color: #ffffff !important; /* Refuerzo con important por si acaso */
 }
 
 /* FileUpload Advanced Customization */

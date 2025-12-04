@@ -87,7 +87,7 @@
                                                     class="h-full w-full object-cover"
                                                 >
                                                 <div v-else class="h-full w-full flex items-center justify-center text-indigo-400 dark:text-indigo-300">
-                                                    <i class="pi pi-github" style="font-size: 1.5rem"></i> <!-- Placeholder icon -->
+                                                    <i class="fa-solid fa-paw"></i>
                                                 </div>
                                             </div>
                                             <div class="ml-4">
@@ -232,11 +232,11 @@
                         <!-- Columna Izquierda: Foto -->
                         <div class="flex flex-col items-center space-y-3">
                             <div class="relative group">
-                                <div class="h-32 w-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                                <div class="h-40 w-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                                     <img v-if="photoPreview || form.photo_url" :src="photoPreview || form.photo_url" class="h-full w-full object-cover">
                                     <i v-else class="pi pi-camera text-4xl text-gray-300"></i>
                                 </div>
-                                <label class="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
+                                <label class="absolute bottom-0 right-0 bg-indigo-600 text-white py-2 px-3 rounded-full shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
                                     <i class="pi pi-pencil text-xs"></i>
                                     <input type="file" class="hidden" @change="updatePhotoPreview" accept="image/*">
                                 </label>
@@ -418,14 +418,15 @@ export default {
     },
     methods: {
         openModal(pet) {
+            // console.log('Abriendo modal para mascota:', pet);
             this.photoPreview = null;
             
             // Inicializamos form asegurando que additionals sea un objeto si viene null
             const additionals = pet.additionals || {
                 chip_id: '',
                 pedigree: '',
-                sterilized: false,
-                vaccinated: false,
+                sterilized: !! pet.additionals?.sterilized,
+                vaccinated: !! pet.additionals?.vaccinated,
                 notes: ''
             };
 
