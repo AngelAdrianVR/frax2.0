@@ -3,6 +3,7 @@
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\PrivateUnitController;
+use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -124,3 +125,8 @@ Route::resource('pets', PetController::class)->middleware('auth');
 // Amenidades ===============================================================================
 // ==========================================================================================
 Route::resource('amenities', AmenityController::class)->middleware('auth');
+// Ruta específica para procesar la reserva del residente
+Route::post('amenities/{amenity}/reserve', [AmenityController::class, 'storeReservation'])->middleware('auth')->name('amenities.reserve');
+// Ruta para desactivar/activar (soft delete o cambio de estado)
+Route::patch('amenities/{amenity}/toggle', [AmenityController::class, 'toggleStatus'])->middleware('auth')->name('amenities.toggle');
+Route::get('amenities/{amenity}/availability', [ReservationController::class, 'getAvailability'])->middleware('auth');
