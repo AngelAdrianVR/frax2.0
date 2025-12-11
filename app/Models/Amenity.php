@@ -24,39 +24,32 @@ class Amenity extends Model implements HasMedia
         'mode',                // 'Exclusivo' o 'Compartido'
         'capacity',            // Aforo máximo
         'buffer_minutes',      // Tiempo de limpieza
-        'availability_schedule', // Horarios JSON
+        'availability_schedule', // Horarios JSON: {'monday': {'start': '09:00', 'end': '20:00', 'active': true}}
         'max_days_advance',    // Ventana de reserva
-        'requires_approval'    // Si requiere confirmación manual
+        'requires_approval',   // Si requiere confirmación manual
+        'is_active'            // Nuevo campo para el switch
     ];
 
     protected $casts = [
         'reservation_cost' => 'decimal:2',
         'rules' => 'array', 
-        'availability_schedule' => 'array', // Cast automático a array PHP
+        'availability_schedule' => 'array', 
         'requires_approval' => 'boolean',
+        'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Relación: La amenidad pertenece al Fraccionamiento.
-     */
     public function subdivision(): BelongsTo
     {
         return $this->belongsTo(Subdivision::class, 'subdivision_id');
     }
 
-    /**
-     * Relación: Reservaciones asociadas.
-     */
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);
     }
 
-    /**
-     * Relación: Bloqueos por mantenimiento.
-     */
     public function maintenanceBlocks(): HasMany
     {
         return $this->hasMany(AmenityMaintenanceBlock::class);
@@ -67,18 +60,18 @@ class Amenity extends Model implements HasMedia
         return $this->morphMany(Comment::class, 'commentable'); 
     }
 
-    // --- Helpers de Lógica de Negocio ---
-
     /**
-     * Verifica si la amenidad está disponible en un rango de fechas dado.
-     * Esta función es el corazón del calendario.
+     * Verifica disponibilidad básica (usado para validaciones rápidas)
      */
     public function isAvailableFor($start, $end, $requestedAttendees = 1): bool
     {
         $start = Carbon::parse($start);
         $end = Carbon::parse($end);
 
-        // 1. Verificar Mantenimiento
+        // 1. Verificar si está activa
+        if (!$this->is_active) return false;
+
+        // 2. Verificar Mantenimiento
         $maintenance = $this->maintenanceBlocks()
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start_date_time', [$start, $end])
@@ -87,25 +80,29 @@ class Amenity extends Model implements HasMedia
 
         if ($maintenance) return false;
 
-        // 2. Verificar Horario (availability_schedule)
-        // Lógica simple: verificar si el día de la semana tiene slots abiertos
-        // En una implementación real, iterarías por cada día del rango.
-        $dayName = strtolower($start->format('l')); // monday, tuesday...
+        // 3. Verificar Horario Semanal
+        $dayName = strtolower($start->format('l')); 
         $schedule = $this->availability_schedule;
         
-        if (isset($schedule[$dayName]) && empty($schedule[$dayName])) {
-            return false; // Cerrado ese día
+        // Si no hay configuración para ese día o está marcado como inactivo
+        if (!isset($schedule[$dayName]) || 
+            (isset($schedule[$dayName]['active']) && !$schedule[$dayName]['active'])) {
+            return false;
         }
 
-        // 3. Verificar Colisiones de Reservas
+        // Verificar horas dentro del horario permitido
+        $allowStart = Carbon::parse($start->format('Y-m-d') . ' ' . $schedule[$dayName]['start']);
+        $allowEnd = Carbon::parse($start->format('Y-m-d') . ' ' . $schedule[$dayName]['end']);
+
+        if ($start->lt($allowStart) || $end->gt($allowEnd)) {
+            return false;
+        }
+
+        // 4. Verificar Colisiones
         if ($this->mode === 'Exclusivo') {
-            // Si es exclusivo, no puede haber NINGUNA reserva solapada
-            // Incluimos el buffer_minutes para que no peguen reservas
             $bufferEnd = $end->copy()->addMinutes($this->buffer_minutes);
-            
             return !$this->reservations()
-                ->where('status', '!=', 'Cancelada')
-                ->where('status', '!=', 'Rechazada')
+                ->whereNotIn('status', ['Cancelada', 'Rechazada'])
                 ->where(function ($q) use ($start, $bufferEnd) {
                     $q->whereBetween('start_date_time', [$start, $bufferEnd])
                       ->orWhereBetween('end_date_time', [$start, $bufferEnd])
@@ -115,9 +112,8 @@ class Amenity extends Model implements HasMedia
                       });
                 })->exists();
         } else {
-            // Si es Compartido, sumamos los asistentes de las reservas en ese lapso
             $currentAttendees = $this->reservations()
-                ->where('status', '!=', 'Cancelada')
+                ->whereNotIn('status', ['Cancelada', 'Rechazada'])
                 ->where(function ($q) use ($start, $end) {
                      $q->whereBetween('start_date_time', [$start, $end])
                        ->orWhereBetween('end_date_time', [$start, $end]);

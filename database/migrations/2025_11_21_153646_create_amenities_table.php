@@ -35,6 +35,8 @@ return new class extends Migration
             
             // Requiere aprobación manual del administrador?
             $table->boolean('requires_approval')->default(false);
+            // Está o no activa para reservas
+            $table->boolean('is_active')->default(true);
             
             $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');
             $table->timestamps();
