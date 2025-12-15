@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import axios from 'axios'; // Importamos Axios para la petición
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 
 // Definición explícita de props
@@ -67,6 +68,24 @@ const toggleTheme = () => {
     }
 };
 
+// --- Lógica de Estatus de Pago ---
+const paymentStatus = ref('current');
+
+// Método para obtener el estatus real desde el backend
+const fetchPaymentStatus = async () => {
+    // Solo si es Residente tiene sentido buscar el estatus de pagos
+    if (userRole.value !== 'Residente') return;
+
+    try {
+        const response = await axios.get(route('payment.status'));
+        paymentStatus.value = response.data.status;
+    } catch (error) {
+        console.error('Error obteniendo estatus de pagos:', error);
+        // Fallback a current si falla para no asustar al usuario visualmente
+        paymentStatus.value = 'current';
+    }
+};
+
 onMounted(() => {
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         isDark.value = true;
@@ -77,6 +96,9 @@ onMounted(() => {
     }
     document.addEventListener('click', handleClickOutside);
     window.addEventListener('scroll', closeAllCategories, true);
+
+    // Obtener estatus de pago al montar el componente
+    fetchPaymentStatus();
 });
 
 onUnmounted(() => {
@@ -163,7 +185,7 @@ const menuItems = computed(() => [
             { name: 'Mis Cuotas', route: 'fees.index', allowedRoles: ['Residente', 'Admin'] }, 
             { name: 'Pagos Recibidos', route: 'payments.index', allowedRoles: ['Admin'] }, 
             { name: 'Conciliación Bancaria', route: 'bank.reconciliations', allowedRoles: ['Admin'] },
-            { name: 'Morosos', route: 'slow.payers', allowedRoles: ['Admin', 'Empleado'] },
+            { name: 'Morosos', route: 'slowPayers.index', allowedRoles: ['Admin', 'Empleado', 'Residente'] },
         ]
     },
     {
@@ -199,15 +221,12 @@ const filteredMenuItems = computed(() => {
     }).filter(category => category.items.length > 0);
 });
 
-// Lógica de Estatus de Pago
-const paymentStatus = ref('current');
-
 // Tooltip dinámico para el semáforo
 const paymentStatusText = computed(() => {
     switch (paymentStatus.value) {
         case 'current': return 'Al corriente con los pagos';
-        case 'late': return 'Pago(s) retrasados';
-        case 'defaulter': return 'Pago(s) vencido(s). Moroso';
+        case 'late': return 'Pago(s) retrasado(s)';
+        case 'defaulter': return 'Moroso';
         default: return '';
     }
 });

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
+use Carbon\Carbon;
 
 class RoleAndUserSeeder extends Seeder
 {
@@ -129,8 +130,8 @@ class RoleAndUserSeeder extends Seeder
                 'lot_number' => 'CUMBRES-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'square_meters' => rand(120, 300),
                 'unit_street' => 'Calle Roble',
-                'exterior_number' => (string)$i, // CAMBIO: Usar exterior_number para la fachada
-                'int_number' => null,            // CAMBIO: Interior nulo (o ponle 'A', 'B' si aplica)
+                'exterior_number' => (string)$i, 
+                'int_number' => null,
                 'status' => 'Activo',
                 'subdivision_id' => $subdivisionId1,
                 'created_at' => now(), 'updated_at' => now(),
@@ -163,7 +164,7 @@ class RoleAndUserSeeder extends Seeder
             'Guardia' => Role::create(['name' => 'Guardia', 'team_id' => $subdivisionId2, 'guard_name' => 'web']),
         ];
 
-        // Asignar permisos Sub 2 (Igual lógica)
+        // Asignar permisos Sub 2
         $rolesSub2['Admin']->givePermissionTo($allPermissions);
         $rolesSub2['Residente']->givePermissionTo([
             'Crear Invitaciones de Visita', 'Reservar Amenidades', 'Gestionar Mascotas', 
@@ -182,8 +183,8 @@ class RoleAndUserSeeder extends Seeder
                 'lot_number' => 'OLIVOS-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'square_meters' => rand(90, 200),
                 'unit_street' => 'Calle Olivo',
-                'exterior_number' => (string)$i, // CAMBIO: Usar exterior_number para la fachada
-                'int_number' => null,            // CAMBIO: Interior nulo
+                'exterior_number' => (string)$i,
+                'int_number' => null,
                 'status' => 'Activo',
                 'subdivision_id' => $subdivisionId2,
                 'created_at' => now(), 'updated_at' => now(),
@@ -194,13 +195,12 @@ class RoleAndUserSeeder extends Seeder
         // CREAR USUARIOS
         // =========================================================
 
-        // 1. Super Admin (CAMBIO: Asignado a AMBOS fraccionamientos)
+        // 1. Super Admin
         $adminUser = User::firstOrCreate(
             ['email' => 'angel@gmail.com'],
             ['name' => 'Angel Admin', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
         );
         
-        // A) Asignar a Sub 1 (Principal)
         setPermissionsTeamId($subdivisionId1); 
         $adminUser->assignRole($rolesSub1['Admin']);
         DB::table('subdivision_user')->updateOrInsert(
@@ -208,7 +208,6 @@ class RoleAndUserSeeder extends Seeder
             ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
         );
 
-        // B) Asignar a Sub 2 (Secundario para pruebas)
         setPermissionsTeamId($subdivisionId2);
         $adminUser->assignRole($rolesSub2['Admin']);
         DB::table('subdivision_user')->updateOrInsert(
@@ -216,7 +215,7 @@ class RoleAndUserSeeder extends Seeder
             ['is_current' => false, 'created_at' => now(), 'updated_at' => now()]
         );
 
-        // 2. Guardia (Solo en Sub 1)
+        // 2. Guardia
         $guardUser = User::firstOrCreate(
             ['email' => 'guardia@gmail.com'],
             ['name' => 'Pedro Guardia', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
@@ -228,13 +227,13 @@ class RoleAndUserSeeder extends Seeder
             ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
         );
 
-        // 3. Residente Multi-Tenancy (En AMBOS fraccionamientos)
+        // 3. Residente 1: JUAN (Multi-Fraccionamiento)
         $residentUser = User::firstOrCreate(
             ['email' => 'residente@gmail.com'],
             ['name' => 'Juan Residente', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
         );
 
-        // A) Asignar a Sub 1
+        // Juan en Sub 1
         setPermissionsTeamId($subdivisionId1);
         $residentUser->assignRole($rolesSub1['Residente']);
         DB::table('subdivision_user')->updateOrInsert(
@@ -242,20 +241,16 @@ class RoleAndUserSeeder extends Seeder
             ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
         );
 
-        // B) Asignar a Sub 2 (Nota: is_current false para que inicie en el 1 por defecto)
+        // Juan en Sub 2
         setPermissionsTeamId($subdivisionId2);
         $residentUser->assignRole($rolesSub2['Residente']);
         DB::table('subdivision_user')->updateOrInsert(
             ['user_id' => $residentUser->id, 'subdivision_id' => $subdivisionId2],
             ['is_current' => false, 'created_at' => now(), 'updated_at' => now()]
         );
-
-        // =========================================================
-        // PERFIL DE RESIDENTE Y ASIGNACIÓN DE UNIDADES
-        // =========================================================
         
-        // Crear perfil de residente único
-        $residentId = DB::table('residents')->insertGetId([
+        // Perfil Residente Juan
+        $residentIdJuan = DB::table('residents')->insertGetId([
             'full_name' => $residentUser->name,
             'email' => $residentUser->email,
             'user_id' => $residentUser->id,
@@ -263,28 +258,160 @@ class RoleAndUserSeeder extends Seeder
             'created_at' => now(), 'updated_at' => now(),
         ]);
 
-        // Asignar Casa en Sub 1 (Las Cumbres)
+        // Unidades de Juan
         if (isset($unitsSub1[0])) {
             DB::table('residence_units')->insert([
-                'resident_id' => $residentId,
+                'resident_id' => $residentIdJuan,
                 'private_unit_id' => $unitsSub1[0],
                 'role_in_unit' => 'Dueño',
-                'primary' => true, // Casa principal
+                'primary' => true,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
         }
-
-        // Asignar Casa en Sub 2 (Los Olivos)
         if (isset($unitsSub2[0])) {
             DB::table('residence_units')->insert([
-                'resident_id' => $residentId,
+                'resident_id' => $residentIdJuan,
                 'private_unit_id' => $unitsSub2[0],
                 'role_in_unit' => 'Dueño',
-                'primary' => false, // Casa secundaria
+                'primary' => false,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
         }
 
-        $this->command->info("Seed completo: Admin y Residente configurados en múltiples fraccionamientos.");
+        // =========================================================
+        // 4. NUEVO RESIDENTE: CARLOS (Solo Sub 1, con atraso)
+        // =========================================================
+        $residentUserCarlos = User::firstOrCreate(
+            ['email' => 'residente2@gmail.com'],
+            ['name' => 'Carlos Inquilino', 'password' => Hash::make('321321321'), 'email_verified_at' => now()]
+        );
+
+        // Carlos solo en Sub 1
+        setPermissionsTeamId($subdivisionId1);
+        $residentUserCarlos->assignRole($rolesSub1['Residente']);
+        DB::table('subdivision_user')->updateOrInsert(
+            ['user_id' => $residentUserCarlos->id, 'subdivision_id' => $subdivisionId1],
+            ['is_current' => true, 'created_at' => now(), 'updated_at' => now()]
+        );
+
+        // Perfil Residente Carlos
+        $residentIdCarlos = DB::table('residents')->insertGetId([
+            'full_name' => $residentUserCarlos->name,
+            'email' => $residentUserCarlos->email,
+            'user_id' => $residentUserCarlos->id,
+            'person_type' => 'Inquilino',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        // Unidad de Carlos (Usamos la segunda unidad disponible del array unitsSub1)
+        if (isset($unitsSub1[1])) {
+            DB::table('residence_units')->insert([
+                'resident_id' => $residentIdCarlos,
+                'private_unit_id' => $unitsSub1[1], // Unidad Diferente a la de Juan
+                'role_in_unit' => 'Inquilino',
+                'primary' => true,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        $this->command->info("Usuarios creados: Juan (Multi) y Carlos (Solo Cumbres).");
+
+        // =========================================================
+        // 5. GENERACIÓN DE CONCEPTOS, CUOTAS Y PAGOS
+        // =========================================================
+
+        // Crear Conceptos de Cobro (Billing Concepts)
+        $conceptSub1 = DB::table('billing_concepts')->insertGetId([
+            'name' => 'Mantenimiento Mensual',
+            'base_amount' => 1500.00,
+            'recurrence_type' => 'Mensual',
+            'slow_payers_apply' => true,
+            'subdivision_id' => $subdivisionId1,
+            'created_at' => now(), 'updated_at' => now()
+        ]);
+
+        $conceptSub2 = DB::table('billing_concepts')->insertGetId([
+            'name' => 'Mantenimiento Mensual',
+            'base_amount' => 2000.00,
+            'recurrence_type' => 'Mensual',
+            'slow_payers_apply' => true,
+            'subdivision_id' => $subdivisionId2,
+            'created_at' => now(), 'updated_at' => now()
+        ]);
+
+        // --- CASO A: JUAN en SUB 1 (AL CORRIENTE) ---
+        // Generamos 3 cuotas pasadas y las pagamos todas.
+        // Resultado: 0 pagos expirados -> Al corriente.
+        for ($i = 3; $i >= 1; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            
+            // 1. Generar la Cuota (Fee)
+            DB::table('generated_fees')->insert([
+                'payment_reference' => 'REF-S1-JUAN-' . $i,
+                'total_amount' => 1500.00,
+                'amount_paid' => 1500.00, // Pagado completo
+                'expiration_date' => $date->copy()->addDays(10), // Expiró hace tiempo
+                'start_period' => $date->copy()->startOfMonth(),
+                'end_period' => $date->copy()->endOfMonth(),
+                'status' => 'Pagado',
+                'private_unit_id' => $unitsSub1[0],
+                'billing_concept_id' => $conceptSub1,
+                'created_at' => $date, 'updated_at' => $date
+            ]);
+
+            // 2. Registrar el Pago (Payment)
+            DB::table('payments')->insert([
+                'transaction_folio' => 'TX-S1-JUAN-' . $i,
+                'amount' => 1500.00,
+                'payment_date' => $date->copy()->addDays(5), // Pagó antes de expirar
+                'payment_method' => 'Transferencia',
+                'billing_concept_id' => $conceptSub1,
+                'resident_id' => $residentIdJuan,
+                'created_at' => $date, 'updated_at' => $date
+            ]);
+        }
+
+        // --- CASO B: JUAN en SUB 2 (MOROSO) ---
+        // Generamos 3 cuotas pasadas y NO las pagamos.
+        // Resultado: 3 pagos expirados (>=3) -> Moroso.
+        for ($i = 3; $i >= 1; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            
+            // 1. Generar la Cuota (Fee) Vencida
+            DB::table('generated_fees')->insert([
+                'payment_reference' => 'REF-S2-JUAN-' . $i,
+                'total_amount' => 2000.00,
+                'amount_paid' => 0.00, // Nada pagado
+                'expiration_date' => $date->copy()->addDays(5), // Expiró hace tiempo
+                'start_period' => $date->copy()->startOfMonth(),
+                'end_period' => $date->copy()->endOfMonth(),
+                'status' => 'Atrasada', // Estatus de deuda
+                'private_unit_id' => $unitsSub2[0],
+                'billing_concept_id' => $conceptSub2,
+                'created_at' => $date, 'updated_at' => $date
+            ]);
+
+            // NO generamos registro en la tabla 'payments'
+        }
+
+        // --- CASO C: CARLOS en SUB 1 (PAGO RETRASADO) ---
+        // Generamos 1 cuota pasada y NO la pagamos.
+        // Resultado: 1 pago expirado (< 2) -> Retrasado (No Moroso).
+        $dateCarlos = Carbon::now()->subMonth(1);
+        
+        DB::table('generated_fees')->insert([
+            'payment_reference' => 'REF-S1-CARLOS-1',
+            'total_amount' => 1500.00,
+            'amount_paid' => 0.00, // Nada pagado
+            'expiration_date' => $dateCarlos->copy()->addDays(5), // Ya expiró
+            'start_period' => $dateCarlos->copy()->startOfMonth(),
+            'end_period' => $dateCarlos->copy()->endOfMonth(),
+            'status' => 'Atrasada',
+            'private_unit_id' => $unitsSub1[1], // Unidad de Carlos
+            'billing_concept_id' => $conceptSub1,
+            'created_at' => $dateCarlos, 'updated_at' => $dateCarlos
+        ]);
+
+        $this->command->info("Seed financiero completo: Juan (Limpio en Sub1, Moroso en Sub2), Carlos (Retrasado en Sub1).");
     }
 }

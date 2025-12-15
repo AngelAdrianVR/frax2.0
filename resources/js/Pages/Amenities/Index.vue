@@ -123,7 +123,7 @@ const changeMonth = (delta) => {
 };
 
 const submitReservation = () => {
-    reserveForm.post(route('amenities.reserve', selectedAmenity.value.id), {
+    reserveForm.post(route('reservations.store', {amenityId: selectedAmenity.value.id}), {
         onSuccess: () => {
             showReserveModal.value = false;
             toast.add({ severity: 'success', summary: 'Reserva Creada', detail: 'Tu solicitud ha sido enviada.' });

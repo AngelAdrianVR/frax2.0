@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class PrivateUnit extends Model
 {
@@ -127,5 +129,38 @@ class PrivateUnit extends Model
     public function generatedFees(): HasMany
     {
         return $this->hasMany(GeneratedFee::class, 'private_unit_id');
+    }
+
+    /**
+     * SCOPE: Añade una columna 'total_debt' a la consulta.
+     * Calcula: Suma de (monto total - monto pagado) de recibos vencidos o pendientes.
+     * Usa subquery para máximo rendimiento.
+     */
+    public function scopeWithTotalDebt(Builder $query)
+    {
+        return $query->addSelect([
+            'total_debt' => GeneratedFee::selectRaw('COALESCE(SUM(total_amount - amount_paid), 0)')
+                ->whereColumn('generated_fees.private_unit_id', 'private_units.id')
+                ->whereIn('status', ['Pendiente', 'Parcial', 'Atrasada'])
+                // Opcional: Si solo quieres contar deuda vencida, descomenta abajo:
+                // ->where('expiration_date', '<', now())
+        ]);
+    }
+
+    /**
+     * Helper para saber si la unidad es morosa (útil para bloquear accesos).
+     * Puedes llamar a esto $unit->is_debtor
+     */
+    public function getIsDebtorAttribute()
+    {
+        // Si ya cargamos el scope, usamos el valor, si no, calculamos.
+        if (isset($this->attributes['total_debt'])) {
+            return $this->attributes['total_debt'] > 0;
+        }
+
+        return $this->generatedFees()
+            ->whereIn('status', ['Pendiente', 'Parcial', 'Atrasada'])
+            ->whereRaw('(total_amount - amount_paid) > 0')
+            ->exists();
     }
 }
