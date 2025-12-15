@@ -18,12 +18,14 @@ class PrivateUnit extends Model
         'int_number', 
         'status', // 'Activo', 'Inactivo'
         'access_block', 
-        'subdivision_id'
+        'subdivision_id',
+        'is_slow_payer', // Bandera para indicar si la unidad es morosa (3 o más cuotas vencidas)
     ];
 
     protected $casts = [
         'square_meters' => 'decimal:2',
         'access_block' => 'boolean',
+        'is_slow_payer' => 'boolean',
     ];
 
     /**

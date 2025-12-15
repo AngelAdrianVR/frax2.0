@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('exterior_number', 20)->nullable(); // es el numero de la casa, puede ser alfanumerico
             $table->enum('status', ['Activo', 'Inactivo'])->default('Activo');
             $table->boolean('access_block')->default(false); // Booleano: Bloqueado o no
+            $table->boolean('is_slow_payer')->default(false); // Moroso (3 o más cuotas vencidas)
             
             // Clave foránea
             $table->foreignId('subdivision_id')->constrained()->onDelete('cascade');

@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\AmenityController;
+use App\Http\Controllers\BankReconciliationController;
+use App\Http\Controllers\BillingConceptController;
+use App\Http\Controllers\GeneratedFeeController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentStatusController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\PrivateUnitController;
@@ -147,3 +151,29 @@ Route::resource('reservations', ReservationController::class)->middleware('auth'
 // Residentes ===============================================================================
 // ==========================================================================================
 // Route::resource('residents', ResidentController::class)->middleware('auth');
+
+
+// ==========================================================================================
+// MÓDULO DE FINANZAS Y CUOTAS (NUEVO)
+// ==========================================================================================
+
+// 1. Mis Cuotas: Usamos resource para permitir expansión (show, print, etc.)
+// La URL será /mis-cuotas, pero los nombres de ruta serán fees.index, fees.show, etc.
+Route::resource('mis-cuotas', GeneratedFeeController::class)
+    ->names('fees')
+    ->middleware('auth');
+
+// 2. Pagos: Solo listado y creación de nuevos pagos
+Route::resource('payments', PaymentController::class)
+    ->only(['index', 'store'])
+    ->middleware('auth');
+
+// 3. Conciliación Bancaria
+Route::get('/conciliacion', [BankReconciliationController::class, 'index'])
+    ->name('bank.reconciliations')
+    ->middleware('auth');
+
+// 4. Conceptos de Cobro (Admin)
+Route::get('/billing-concepts', [BillingConceptController::class, 'index'])
+    ->name('billing-concepts.index')
+    ->middleware('auth');
