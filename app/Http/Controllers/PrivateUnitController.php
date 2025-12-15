@@ -245,4 +245,39 @@ class PrivateUnitController extends Controller
         $privateUnit->delete();
         return redirect()->back()->with('success', 'Unidad eliminada correctamente.');
     }
+
+
+    // ----------- MÓDULO DE MOROSOS ------------
+
+    public function slowPayersIndex(Request $request)
+    {
+        $currentSubdivisionId = $this->getCurrentSubdivisionId($request);
+        
+        // Obtenemos unidades con su deuda calculada
+        $debtors = PrivateUnit::query()
+            ->where('subdivision_id', $currentSubdivisionId)
+            ->withTotalDebt() // Scope del modelo
+            ->with(['residents' => function($q) {
+                $q->wherePivot('role_in_unit', 'Dueño')->select('residents.id', 'residents.full_name');
+            }])
+            // Ordenamos por los que deben más
+            ->orderByDesc('total_debt')
+            ->paginate(50);
+
+        $debtors->through(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'address' => trim("{$unit->unit_street} {$unit->exterior_number}"),
+                'owner_name' => $unit->residents->first()->full_name ?? 'N/A',
+                'total_debt' => (float) $unit->total_debt, // Casting a float para JS
+                'status' => $unit->status,
+                'is_debtor' => $unit->total_debt > 0
+            ];
+        });
+
+        return Inertia::render('SlowPayers/Index', [
+            'debtors' => $debtors
+        ]);
+    }
+
 }

@@ -16,13 +16,11 @@ class Resident extends Model
         'person_type', // 'Propietario', 'Inquilino', 'Empleado', 'Miembro familiar'
         'is_emergency_contact', 
         'emergency_contact_info', 
-        'is_slow_payer', 
         'user_id'
     ];
 
     protected $casts = [
         'is_emergency_contact' => 'boolean',
-        'is_slow_payer' => 'boolean',
         'emergency_contact_info' => 'array', // JSON
     ];
 

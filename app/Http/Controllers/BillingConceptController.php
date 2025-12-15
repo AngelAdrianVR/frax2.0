@@ -4,62 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\BillingConcept;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class BillingConceptController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $currentSubdivisionId = session('current_subdivision_id');
+        if (!$currentSubdivisionId) {
+            $currentSubdivisionId = DB::table('subdivision_user')
+                ->where('user_id', $request->user()->id)
+                ->value('subdivision_id');
+        }
+
+        $concepts = BillingConcept::query()
+            ->where('subdivision_id', $currentSubdivisionId)
+            ->get()
+            ->map(fn($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'base_amount' => (float) $c->base_amount,
+                'recurrence_type' => $c->recurrence_type,
+                'slow_payers_apply' => $c->slow_payers_apply
+            ]);
+
+        return Inertia::render('BillingConcepts/Index', [
+            'concepts' => $concepts
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(BillingConcept $billingConcept)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(BillingConcept $billingConcept)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, BillingConcept $billingConcept)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(BillingConcept $billingConcept)
-    {
-        //
-    }
+    // Aquí agregarías métodos store, update, destroy para crear nuevos conceptos
 }

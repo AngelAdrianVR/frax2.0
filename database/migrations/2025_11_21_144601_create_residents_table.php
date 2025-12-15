@@ -18,9 +18,7 @@ return new class extends Migration
             $table->string('email', 100)->nullable();
             $table->enum('person_type', ['Propietario', 'Inquilino', 'Empleado', 'Miembro familiar'])->default('Propietario');
             $table->boolean('is_emergency_contact')->default(false);
-            $table->json('emergency_contact_info')->nullable();
-            $table->boolean('is_slow_payer')->default(false); // Moroso
-            
+            $table->json('emergency_contact_info')->nullable();            
             // Un residente puede tener un usuario de sistema asociado, o no.
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             

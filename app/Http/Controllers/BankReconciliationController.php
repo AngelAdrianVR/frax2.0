@@ -4,62 +4,41 @@ namespace App\Http\Controllers;
 
 use App\Models\BankReconciliation;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 
 class BankReconciliationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        $currentSubdivisionId = session('current_subdivision_id');
+        if (!$currentSubdivisionId) {
+            $currentSubdivisionId = DB::table('subdivision_user')
+                ->where('user_id', $request->user()->id)
+                ->value('subdivision_id');
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        // Filtramos conciliaciones cuyos pagos pertenezcan a conceptos del fraccionamiento
+        $reconciliations = BankReconciliation::query()
+            ->with('payment.billingConcept')
+            ->whereHas('payment.billingConcept', function (Builder $q) use ($currentSubdivisionId) {
+                $q->where('subdivision_id', $currentSubdivisionId);
+            })
+            ->latest()
+            ->paginate(15)
+            ->through(fn ($rec) => [
+                'id' => $rec->id,
+                'bank_reference' => $rec->bank_reference,
+                'amount' => (float) $rec->amount,
+                'transaction_date' => $rec->transaction_date->format('d/m/Y'),
+                'status' => $rec->status,
+                'error_message' => $rec->error_message,
+                'matched_payment_folio' => $rec->payment ? $rec->payment->transaction_folio : null,
+            ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(BankReconciliation $bankReconciliation)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(BankReconciliation $bankReconciliation)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, BankReconciliation $bankReconciliation)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(BankReconciliation $bankReconciliation)
-    {
-        //
+        return Inertia::render('BankReconciliation/Index', [
+            'reconciliations' => $reconciliations,
+        ]);
     }
 }

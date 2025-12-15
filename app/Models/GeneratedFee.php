@@ -30,7 +30,7 @@ class GeneratedFee extends Model
         return $this->belongsTo(PrivateUnit::class, 'private_unit_id'); 
     }
     
-    public function concept() 
+    public function billingConcept() 
     { 
         return $this->belongsTo(BillingConcept::class, 'billing_concept_id'); 
     }

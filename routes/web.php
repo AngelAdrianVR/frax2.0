@@ -1,9 +1,15 @@
 <?php
 
 use App\Http\Controllers\AmenityController;
+use App\Http\Controllers\BankReconciliationController;
+use App\Http\Controllers\BillingConceptController;
+use App\Http\Controllers\GeneratedFeeController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentStatusController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\PrivateUnitController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +36,9 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    // --- NUEVA RUTA PARA EL SEMÁFORO DEL SIDEBAR ---
+    Route::get('/payment-status', [PaymentStatusController::class, 'show'])->name('payment.status');
 });
 
 
@@ -106,6 +115,8 @@ Route::delete('/permissions/{permission}', [RoleController::class, 'destroyPermi
 Route::resource('/admin/private-units', PrivateUnitController::class)->names('admin.private-units')->middleware('auth');
 // Ruta extra para inactivación rápida (Toggle)
 Route::patch('/admin/private-units/{privateUnit}/toggle-status', [PrivateUnitController::class, 'toggleStatus'])->name('admin.private-units.toggle-status')->middleware('auth');
+// Vista de morosos
+Route::get('/morosos', [PrivateUnitController::class, 'slowPayersIndex'])->name('slowPayers.index')->middleware('auth');
 
 
 // Vehiculos ================================================================================
@@ -130,3 +141,39 @@ Route::post('amenities/{amenity}/reserve', [AmenityController::class, 'storeRese
 // Ruta para desactivar/activar (soft delete o cambio de estado)
 Route::patch('amenities/{amenity}/toggle', [AmenityController::class, 'toggleStatus'])->middleware('auth')->name('amenities.toggle');
 Route::get('amenities/{amenity}/availability', [ReservationController::class, 'getAvailability'])->middleware('auth');
+
+
+// Reservaciones de Amenidades ==============================================================
+// ==========================================================================================
+Route::resource('reservations', ReservationController::class)->middleware('auth');
+
+
+// Residentes ===============================================================================
+// ==========================================================================================
+// Route::resource('residents', ResidentController::class)->middleware('auth');
+
+
+// ==========================================================================================
+// MÓDULO DE FINANZAS Y CUOTAS (NUEVO)
+// ==========================================================================================
+
+// 1. Mis Cuotas: Usamos resource para permitir expansión (show, print, etc.)
+// La URL será /mis-cuotas, pero los nombres de ruta serán fees.index, fees.show, etc.
+Route::resource('mis-cuotas', GeneratedFeeController::class)
+    ->names('fees')
+    ->middleware('auth');
+
+// 2. Pagos: Solo listado y creación de nuevos pagos
+Route::resource('payments', PaymentController::class)
+    ->only(['index', 'store'])
+    ->middleware('auth');
+
+// 3. Conciliación Bancaria
+Route::get('/conciliacion', [BankReconciliationController::class, 'index'])
+    ->name('bank.reconciliations')
+    ->middleware('auth');
+
+// 4. Conceptos de Cobro (Admin)
+Route::get('/billing-concepts', [BillingConceptController::class, 'index'])
+    ->name('billing-concepts.index')
+    ->middleware('auth');

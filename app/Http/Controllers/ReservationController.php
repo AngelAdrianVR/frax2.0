@@ -27,79 +27,111 @@ class ReservationController extends Controller
 
         $availability = [];
 
+        // Aseguramos que el schedule sea un array.
+        // Si viene como string JSON, lo decodificamos.
+        $schedule = $amenity->availability_schedule;
+        if (is_string($schedule)) {
+            $schedule = json_decode($schedule, true);
+        }
+
         // Iterar por cada día del mes
         $current = $startOfMonth->copy();
         while ($current <= $endOfMonth) {
             $dateStr = $current->format('Y-m-d');
-            $dayOfWeek = strtolower($current->format('l'));
+            $dayOfWeek = strtolower($current->format('l')); // monday, tuesday...
             
             // 1. Checar Schedule Base
-            $schedule = $amenity->availability_schedule;
-            $isOpen = isset($schedule[$dayOfWeek]) && ($schedule[$dayOfWeek]['active'] ?? false);
+            $dayConfig = $schedule[$dayOfWeek] ?? null;
+            
+            // Usamos filter_var para validar booleanos correctamente incluso si vienen como strings "1" o "0"
+            $isActive = isset($dayConfig['active']) && filter_var($dayConfig['active'], FILTER_VALIDATE_BOOLEAN);
+            $isOpen = $dayConfig && $isActive;
             
             // 2. Checar Mantenimiento
-            $isMaintenance = $amenity->maintenanceBlocks()
-                ->whereDate('start_date_time', '<=', $current)
-                ->whereDate('end_date_time', '>=', $current)
-                ->exists();
+            $isMaintenance = false;
+            if (method_exists($amenity, 'maintenanceBlocks')) {
+                $isMaintenance = $amenity->maintenanceBlocks()
+                    ->whereDate('start_date_time', '<=', $current)
+                    ->whereDate('end_date_time', '>=', $current)
+                    ->exists();
+            }
 
-            $status = 'available'; // available, low, full, closed
-            $percent = 0;
-
+            // Estado inicial
+            $status = 'high'; 
+            
             if (!$isOpen || $isMaintenance) {
                 $status = 'closed';
             } else {
-                // Calcular ocupación real
-                // Obtener reservas de ese día
+                // Obtener reservas activas para el día
                 $reservations = $amenity->reservations()
                     ->whereNotIn('status', ['Cancelada', 'Rechazada'])
                     ->whereDate('start_date_time', $dateStr)
                     ->get();
 
                 if ($amenity->mode === 'Exclusivo') {
-                    // Si es exclusivo, calculamos horas ocupadas vs horas totales del día
-                    $openTime = Carbon::parse($dateStr . ' ' . $schedule[$dayOfWeek]['start']);
-                    $closeTime = Carbon::parse($dateStr . ' ' . $schedule[$dayOfWeek]['end']);
-                    $totalMinutes = $closeTime->diffInMinutes($openTime);
+                    // Modo Exclusivo: Calcular tiempo ocupado vs tiempo total
+                    $startTimeStr = $dayConfig['start'] ?? '00:00';
+                    $endTimeStr = $dayConfig['end'] ?? '00:00';
+
+                    $openTime = Carbon::parse($dateStr . ' ' . $startTimeStr);
+                    $closeTime = Carbon::parse($dateStr . ' ' . $endTimeStr);
                     
-                    $occupiedMinutes = 0;
-                    foreach ($reservations as $res) {
-                        $occupiedMinutes += $res->end_date_time->diffInMinutes($res->start_date_time);
-                        // Añadir buffer si aplica
-                        $occupiedMinutes += $amenity->buffer_minutes; 
+                    // Si cierra antes o igual que abre, no hay tiempo disponible -> Cerrado
+                    if ($closeTime->lessThanOrEqualTo($openTime)) {
+                         $status = 'closed';
+                    } else {
+                        $totalMinutes = $closeTime->diffInMinutes($openTime);
+                        
+                        $occupiedMinutes = 0;
+                        foreach ($reservations as $res) {
+                            // Asegurar que las fechas de reserva sean Carbon
+                            $resStart = Carbon::parse($res->start_date_time);
+                            $resEnd = Carbon::parse($res->end_date_time);
+                            
+                            $occupiedMinutes += $resEnd->diffInMinutes($resStart);
+                            // Buffer entre reservas
+                            $occupiedMinutes += $amenity->buffer_minutes ?? 0; 
+                        }
+
+                        // LÓGICA CORREGIDA:
+                        // Si no hay minutos ocupados, forzamos estado 'high' para evitar errores de división o redondeo
+                        if ($occupiedMinutes == 0) {
+                            $status = 'high';
+                        } else {
+                            // Cálculo de porcentaje
+                            $occupancy = $totalMinutes > 0 ? ($occupiedMinutes / $totalMinutes) * 100 : 100;
+                            
+                            if ($occupancy >= 95) $status = 'full'; // Casi lleno o lleno
+                            elseif ($occupancy >= 50) $status = 'low'; // Medio lleno
+                            else $status = 'high'; // Disponible
+                        }
                     }
 
-                    $occupancy = $totalMinutes > 0 ? ($occupiedMinutes / $totalMinutes) * 100 : 100;
-                    
-                    if ($occupancy >= 90) $status = 'full';
-                    elseif ($occupancy >= 50) $status = 'low'; // Poca disponibilidad
-                    else $status = 'high'; // Mucha disponibilidad
-
                 } else {
-                    // Compartido: Suma de asistentes vs capacidad diaria (simplificado)
-                    // Una métrica mejor sería por slots, pero para vista mensual usamos promedio
+                    // Modo Compartido: Asistentes vs Capacidad
                     $totalAttendees = $reservations->sum('attendees_amount');
-                    // Estimación: si el total de gente en el día supera X veces la capacidad
-                    // O simplemente comparamos contra capacidad instantánea
-                    if ($totalAttendees >= ($amenity->capacity * 2)) $status = 'low'; // Muy concurrido
+                    $capacity = $amenity->capacity > 0 ? $amenity->capacity : 1;
+
+                    if ($totalAttendees >= $capacity) $status = 'full';
+                    elseif ($totalAttendees >= ($capacity * 0.8)) $status = 'low'; 
                     else $status = 'high';
                 }
             }
             
-            // Obtenemos las horas ocupadas para pintar en el frontend si se requiere
+            // Slots ocupados para UI
             $busySlots = $amenity->reservations()
                 ->whereDate('start_date_time', $dateStr)
-                ->whereNotIn('status', ['Cancelada'])
+                ->whereNotIn('status', ['Cancelada', 'Rechazada'])
                 ->get()
                 ->map(fn($r) => [
-                    'start' => $r->start_date_time->format('H:i'),
-                    'end' => $r->end_date_time->format('H:i')
+                    'start' => Carbon::parse($r->start_date_time)->format('H:i'),
+                    'end' => Carbon::parse($r->end_date_time)->format('H:i')
                 ]);
 
             $availability[] = [
                 'date' => $dateStr,
                 'day' => $current->day,
-                'status' => $status, // high, low, full, closed
+                'status' => $status,
                 'busy_slots' => $busySlots
             ];
 
@@ -109,8 +141,10 @@ class ReservationController extends Controller
         return response()->json($availability);
     }
 
-    public function store(Request $request, Amenity $amenity)
+    public function store(Request $request)
     {
+        $amenity = Amenity::findOrFail($request->amenityId);
+        
         $request->validate([
             'date' => 'required|date|after_or_equal:today',
             'start_time' => 'required',
@@ -121,15 +155,19 @@ class ReservationController extends Controller
         $startDateTime = Carbon::parse($request->date . ' ' . $request->start_time);
         $endDateTime = Carbon::parse($request->date . ' ' . $request->end_time);
 
-        if (!$amenity->isAvailableFor($startDateTime, $endDateTime, $request->attendees)) {
-            return Redirect::back()->with('error', 'La amenidad no está disponible en este horario o excede el aforo.');
+        // Validación de disponibilidad exacta
+        if (method_exists($amenity, 'isAvailableFor')) {
+             if (!$amenity->isAvailableFor($startDateTime, $endDateTime, $request->attendees)) {
+                return Redirect::back()->with('error', 'La amenidad no está disponible en este horario o excede el aforo.');
+            }
         }
 
         $user = $request->user();
-        $unitId = $user->getCurrentPropertyId();
+        // Fallback robusto para obtener unitId
+        $unitId = method_exists($user, 'getCurrentPropertyId') ? $user->getCurrentPropertyId() : ($user->resident->private_unit_id ?? null);
 
-        DB::beginTransaction();
-        try {
+        // DB::beginTransaction();
+        // try {
             $totalCost = $amenity->reservation_cost; 
 
             $concept = BillingConcept::firstOrCreate(
@@ -161,12 +199,12 @@ class ReservationController extends Controller
                 'resident_id' => $user->resident->id ?? null,
             ]);
 
-            DB::commit();
-            return Redirect::back()->with('success', 'Apartado realizado. Confirma tu pago en finanzas.');
+            // DB::commit();
+            // return Redirect::back()->with('success', 'Apartado realizado. Confirma tu pago en finanzas.');
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return Redirect::back()->with('error', 'Error al procesar: ' . $e->getMessage());
-        }
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+        //     return Redirect::back()->with('error', 'Error al procesar: ' . $e->getMessage());
+        // }
     }
 }
