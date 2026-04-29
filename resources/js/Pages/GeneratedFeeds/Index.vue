@@ -11,7 +11,7 @@ const props = defineProps({
 // Helper para colores de estatus
 const getStatusColor = (status, isOverdue) => {
     if (status === 'Pagado') return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    if (status === 'Cancelado') return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400';
+    if (status === 'Cancelado') return 'bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-400';
     if (isOverdue || status === 'Atrasada') return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
     return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'; // Pendiente/Parcial
 };
@@ -30,10 +30,10 @@ const formatCurrency = (value) => {
                 <!-- Encabezado -->
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center px-4 sm:px-0">
                     <div>
-                        <h2 class="font-bold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                        <h2 class="font-bold text-2xl text-zinc-800 dark:text-zinc-200 leading-tight">
                             Mis Cuotas y Pagos
                         </h2>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm">
+                        <p class="text-zinc-500 dark:text-zinc-400 text-sm">
                             Consulta tu historial y saldo pendiente.
                         </p>
                     </div>
@@ -42,7 +42,7 @@ const formatCurrency = (value) => {
                 <!-- Tarjetas de Resumen (KPIs) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 sm:px-0">
                     <!-- Tarjeta 1: Deuda Total -->
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border-l-4"
+                    <div class="bg-white dark:bg-zinc-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border-l-4"
                          :class="stats.total_debt > 0 ? 'border-red-500' : 'border-green-500'">
                         <div class="flex items-center">
                             <div class="p-3 rounded-full" :class="stats.total_debt > 0 ? 'bg-red-100 text-red-500' : 'bg-green-100 text-green-500'">
@@ -51,14 +51,14 @@ const formatCurrency = (value) => {
                                 </svg>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Saldo Pendiente</p>
-                                <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ formatCurrency(stats.total_debt) }}</p>
+                                <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Saldo Pendiente</p>
+                                <p class="text-2xl font-bold text-zinc-800 dark:text-white">{{ formatCurrency(stats.total_debt) }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Tarjeta 2: Cuotas Pendientes -->
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border-l-4 border-yellow-500">
+                    <div class="bg-white dark:bg-zinc-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border-l-4 border-yellow-500">
                         <div class="flex items-center">
                             <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
@@ -66,14 +66,14 @@ const formatCurrency = (value) => {
                                 </svg>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Recibos por Pagar</p>
-                                <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.pending_count }}</p>
+                                <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Recibos por Pagar</p>
+                                <p class="text-2xl font-bold text-zinc-800 dark:text-white">{{ stats.pending_count }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Tarjeta 3: Próximo Vencimiento -->
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border-l-4 border-blue-500">
+                    <div class="bg-white dark:bg-zinc-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border-l-4 border-blue-500">
                         <div class="flex items-center">
                             <div class="p-3 rounded-full bg-blue-100 text-blue-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
@@ -81,47 +81,47 @@ const formatCurrency = (value) => {
                                 </svg>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Próximo Vencimiento</p>
-                                <p class="text-lg font-bold text-gray-800 dark:text-white truncate">{{ stats.next_due_date }}</p>
+                                <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Próximo Vencimiento</p>
+                                <p class="text-lg font-bold text-zinc-800 dark:text-white truncate">{{ stats.next_due_date }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Lista de Cuotas (Desktop y Móvil) -->
-                <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Historial de Cuotas</h3>
+                <div class="bg-white dark:bg-zinc-800 shadow-xl sm:rounded-lg overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
+                        <h3 class="text-lg font-medium text-zinc-900 dark:text-white">Historial de Cuotas</h3>
                     </div>
 
                     <!-- Tabla Desktop -->
                     <div class="hidden md:block overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
+                        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                            <thead class="bg-zinc-50 dark:bg-zinc-700">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Concepto</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Periodo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vencimiento</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Monto</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pagado</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estatus</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">Concepto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">Periodo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">Vencimiento</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">Monto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">Pagado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">Estatus</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                <tr v-for="fee in fees.data" :key="fee.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                                <tr v-for="fee in fees.data" :key="fee.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-700/50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-zinc-900 dark:text-white">
                                         {{ fee.concept_name }}
-                                        <div class="text-xs text-gray-400 font-normal">{{ fee.payment_reference }}</div>
+                                        <div class="text-xs text-zinc-400 font-normal">{{ fee.payment_reference }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ fee.period }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">{{ fee.period }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                                         <span :class="{'text-red-500 font-bold': fee.is_overdue}">{{ fee.expiration_date }}</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-bold">{{ formatCurrency(fee.total_amount) }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white font-bold">{{ formatCurrency(fee.total_amount) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                                         {{ formatCurrency(fee.amount_paid) }}
-                                        <div v-if="fee.amount_paid > 0 && fee.balance > 0" class="w-full bg-gray-200 rounded-full h-1.5 mt-1 dark:bg-gray-700">
+                                        <div v-if="fee.amount_paid > 0 && fee.balance > 0" class="w-full bg-zinc-200 rounded-full h-1.5 mt-1 dark:bg-zinc-700">
                                             <div class="bg-blue-600 h-1.5 rounded-full" :style="`width: ${(fee.amount_paid / fee.total_amount) * 100}%`"></div>
                                         </div>
                                     </td>
@@ -150,11 +150,11 @@ const formatCurrency = (value) => {
 
                     <!-- Lista Móvil (Cards) -->
                     <div class="md:hidden">
-                        <div v-for="fee in fees.data" :key="fee.id" class="p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <div v-for="fee in fees.data" :key="fee.id" class="p-4 border-b border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/50">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
-                                    <h4 class="text-sm font-bold text-gray-900 dark:text-white">{{ fee.concept_name }}</h4>
-                                    <p class="text-xs text-gray-500">{{ fee.period }}</p>
+                                    <h4 class="text-sm font-bold text-zinc-900 dark:text-white">{{ fee.concept_name }}</h4>
+                                    <p class="text-xs text-zinc-500">{{ fee.period }}</p>
                                 </div>
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full"
                                       :class="getStatusColor(fee.status, fee.is_overdue)">
@@ -164,17 +164,17 @@ const formatCurrency = (value) => {
                             
                             <div class="grid grid-cols-2 gap-4 text-sm mb-3">
                                 <div>
-                                    <p class="text-xs text-gray-500 uppercase">Monto</p>
-                                    <p class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(fee.total_amount) }}</p>
+                                    <p class="text-xs text-zinc-500 uppercase">Monto</p>
+                                    <p class="font-bold text-zinc-900 dark:text-white">{{ formatCurrency(fee.total_amount) }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-500 uppercase">Pendiente</p>
+                                    <p class="text-xs text-zinc-500 uppercase">Pendiente</p>
                                     <p class="font-bold text-red-600 dark:text-red-400">{{ formatCurrency(fee.balance) }}</p>
                                 </div>
                             </div>
 
                             <div class="flex justify-between items-center mt-2">
-                                <p class="text-xs text-gray-500">Vence: <span :class="{'text-red-500 font-bold': fee.is_overdue}">{{ fee.expiration_date }}</span></p>
+                                <p class="text-xs text-zinc-500">Vence: <span :class="{'text-red-500 font-bold': fee.is_overdue}">{{ fee.expiration_date }}</span></p>
                                 <button v-if="fee.balance > 0" class="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg shadow hover:bg-indigo-700">
                                     Pagar Ahora
                                 </button>
@@ -192,7 +192,7 @@ const formatCurrency = (value) => {
                               class="px-3 py-1 border rounded text-sm transition-colors"
                               :class="link.active 
                                 ? 'bg-indigo-600 text-white border-indigo-600' 
-                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'" />
+                                : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600'" />
                     </div>
                 </div>
 

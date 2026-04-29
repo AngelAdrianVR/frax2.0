@@ -48,10 +48,10 @@ class PrivateUnitController extends Controller
         $units = PrivateUnit::query()
             // FILTRO MULTI-TENANCY: Solo unidades del fraccionamiento actual
             ->where('subdivision_id', $currentSubdivisionId)
-            ->with(['residents' => function ($query) {
+            ->with(['users' => function ($query) {
                 // Traemos solo a los dueños para mostrar en la lista
                 $query->wherePivot('role_in_unit', 'Dueño')
-                      ->select('residents.id', 'residents.full_name');
+                      ->select('users.id', 'users.name');
             }])
             // Filtros de búsqueda
             ->when($search, function ($query, $search) {
@@ -59,11 +59,10 @@ class PrivateUnitController extends Controller
                     $q->where('unit_street', 'like', "%{$search}%")
                       ->orWhere('exterior_number', 'like', "%{$search}%")
                       ->orWhere('lot_number', 'like', "%{$search}%")
-                      ->orWhereHas('residents', function (Builder $q) use ($search) {
-                          $q->where('full_name', 'like', "%{$search}%")
+                      ->orWhereHas('users', function (Builder $q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%")
                             // CORRECCIÓN SQL: Usar el nombre de la tabla pivote explícitamente
-                            // en lugar de wherePivot() que falla dentro de whereHas()
-                            ->where('residence_units.role_in_unit', 'Dueño');
+                            ->where('private_unit_user.role_in_unit', 'Dueño');
                       });
                 });
             })
@@ -95,7 +94,7 @@ class PrivateUnitController extends Controller
             }
 
             // Obtener nombre del propietario principal (o el primero que encuentre)
-            $owner = $unit->residents->first();
+            $owner = $unit->users->first();
 
             return [
                 'id' => $unit->id,
@@ -104,7 +103,7 @@ class PrivateUnitController extends Controller
                 'exterior_number' => $unit->exterior_number,
                 'int_number' => $unit->int_number,
                 'full_address' => trim("{$unit->unit_street} {$unit->exterior_number}" . ($unit->int_number ? " Int. {$unit->int_number}" : "")),
-                'owner_name' => $owner ? $owner->full_name : 'Sin propietario asignado',
+                'owner_name' => $owner ? $owner->name : 'Sin propietario asignado',
                 'status' => $unit->status, // Activo / Inactivo
                 'access_block' => $unit->access_block,
                 'payment_status' => $paymentStatus,
@@ -169,7 +168,7 @@ class PrivateUnitController extends Controller
 
         // Cargar relaciones necesarias para las pestañas
         $privateUnit->load([
-            'residents', // Pivote incluye role_in_unit
+            'users', // Pivote incluye role_in_unit
             'vehicles',
             'pets',
             'generatedFees' => function($q) {
@@ -257,8 +256,8 @@ class PrivateUnitController extends Controller
         $debtors = PrivateUnit::query()
             ->where('subdivision_id', $currentSubdivisionId)
             ->withTotalDebt() // Scope del modelo
-            ->with(['residents' => function($q) {
-                $q->wherePivot('role_in_unit', 'Dueño')->select('residents.id', 'residents.full_name');
+            ->with(['users' => function($q) {
+                $q->wherePivot('role_in_unit', 'Dueño')->select('users.id', 'users.name');
             }])
             // Ordenamos por los que deben más
             ->orderByDesc('total_debt')
@@ -268,7 +267,7 @@ class PrivateUnitController extends Controller
             return [
                 'id' => $unit->id,
                 'address' => trim("{$unit->unit_street} {$unit->exterior_number}"),
-                'owner_name' => $unit->residents->first()->full_name ?? 'N/A',
+                'owner_name' => $unit->users->first()->name ?? 'N/A',
                 'total_debt' => (float) $unit->total_debt, // Casting a float para JS
                 'status' => $unit->status,
                 'is_debtor' => $unit->total_debt > 0

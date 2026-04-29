@@ -10,11 +10,66 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import PrimeVue from 'primevue/config';
 import Accordion from 'primevue/accordion';
 import ConfirmationService from 'primevue/confirmationservice';
-// import AccordionTab from 'primevue/accordiontab';
 import ToastService from 'primevue/toastservice';
-// import Chart from 'primevue/chart';
 import 'primeicons/primeicons.css';
-import Aura from '@primeuix/themes/aura'; // Se importa el preset del tema Aura
+
+// --- CAMBIOS PARA EL TEMA PERSONALIZADO ---
+import Aura from '@primeuix/themes/aura'; 
+import { definePreset } from '@primeuix/themes'; // Importamos la utilidad para personalizar
+
+// Creamos el preset basado en Aura con la paleta Zinc
+const MyPreset = definePreset(Aura, {
+    semantic: {
+        primary: {
+            50: '{zinc.50}',
+            100: '{zinc.100}',
+            200: '{zinc.200}',
+            300: '{zinc.300}',
+            400: '{zinc.400}',
+            500: '{zinc.500}',
+            600: '{zinc.600}',
+            700: '{zinc.700}',
+            800: '{zinc.800}',
+            900: '{zinc.900}',
+            950: '{zinc.950}'
+        },
+        colorScheme: {
+            light: {
+                surface: {
+                    0: '#ffffff',
+                    50: '{zinc.50}',
+                    100: '{zinc.100}',
+                    200: '{zinc.200}',
+                    300: '{zinc.300}',
+                    400: '{zinc.400}',
+                    500: '{zinc.500}',
+                    600: '{zinc.600}',
+                    700: '{zinc.700}',
+                    800: '{zinc.800}',
+                    900: '{zinc.900}',
+                    950: '{zinc.950}'
+                }
+            },
+            dark: {
+                surface: {
+                    0: '#09090b',
+                    50: '{zinc.50}',
+                    100: '{zinc.100}',
+                    200: '{zinc.200}',
+                    300: '{zinc.300}',
+                    400: '{zinc.400}',
+                    500: '{zinc.500}',
+                    600: '{zinc.600}',
+                    700: '{zinc.700}',
+                    800: '{zinc.800}',
+                    900: '{zinc.900}',
+                    950: '{zinc.950}'
+                }
+            }
+        }
+    }
+});
+// ------------------------------------------
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -25,21 +80,17 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
-            // Configuración de PrimeVue con el tema Aura y modo oscuro
             .use(PrimeVue, {
                 ripple: true,
                 theme: {
-                    preset: Aura,
+                    preset: MyPreset, // <--- CAMBIADO: Usamos nuestro preset personalizado
                     options: {
-                        // Conecta el modo oscuro de PrimeVue con el de Tailwind CSS
-                        darkModeSelector: '.dark',
+                        darkModeSelector: '.my-app-dark',
                     }
                 }
             })
             .component('Accordion', Accordion)
             .use(ConfirmationService)
-            // .component('AccordionTab', AccordionTab)
-            // .component('Chart', Chart)
             .use(ToastService)
             .mount(el);
     },

@@ -4,62 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Checkpoint;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class CheckpointController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        $checkpoints = Checkpoint::latest()
+            ->paginate(15)
+            ->through(function ($checkpoint) {
+                return [
+                    'id' => $checkpoint->id,
+                    'name' => $checkpoint->name,
+                    'coordinates' => $checkpoint->coordinates ?? 'No definidas',
+                    'tag_nfc_id' => $checkpoint->tag_nfc_id ?? 'Sin Tag Asignado',
+                ];
+            });
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Checkpoint $checkpoint)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Checkpoint $checkpoint)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Checkpoint $checkpoint)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Checkpoint $checkpoint)
-    {
-        //
+        return Inertia::render('Checkpoints/Index', [
+            'checkpoints' => $checkpoints
+        ]);
     }
 }

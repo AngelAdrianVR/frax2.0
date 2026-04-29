@@ -1,7 +1,7 @@
 <template>
     <AppLayout title="Roles y Permisos">
         <template v-slot:header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-zinc-800 dark:text-zinc-200 leading-tight">
                 Gestión de Roles y Permisos
             </h2>
         </template>
@@ -10,14 +10,14 @@
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
                 <!-- Pestañas de Navegación -->
-                <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="mb-6 border-b border-zinc-200 dark:border-zinc-700">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button 
                             @click="activeTab = 'roles'"
                             :class="[
                                 activeTab === 'roles'
                                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300',
+                                    : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300',
                                 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
                             ]"
                         >
@@ -28,7 +28,7 @@
                             :class="[
                                 activeTab === 'permissions'
                                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300',
+                                    : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300',
                                 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
                             ]"
                         >
@@ -53,22 +53,22 @@
                     </div>
 
                     <!-- Lista de Roles -->
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg transition-colors duration-200">
-                        <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700/50">
+                    <div class="bg-white dark:bg-zinc-800 overflow-hidden shadow-xl sm:rounded-lg transition-colors duration-200">
+                        <div class="p-6 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                            <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                                <thead class="bg-zinc-50 dark:bg-zinc-700/50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rol</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Permisos Asignados</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Rol</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Permisos Asignados</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <tr v-for="role in roles" :key="role.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                <tbody class="bg-white dark:bg-zinc-800 divide-y divide-zinc-200 dark:divide-zinc-700">
+                                    <tr v-for="role in roles" :key="role.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-700/30 transition-colors">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ role.name }}</div>
+                                                    <div class="text-sm font-medium text-zinc-900 dark:text-white">{{ role.name }}</div>
                                                     <div v-if="role.name === 'Admin'" class="text-xs text-yellow-600 dark:text-yellow-400 font-semibold flex items-center mt-1">
                                                         <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
                                                         Sistema
@@ -91,10 +91,10 @@
                                                     >
                                                         {{ perm.name }}
                                                     </span>
-                                                    <span v-if="role.permissions.length > 5" class="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
+                                                    <span v-if="role.permissions.length > 5" class="text-xs text-zinc-500 dark:text-zinc-400 font-medium px-1">
                                                         +{{ role.permissions.length - 5 }} más...
                                                     </span>
-                                                    <span v-if="role.permissions.length === 0" class="text-xs text-gray-400 dark:text-gray-500 italic">Sin permisos</span>
+                                                    <span v-if="role.permissions.length === 0" class="text-xs text-zinc-400 dark:text-zinc-500 italic">Sin permisos</span>
                                                 </template>
                                             </div>
                                         </td>
@@ -139,13 +139,13 @@
                     <!-- Lista de Permisos Agrupada -->
                     <div class="space-y-6">
                          <!-- Iteramos sobre los GRUPOS (reutilizando la lógica computada) -->
-                        <div v-for="(groupPerms, groupName) in groupedPermissions" :key="groupName" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                                <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ groupName }}</h3>
+                        <div v-for="(groupPerms, groupName) in groupedPermissions" :key="groupName" class="bg-white dark:bg-zinc-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-700/50">
+                                <h3 class="text-lg font-bold text-zinc-800 dark:text-white">{{ groupName }}</h3>
                             </div>
                             <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div v-for="permission in groupPerms" :key="permission.id" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/20">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ permission.name }}</span>
+                                <div v-for="permission in groupPerms" :key="permission.id" class="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-700/20">
+                                    <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ permission.name }}</span>
                                     <div class="flex space-x-2">
                                         <button @click="openPermissionModal(permission)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 p-1 rounded">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -159,13 +159,13 @@
                         </div>
 
                          <!-- Permisos Sin Categoría -->
-                         <div v-if="miscPermissions.length > 0" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                                <h3 class="text-lg font-bold text-gray-800 dark:text-white">Otros Permisos</h3>
+                         <div v-if="miscPermissions.length > 0" class="bg-white dark:bg-zinc-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-700/50">
+                                <h3 class="text-lg font-bold text-zinc-800 dark:text-white">Otros Permisos</h3>
                             </div>
                             <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div v-for="permission in miscPermissions" :key="permission.id" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/20">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ permission.name }}</span>
+                                <div v-for="permission in miscPermissions" :key="permission.id" class="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-700/20">
+                                    <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ permission.name }}</span>
                                     <div class="flex space-x-2">
                                         <button @click="openPermissionModal(permission)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 p-1 rounded">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -213,12 +213,12 @@
 
                     <!-- Nombre del Rol -->
                     <div class="mb-6">
-                        <InputLabel for="name" value="Nombre del Rol" class="dark:text-gray-300" />
+                        <InputLabel for="name" value="Nombre del Rol" class="dark:text-zinc-300" />
                         <TextInput
                             id="name"
                             v-model="form.name"
                             type="text"
-                            class="mt-1 block w-full dark:bg-gray-900 dark:text-white dark:border-gray-700 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                            class="mt-1 block w-full dark:bg-zinc-900 dark:text-white dark:border-zinc-700 disabled:opacity-50 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
                             placeholder="Ej. Supervisor de Alberca"
                             ref="nameInput"
                             :disabled="isReadOnly"
@@ -228,12 +228,12 @@
 
                     <!-- Lista de Permisos Agrupada (Checkbox) -->
                     <div class="mt-6">
-                        <InputLabel value="Permisos del Rol" class="mb-3 dark:text-gray-300 text-lg font-semibold" />
+                        <InputLabel value="Permisos del Rol" class="mb-3 dark:text-zinc-300 text-lg font-semibold" />
                         
                         <div class="space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
                             <!-- Grupos -->
-                            <div v-for="(groupPerms, groupName) in groupedPermissions" :key="groupName" class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                                <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3 border-b border-gray-200 dark:border-gray-600 pb-2 uppercase tracking-wide">
+                            <div v-for="(groupPerms, groupName) in groupedPermissions" :key="groupName" class="bg-zinc-50 dark:bg-zinc-700/30 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
+                                <h3 class="text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-3 border-b border-zinc-200 dark:border-zinc-600 pb-2 uppercase tracking-wide">
                                     {{ groupName }}
                                 </h3>
                                 
@@ -244,13 +244,13 @@
                                                 type="checkbox" 
                                                 :value="permission.name" 
                                                 v-model="form.permissions"
-                                                class="rounded border-gray-300 dark:border-gray-600 text-blue-600 shadow-sm focus:ring-blue-500 dark:bg-gray-800 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                class="rounded border-zinc-300 dark:border-zinc-600 text-blue-600 shadow-sm focus:ring-blue-500 dark:bg-zinc-800 dark:focus:ring-offset-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 :id="'perm_' + permission.id"
                                                 :disabled="isReadOnly"
                                             >
                                         </div>
                                         <div class="ml-2 text-sm">
-                                            <label :for="'perm_' + permission.id" class="font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none" :class="{'cursor-not-allowed': isReadOnly}">
+                                            <label :for="'perm_' + permission.id" class="font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer select-none" :class="{'cursor-not-allowed': isReadOnly}">
                                                 {{ permission.name }}
                                             </label>
                                         </div>
@@ -259,8 +259,8 @@
                             </div>
 
                             <!-- Otros -->
-                            <div v-if="miscPermissions.length > 0" class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                                <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3 border-b border-gray-200 dark:border-gray-600 pb-2 uppercase tracking-wide">
+                            <div v-if="miscPermissions.length > 0" class="bg-zinc-50 dark:bg-zinc-700/30 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
+                                <h3 class="text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-3 border-b border-zinc-200 dark:border-zinc-600 pb-2 uppercase tracking-wide">
                                     Otros Permisos
                                 </h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -269,11 +269,11 @@
                                             type="checkbox" 
                                             :value="permission.name" 
                                             v-model="form.permissions"
-                                            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 shadow-sm focus:ring-blue-500 dark:bg-gray-800 dark:focus:ring-offset-gray-800 disabled:opacity-50"
+                                            class="rounded border-zinc-300 dark:border-zinc-600 text-blue-600 shadow-sm focus:ring-blue-500 dark:bg-zinc-800 dark:focus:ring-offset-zinc-800 disabled:opacity-50"
                                             :id="'perm_' + permission.id"
                                             :disabled="isReadOnly"
                                         >
-                                        <label :for="'perm_' + permission.id" class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                                        <label :for="'perm_' + permission.id" class="ml-2 text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer select-none">
                                             {{ permission.name }}
                                         </label>
                                     </div>
@@ -285,7 +285,7 @@
             </template>
 
             <template v-slot:footer>
-                <SecondaryButton @click="closeModal" class="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                <SecondaryButton @click="closeModal" class="dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600">
                     {{ isReadOnly ? 'Cerrar' : 'Cancelar' }}
                 </SecondaryButton>
 
@@ -310,17 +310,17 @@
             <template v-slot:content>
                 <div class="mt-4">
                     <div class="mb-4">
-                        <InputLabel for="perm_name" value="Nombre del Permiso" class="dark:text-gray-300" />
+                        <InputLabel for="perm_name" value="Nombre del Permiso" class="dark:text-zinc-300" />
                         <TextInput
                             id="perm_name"
                             v-model="permForm.name"
                             type="text"
-                            class="mt-1 block w-full dark:bg-gray-900 dark:text-white dark:border-gray-700"
+                            class="mt-1 block w-full dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
                             placeholder="Ej. Crear Amenidades"
                             ref="permNameInput"
                         />
                         <InputError :message="permForm.errors.name" class="mt-2" />
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
                             Sugerencia: Usa nombres claros como "Acción + Objeto" (Ej. <i>Editar Usuarios</i>) para que se agrupen automáticamente.
                         </p>
                     </div>
@@ -328,7 +328,7 @@
             </template>
 
             <template v-slot:footer>
-                <SecondaryButton @click="closePermissionModal" class="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                <SecondaryButton @click="closePermissionModal" class="dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600">
                     Cancelar
                 </SecondaryButton>
 

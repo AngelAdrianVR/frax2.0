@@ -2,15 +2,15 @@
     <AppLayout :title="'Control Vehicular'">
         <ConfirmDialog></ConfirmDialog>
 
-        <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-4 sm:p-8 transition-colors duration-300">
+        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
             
             <!-- Encabezado Admin -->
             <div class="max-w-7xl mx-auto mb-1 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                    <h1 class="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
                         Administración Vehicular
                     </h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                         Gestión global de vehículos del fraccionamiento.
                     </p>
                 </div>
@@ -18,7 +18,7 @@
                 <!-- Buscador -->
                 <div class="w-full md:w-auto relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="h-5 w-5 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </span>
@@ -26,7 +26,7 @@
                         v-model="search" 
                         type="text" 
                         placeholder="Buscar placa, casa o residente..." 
-                        class="pl-10 pr-4 py-2 w-full md:w-80 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                        class="pl-10 pr-4 py-2 w-full md:w-80 rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                     >
                 </div>
             </div>
@@ -43,40 +43,40 @@
             <div class="max-w-7xl mx-auto mt-4">
                 
                 <!-- ESTADO VACÍO -->
-                <div v-if="vehicles.data.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-dashed border-gray-300 dark:border-gray-700">
-                    <div class="mx-auto h-12 w-12 text-gray-400">
+                <div v-if="vehicles.data.length === 0" class="bg-white dark:bg-zinc-800 rounded-xl shadow-sm p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-700">
+                    <div class="mx-auto h-12 w-12 text-zinc-400">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                     </div>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No se encontraron vehículos</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Intenta con otros términos de búsqueda.</p>
+                    <h3 class="mt-2 text-sm font-medium text-zinc-900 dark:text-white">No se encontraron vehículos</h3>
+                    <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Intenta con otros términos de búsqueda.</p>
                 </div>
 
                 <div v-else>
                     <!-- TABLA ADMIN (Desktop) -->
-                    <div class="hidden md:block overflow-hidden rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                    <div class="hidden md:block overflow-hidden rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+                        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                            <thead class="bg-zinc-50 dark:bg-zinc-700/50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                                         Placa / Foto
                                     </th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                                         Ubicación (Casa)
                                     </th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                                         Vehículo
                                     </th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                                         Tag Acceso
                                     </th>
-                                    <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                                         Acciones
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700 bg-white dark:bg-zinc-800">
                                 <tr 
                                     v-for="vehicle in vehicles.data" 
                                     :key="vehicle.id" 
@@ -85,7 +85,7 @@
                                 >
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 relative">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 relative">
                                                 <img 
                                                     v-if="vehicle.photo_url" 
                                                     :src="vehicle.photo_url" 
@@ -97,10 +97,10 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                                                <div class="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                                                     {{ vehicle.plate }}
                                                 </div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                <div class="text-xs text-zinc-500 dark:text-zinc-400">
                                                     Reg: {{ formatDate(vehicle.created_at) }}
                                                 </div>
                                             </div>
@@ -108,29 +108,29 @@
                                     </td>
                                     <!-- Nueva Columna: Ubicación y Dueño -->
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                            <i class="fa-solid fa-house-user mr-1 text-gray-400"></i>
+                                        <div class="text-sm font-medium text-zinc-900 dark:text-white">
+                                            <i class="fa-solid fa-house-user mr-1 text-zinc-400"></i>
                                             {{ vehicle.house_info }}
                                         </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        <div class="text-xs text-zinc-500 dark:text-zinc-400">
                                             {{ vehicle.resident_name }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 dark:text-white">{{ vehicle.brand }} {{ vehicle.model }}</div>
+                                        <div class="text-sm text-zinc-900 dark:text-white">{{ vehicle.brand }} {{ vehicle.model }}</div>
                                         <div class="flex items-center gap-2 mt-1">
                                             <span 
-                                                class="inline-block w-3 h-3 rounded-full border border-gray-300"
+                                                class="inline-block w-3 h-3 rounded-full border border-zinc-300"
                                                 :style="{ backgroundColor: translateColor(vehicle.color) }"
                                             ></span>
-                                            <span class="text-xs text-gray-500 capitalize">{{ vehicle.color }}</span>
+                                            <span class="text-xs text-zinc-500 capitalize">{{ vehicle.color }}</span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span v-if="vehicle.tag_access" class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                                             {{ vehicle.tag_access }}
                                         </span>
-                                        <span v-else class="text-xs text-gray-400 italic">N/A</span>
+                                        <span v-else class="text-xs text-zinc-400 italic">N/A</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
@@ -148,22 +148,22 @@
                             v-for="vehicle in vehicles.data" 
                             :key="vehicle.id" 
                             @click="openModal(vehicle)"
-                            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700"
+                            class="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden border border-zinc-200 dark:border-zinc-700"
                         >
-                            <div class="bg-indigo-50 dark:bg-gray-700/50 px-4 py-2 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                                <span class="font-bold text-gray-800 dark:text-white text-lg">{{ vehicle.plate }}</span>
-                                <span class="text-xs bg-white dark:bg-gray-600 px-2 py-1 rounded shadow-sm">
+                            <div class="bg-indigo-50 dark:bg-zinc-700/50 px-4 py-2 border-b border-zinc-100 dark:border-zinc-700 flex justify-between items-center">
+                                <span class="font-bold text-zinc-800 dark:text-white text-lg">{{ vehicle.plate }}</span>
+                                <span class="text-xs bg-white dark:bg-zinc-600 px-2 py-1 rounded shadow-sm">
                                     {{ vehicle.house_info }}
                                 </span>
                             </div>
                             <div class="p-4 flex gap-4">
-                                <div class="h-16 w-16 flex-shrink-0 rounded-lg bg-gray-200 overflow-hidden">
+                                <div class="h-16 w-16 flex-shrink-0 rounded-lg bg-zinc-200 overflow-hidden">
                                      <img v-if="vehicle.photo_url" :src="vehicle.photo_url" class="h-full w-full object-cover">
-                                     <div v-else class="h-full w-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-car fa-lg"></i></div>
+                                     <div v-else class="h-full w-full flex items-center justify-center text-zinc-400"><i class="fa-solid fa-car fa-lg"></i></div>
                                 </div>
                                 <div class="flex-1 space-y-1">
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ vehicle.brand }} - {{ vehicle.model }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Prop: {{ vehicle.resident_name }}</p>
+                                    <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ vehicle.brand }} - {{ vehicle.model }}</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Prop: {{ vehicle.resident_name }}</p>
                                     <p v-if="vehicle.tag_access" class="text-xs text-green-600 font-bold">TAG: {{ vehicle.tag_access }}</p>
                                 </div>
                             </div>
@@ -174,13 +174,13 @@
                     <div v-if="vehicles.links.length > 3" class="mt-6 flex justify-center">
                         <div class="flex flex-wrap gap-1">
                             <template v-for="(link, key) in vehicles.links" :key="key">
-                                <div v-if="link.url === null" class="px-4 py-2 text-sm text-gray-400 border border-transparent rounded-md" v-html="link.label" />
+                                <div v-if="link.url === null" class="px-4 py-2 text-sm text-zinc-400 border border-transparent rounded-md" v-html="link.label" />
                                 <Link v-else 
                                     :href="link.url" 
                                     class="px-4 py-2 text-sm border rounded-md transition-colors"
                                     :class="link.active 
                                         ? 'bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-500' 
-                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'"
+                                        : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600'"
                                     v-html="link.label" 
                                 />
                             </template>
@@ -192,19 +192,19 @@
 
         <!-- REUTILIZAMOS EL MISMO MODAL (Copiado de Index.vue para mantener funcionalidad) -->
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-            <div @click="closeModal" class="absolute inset-0 bg-gray-900/75 transition-opacity"></div>
-            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all max-h-[90vh] overflow-y-auto">
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Editar Vehículo (Admin)</h3>
-                    <button @click="closeModal" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times"></i></button>
+            <div @click="closeModal" class="absolute inset-0 bg-zinc-900/75 transition-opacity"></div>
+            <div class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all max-h-[90vh] overflow-y-auto">
+                <div class="px-6 py-4 bg-zinc-50 dark:bg-zinc-700/50 border-b border-zinc-100 dark:border-zinc-700 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md">
+                    <h3 class="text-lg font-bold text-zinc-900 dark:text-white">Editar Vehículo (Admin)</h3>
+                    <button @click="closeModal" class="text-zinc-400 hover:text-zinc-500"><i class="fa-solid fa-times"></i></button>
                 </div>
                 <div class="p-6 space-y-6">
                     <!-- Previsualización de Imagen -->
                     <div class="flex justify-center">
                         <div class="relative group">
-                            <div class="h-40 w-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                            <div class="h-40 w-40 rounded-full overflow-hidden border-4 border-white dark:border-zinc-700 shadow-lg bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
                                 <img v-if="photoPreview || form.photo_url" :src="photoPreview || form.photo_url" class="h-full w-full object-cover">
-                                <i v-else class="fa-solid fa-car text-3xl text-gray-300"></i>
+                                <i v-else class="fa-solid fa-car text-3xl text-zinc-300"></i>
                             </div>
                             <label class="absolute bottom-0 right-0 bg-indigo-600 text-white py-2 px-3 rounded-full shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
                                 <i class="fa-solid fa-camera"></i>
@@ -215,29 +215,29 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Placa</label>
-                            <input v-model="form.plate" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Placa</label>
+                            <input v-model="form.plate" type="text" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marca</label>
-                            <input v-model="form.brand" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Marca</label>
+                            <input v-model="form.brand" type="text" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Modelo</label>
-                            <input v-model="form.model" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Modelo</label>
+                            <input v-model="form.model" type="text" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
-                            <input v-model="form.color" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Color</label>
+                            <input v-model="form.color" type="text" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white">
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag Acceso</label>
-                            <input v-model="form.tag_access" type="text" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Tag Acceso</label>
+                            <input v-model="form.tag_access" type="text" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white">
                         </div>
                     </div>
                 </div>
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
-                    <button @click="closeModal" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700">Cancelar</button>
+                <div class="px-6 py-4 bg-zinc-50 dark:bg-zinc-700/50 border-t border-zinc-100 dark:border-zinc-700 flex justify-end gap-3">
+                    <button @click="closeModal" class="px-4 py-2 bg-white border border-zinc-300 rounded-lg text-zinc-700">Cancelar</button>
                     <button @click="submitUpdate" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md" :disabled="processing">
                         {{ processing ? 'Guardando...' : 'Guardar Cambios' }}
                     </button>
@@ -290,7 +290,7 @@ export default {
                 'negro': '#000000', 'black': '#000000',
                 'rojo': '#ef4444', 'red': '#ef4444',
                 'azul': '#3b82f6', 'blue': '#3b82f6',
-                'gris': '#6b7280', 'gray': '#6b7280',
+                'gris': '#6b7280', 'zinc': '#6b7280',
                 'plata': '#9ca3af', 'silver': '#c0c0c0',
             }
         }

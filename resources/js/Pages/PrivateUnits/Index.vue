@@ -2,7 +2,7 @@
     <AppLayout :title="'Gestión de Unidades Privadas'">
         <ConfirmDialog></ConfirmDialog>
 
-        <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-4 sm:p-8 transition-colors duration-300">
+        <div class="min-h-screen bg-gray-50 dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
             
             <!-- Encabezado Admin -->
             <div class="max-w-7xl mx-auto mb-1 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -24,7 +24,7 @@
                         v-model="search" 
                         type="text" 
                         placeholder="Buscar calle, número o propietario..." 
-                        class="pl-10 pr-4 py-2 w-full md:w-80 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all"
+                        class="pl-10 pr-4 py-2 w-full md:w-80 rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all"
                     >
                 </div>
             </div>
@@ -41,19 +41,19 @@
             <div class="max-w-7xl mx-auto mt-4">
                 
                 <!-- ESTADO VACÍO -->
-                <div v-if="units.data.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-dashed border-gray-300 dark:border-gray-700">
+                <div v-if="units.data.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-700">
                     <div class="mx-auto h-12 w-12 text-gray-400">
                         <i class="pi pi-home" style="font-size: 2rem"></i>
                     </div>
                     <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No se encontraron unidades</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Intenta con otros términos de búsqueda.</p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-zinc-400">Intenta con otros términos de búsqueda.</p>
                 </div>
 
                 <div v-else>
                     <!-- TABLA ADMIN (Desktop) -->
                     <div class="hidden md:block overflow-hidden rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-700">
+                            <thead class="bg-zinc-50 dark:bg-zinc-700/50">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Unidad / Dirección
@@ -72,7 +72,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-zinc-800">
                                 <tr 
                                     v-for="unit in units.data" 
                                     :key="unit.id"
@@ -81,7 +81,7 @@
                                 >
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-300">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-zinc-300">
                                                 <i class="pi pi-home"></i>
                                             </div>
                                             <div class="ml-4">
@@ -131,7 +131,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span 
                                             class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                                            :class="unit.status === 'Activo' ? 'text-green-600 bg-green-50 dark:bg-green-900/20' : 'text-gray-500 bg-gray-100 dark:bg-gray-700'"
+                                            :class="unit.status === 'Activo' ? 'text-green-600 bg-green-50 dark:bg-green-900/20' : 'text-gray-500 bg-gray-100 dark:zinc-700'"
                                         >
                                             {{ unit.status }}
                                         </span>
@@ -164,7 +164,7 @@
                             v-for="unit in units.data" 
                             :key="unit.id" 
                             @click="$inertia.visit(route('admin.private-units.show', unit.id))"
-                            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border-l-4"
+                            class="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden border-l-4"
                             :class="{
                                 'border-l-green-500': unit.payment_status === 'green',
                                 'border-l-amber-500': unit.payment_status === 'amber',
@@ -221,7 +221,7 @@
                                     class="px-4 py-2 text-sm border rounded-md transition-colors"
                                     :class="link.active 
                                         ? 'bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-500' 
-                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'"
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600'"
                                     v-html="link.label" 
                                 />
                             </template>
@@ -234,9 +234,9 @@
         <!-- MODAL DE EDICIÓN (Creación eliminada de aquí) -->
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <div @click="closeModal" class="absolute inset-0 bg-gray-900/75 transition-opacity backdrop-blur-sm"></div>
-            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
                 
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-zinc-700 flex justify-between items-center">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">
                         Editar Unidad Privada
                     </h3>

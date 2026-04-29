@@ -4,62 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Patrol;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PatrolController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        // Obtenemos los patrullajes y cargamos al guardia (usuario)
+        $patrols = Patrol::with('user')
+            ->latest('start_time')
+            ->paginate(15)
+            ->through(function ($patrol) {
+                return [
+                    'id' => $patrol->id,
+                    'guard_name' => $patrol->user->name ?? 'Guardia no asignado',
+                    'start_time' => $patrol->start_time ? $patrol->start_time->format('d/m/Y H:i') : 'N/A',
+                    'end_time' => $patrol->end_time ? $patrol->end_time->format('d/m/Y H:i') : 'En curso',
+                    'status' => $patrol->status,
+                    'scanned_points' => $patrol->scanned_points ?? 0,
+                ];
+            });
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Patrol $patrol)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Patrol $patrol)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Patrol $patrol)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Patrol $patrol)
-    {
-        //
+        return Inertia::render('Patrols/Index', [
+            'patrols' => $patrols
+        ]);
     }
 }

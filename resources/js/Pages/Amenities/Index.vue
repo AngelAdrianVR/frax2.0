@@ -147,12 +147,12 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
         <Toast />
         <ConfirmDialog />
 
-        <div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 transition-colors duration-300">
             <Head title="Amenidades" />
 
-            <header class="sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+            <header class="sticky top-0 z-10 bg-white/80 dark:bg-zinc-900 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Amenidades</h2>
+                    <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Amenidades</h2>
                     <div v-if="isAdmin">
                         <Link :href="route('amenities.create')" class="inline-flex items-center px-4 py-2 bg-blue-600 rounded-full font-semibold text-xs text-white uppercase hover:bg-blue-500 shadow-lg transition">
                             + Nueva Amenidad
@@ -164,18 +164,18 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <!-- Grid de Amenidades -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div v-for="amenity in amenities" :key="amenity.id" class="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full border border-gray-100 dark:border-gray-700">
+                    <div v-for="amenity in amenities" :key="amenity.id" class="group relative bg-white dark:bg-zinc-800 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full border border-zinc-100 dark:border-zinc-700">
                         
                         <!-- Imagen -->
                         <div class="h-56 overflow-hidden relative">
                             <img :src="amenity.photo_url || `https://ui-avatars.com/api/?name=${amenity.name}`" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700">
                             <!-- Badge Costo -->
-                            <div class="absolute top-4 right-4 bg-white/90 dark:bg-black/80 backdrop-blur text-gray-900 dark:text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                            <div class="absolute top-4 right-4 bg-white/90 dark:bg-black/80 backdrop-blur text-zinc-900 dark:text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
                                 {{ formatCurrency(amenity.reservation_cost) }}
                             </div>
                             <!-- Switch Admin Activo/Inactivo -->
                             <div v-if="isAdmin" class="absolute bottom-4 right-4 bg-white/90 p-1 rounded-full shadow-lg flex items-center gap-2 px-3">
-                                <span class="text-xs font-bold text-gray-600">{{ amenity.is_active ? 'Activa' : 'Inactiva' }}</span>
+                                <span class="text-xs font-bold text-zinc-600">{{ amenity.is_active ? 'Activa' : 'Inactiva' }}</span>
                                 <InputSwitch v-model="amenity.is_active" @input="toggleStatus(amenity)" />
                             </div>
                         </div>
@@ -183,9 +183,9 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                         <!-- Contenido -->
                         <div class="p-6 flex flex-col flex-grow">
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ amenity.name }}</h3>
+                                <h3 class="text-xl font-bold text-zinc-900 dark:text-white">{{ amenity.name }}</h3>
                             </div>
-                            <p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-3 mb-4 flex-grow">{{ amenity.description }}</p>
+                            <p class="text-zinc-500 dark:text-zinc-400 text-sm line-clamp-3 mb-4 flex-grow">{{ amenity.description }}</p>
                             
                             <!-- Botones Residente -->
                             <div v-if="!isAdmin" class="flex flex-col gap-2 mt-auto">
@@ -198,9 +198,9 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                             </div>
 
                             <!-- Botones Admin -->
-                            <div v-else class="flex gap-2 mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <div v-else class="flex gap-2 mt-auto pt-4 border-t border-zinc-100 dark:border-zinc-700">
                                 <!-- Como Create.vue es una vista nueva, Edit también debería serlo. Por ahora mantenemos el link -->
-                                <button @click="$inertia.visit(route('amenities.edit', amenity.id))" class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl text-sm font-semibold">Editar</button>
+                                <button @click="$inertia.visit(route('amenities.edit', amenity.id))" class="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-sm font-semibold">Editar</button>
                                 <button @click="confirmDelete($event, amenity)" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-100">
                                     🗑️
                                 </button>
@@ -216,10 +216,10 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
             <Modal :show="showRulesModal" @close="showRulesModal = false">
                 <div class="p-6">
                     <h3 class="text-xl font-bold mb-4">Reglamento de {{ selectedAmenity?.name }}</h3>
-                    <ul class="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-300" v-if="selectedAmenity?.rules && selectedAmenity.rules.length">
+                    <ul class="list-disc pl-5 space-y-2 text-zinc-600 dark:text-zinc-300" v-if="selectedAmenity?.rules && selectedAmenity.rules.length">
                         <li v-for="(rule, idx) in selectedAmenity.rules" :key="idx">{{ rule }}</li>
                     </ul>
-                    <p v-else class="text-gray-500 italic">No hay reglas específicas registradas.</p>
+                    <p v-else class="text-zinc-500 italic">No hay reglas específicas registradas.</p>
                     <div class="mt-6 flex justify-end">
                         <SecondaryButton @click="showRulesModal = false">Cerrar</SecondaryButton>
                     </div>
@@ -233,15 +233,15 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                 <div class="p-6 dark:text-white flex flex-col md:flex-row gap-6 h-[600px]" v-if="selectedAmenity">
                     
                     <!-- Panel Izquierdo: Calendario -->
-                    <div class="w-full md:w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-700 pr-6">
+                    <div class="w-full md:w-1/2 flex flex-col border-r border-zinc-200 dark:border-zinc-700 pr-6">
                         <div class="flex justify-between items-center mb-4">
-                            <button @click="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-full">◀</button>
+                            <button @click="changeMonth(-1)" class="p-2 hover:bg-zinc-100 rounded-full">◀</button>
                             <h3 class="font-bold text-lg">{{ monthNames[currentMonth] }} {{ currentYear }}</h3>
-                            <button @click="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-full">▶</button>
+                            <button @click="changeMonth(1)" class="p-2 hover:bg-zinc-100 rounded-full">▶</button>
                         </div>
 
                         <!-- Grid Calendario -->
-                        <div class="grid grid-cols-7 gap-2 text-center text-sm mb-2 font-medium text-gray-400">
+                        <div class="grid grid-cols-7 gap-2 text-center text-sm mb-2 font-medium text-zinc-400">
                             <span v-for="d in dayHeaders" :key="d">{{ d }}</span>
                         </div>
                         <div class="grid grid-cols-7 gap-2 flex-grow overflow-y-auto" v-if="!loadingCalendar">
@@ -253,9 +253,9 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                                 @click="selectDate(day)"
                                 :class="[
                                     'h-14 flex flex-col items-center justify-center rounded-lg cursor-pointer transition border relative',
-                                    day.status === 'closed' ? 'bg-gray-100 text-gray-300 cursor-not-allowed' :
+                                    day.status === 'closed' ? 'bg-zinc-100 text-zinc-300 cursor-not-allowed' :
                                     day.status === 'full' ? 'bg-red-50 border-red-200 text-red-400 cursor-not-allowed' :
-                                    selectedDate?.date === day.date ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50 bg-white border-gray-200'
+                                    selectedDate?.date === day.date ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-zinc-50 bg-white border-zinc-200'
                                 ]"
                             >
                                 <span class="font-bold">{{ day.day }}</span>
@@ -271,7 +271,7 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                             <span class="animate-spin text-2xl">⏳</span>
                         </div>
                         
-                        <div class="mt-4 flex gap-4 text-xs text-gray-500 justify-center">
+                        <div class="mt-4 flex gap-4 text-xs text-zinc-500 justify-center">
                             <div class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span> Disponible</div>
                             <div class="flex items-center"><span class="w-2 h-2 bg-orange-400 rounded-full mr-1"></span> Pocos cupos</div>
                             <div class="flex items-center"><span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span> Lleno</div>
@@ -281,7 +281,7 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                     <!-- Panel Derecho: Horarios y Formulario -->
                     <div class="w-full md:w-1/2 flex flex-col relative">
                         <h3 class="text-xl font-bold mb-1">{{ selectedAmenity.name }}</h3>
-                        <p class="text-sm text-gray-500 mb-6">Completa tu reservación</p>
+                        <p class="text-sm text-zinc-500 mb-6">Completa tu reservación</p>
 
                         <div v-if="selectedDate" class="animate-fade-in-up space-y-5">
                             <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800 text-center">
@@ -291,7 +291,7 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                             </div>
 
                             <!-- Mostrar horas ocupadas (informativo) -->
-                            <div v-if="selectedDate.busy_slots.length > 0" class="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                            <div v-if="selectedDate.busy_slots.length > 0" class="text-xs text-zinc-500 bg-zinc-50 p-2 rounded">
                                 <p class="font-bold mb-1">Horarios Ocupados:</p>
                                 <div class="flex flex-wrap gap-2">
                                     <span v-for="slot in selectedDate.busy_slots" :key="slot.start" class="bg-red-100 text-red-600 px-2 py-0.5 rounded">
@@ -304,17 +304,17 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="text-sm font-medium">Inicio</label>
-                                        <input type="time" v-model="reserveForm.start_time" class="w-full rounded-lg border-gray-300 mt-1" required>
+                                        <input type="time" v-model="reserveForm.start_time" class="w-full rounded-lg border-zinc-300 mt-1" required>
                                     </div>
                                     <div>
                                         <label class="text-sm font-medium">Fin</label>
-                                        <input type="time" v-model="reserveForm.end_time" class="w-full rounded-lg border-gray-300 mt-1" required>
+                                        <input type="time" v-model="reserveForm.end_time" class="w-full rounded-lg border-zinc-300 mt-1" required>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="text-sm font-medium">Asistentes (Max: {{ selectedAmenity.capacity }})</label>
-                                    <input type="number" v-model="reserveForm.attendees" min="1" :max="selectedAmenity.capacity" class="w-full rounded-lg border-gray-300 mt-1">
+                                    <input type="number" v-model="reserveForm.attendees" min="1" :max="selectedAmenity.capacity" class="w-full rounded-lg border-zinc-300 mt-1">
                                 </div>
 
                                 <div class="pt-4">
@@ -325,7 +325,7 @@ const dayHeaders = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
                             </form>
                         </div>
 
-                        <div v-else class="flex flex-col items-center justify-center h-full text-gray-400">
+                        <div v-else class="flex flex-col items-center justify-center h-full text-zinc-400">
                             <span class="text-4xl mb-2">📅</span>
                             <p>Selecciona un día en el calendario</p>
                         </div>

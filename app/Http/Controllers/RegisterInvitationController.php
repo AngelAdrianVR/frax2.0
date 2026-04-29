@@ -4,62 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\RegisterInvitation;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class RegisterInvitationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        $currentPropertyId = $request->user()->getCurrentPropertyId();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        $invitations = RegisterInvitation::query()
+            ->where('private_unit_id', $currentPropertyId)
+            ->latest()
+            ->paginate(15)
+            ->through(function ($invitation) {
+                return [
+                    'id' => $invitation->id,
+                    'email' => $invitation->email,
+                    'role_type' => $invitation->role_type,
+                    'status' => $invitation->status,
+                    'expires_at' => $invitation->expires_at ? $invitation->expires_at->format('d/m/Y') : 'N/A',
+                ];
+            });
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(RegisterInvitation $registerInvitation)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(RegisterInvitation $registerInvitation)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, RegisterInvitation $registerInvitation)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(RegisterInvitation $registerInvitation)
-    {
-        //
+        return Inertia::render('RegisterInvitations/Index', [
+            'invitations' => $invitations
+        ]);
     }
 }

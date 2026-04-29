@@ -4,62 +4,45 @@ namespace App\Http\Controllers;
 
 use App\Models\Subdivision;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class SubdivisionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // Obtener el ID del fraccionamiento actual de la sesión o base de datos
+        $currentSubdivisionId = session('current_subdivision_id');
+        if (!$currentSubdivisionId) {
+            $currentSubdivisionId = DB::table('subdivision_user')
+                ->where('user_id', $request->user()->id)
+                ->value('subdivision_id');
+        }
+
+        if (!$currentSubdivisionId) {
+            return redirect()->back()->with('error', 'No tienes un fraccionamiento asignado.');
+        }
+
+        // Obtener los datos del fraccionamiento actual
+        $subdivision = Subdivision::find($currentSubdivisionId);
+
+        return Inertia::render('Subdivisions/Index', [
+            'subdivision' => $subdivision
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Subdivision $subdivision)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Subdivision $subdivision)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Subdivision $subdivision)
     {
-        //
-    }
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'tax_id' => 'nullable|string|max:50',
+            'bank_account' => 'nullable|string|max:50',
+            'bank_name' => 'nullable|string|max:100',
+            // Agrega aquí otras reglas de validación según las columnas de tu tabla
+        ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Subdivision $subdivision)
-    {
-        //
+        $subdivision->update($validated);
+
+        return redirect()->back()->with('success', 'Datos del coto actualizados correctamente.');
     }
 }

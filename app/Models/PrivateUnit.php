@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class PrivateUnit extends Model
 {
@@ -37,17 +36,15 @@ class PrivateUnit extends Model
     }
 
     /**
-     * Residentes asociados a la unidad (Dueños, inquilinos, etc).
-     * Relación Muchos a Muchos con tabla intermedia personalizada 'residence_units'.
+     * Usuarios asociados a la unidad (Dueños, inquilinos, etc).
+     * Relación Muchos a Muchos con tabla intermedia 'private_unit_user'.
      */
-    public function residents(): BelongsToMany
+    public function users(): BelongsToMany
     {
-        return $this->belongsToMany(Resident::class, 'residence_units', 'private_unit_id', 'resident_id')
-                    ->using(ResidenceUnit::class)
+        return $this->belongsToMany(User::class, 'private_unit_user', 'private_unit_id', 'user_id')
                     ->withPivot([
                         'role_in_unit', 'responsible_for_payments', 
-                        'start_date', 'end_date', 'primary', 
-                        'is_primary_owner', 'permissions_level', 'alias'
+                        'start_date', 'end_date', 'is_primary', 'alias'
                     ])
                     ->withTimestamps();
     }

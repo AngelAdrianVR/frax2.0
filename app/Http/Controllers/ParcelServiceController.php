@@ -4,62 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\ParcelService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ParcelServiceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        $currentPropertyId = $request->user()->getCurrentPropertyId();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        $parcels = ParcelService::query()
+            ->where('private_unit_id', $currentPropertyId)
+            ->latest()
+            ->paginate(15)
+            ->through(function ($parcel) {
+                return [
+                    'id' => $parcel->id,
+                    'courier' => $parcel->courier ?? 'Desconocido', // Ej: DHL, Amazon
+                    'tracking_number' => $parcel->tracking_number ?? 'S/N',
+                    'status' => $parcel->status ?? 'En Caseta', // Ej: En Caseta, Entregado
+                    'received_at' => $parcel->created_at ? $parcel->created_at->format('d/m/Y H:i') : 'N/A',
+                ];
+            });
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(ParcelService $parcelService)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ParcelService $parcelService)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ParcelService $parcelService)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ParcelService $parcelService)
-    {
-        //
+        return Inertia::render('ParcelServices/Index', [
+            'parcels' => $parcels
+        ]);
     }
 }

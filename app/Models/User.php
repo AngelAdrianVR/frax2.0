@@ -6,7 +6,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
@@ -87,21 +86,20 @@ class User extends Authenticatable
     }
 
     /**
-     * Todos los perfiles de residente asociados al usuario.
-     * Relación 1:N según diagrama 'estructura inmobiliaria'.
-     * Vital para sistemas multi-propiedad donde un usuario puede ser residente en varios contextos.
+     * Unidades privadas asociadas al usuario (propiedades donde es dueño, inquilino, etc).
      */
-    public function residents(): HasMany
+    public function privateUnits(): BelongsToMany
     {
-        return $this->hasMany(Resident::class, 'user_id');
-    }
-
-    /**
-     * Perfil de residente asociado al usuario (si aplica).
-     */
-    public function resident(): HasOne
-    {
-        return $this->hasOne(Resident::class, 'user_id');
+        return $this->belongsToMany(PrivateUnit::class, 'private_unit_user', 'user_id', 'private_unit_id')
+                    ->withPivot([
+                        'role_in_unit', 
+                        'responsible_for_payments', 
+                        'start_date', 
+                        'end_date', 
+                        'is_primary', // Actualizado para coincidir con tu BD
+                        'alias'       // permissions_level eliminado
+                    ])
+                    ->withTimestamps();
     }
 
     /**
@@ -125,7 +123,6 @@ class User extends Authenticatable
      */
     public function parcels(): HasMany
     {
-        // Ajustado a 'user_id' para coincidir con el diagrama (users_id -> singular)
         return $this->hasMany(ParcelService::class, 'user_id');
     }
 
@@ -144,8 +141,8 @@ class User extends Authenticatable
             return session('current_property_id');
         }
 
-        // 2. Si no hay sesión, intentar obtener la primera propiedad de RESIDENTE
-        $firstUnit = $this->residents->flatMap->privateUnits->first();
+        // 2. Si no hay sesión, intentar obtener la primera propiedad directamente de la relación
+        $firstUnit = $this->privateUnits->first();
         if ($firstUnit) {
             return $firstUnit->id;
         }

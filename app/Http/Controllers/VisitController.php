@@ -4,62 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Visit;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class VisitController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // Obtenemos la propiedad actual del residente
+        $currentPropertyId = $request->user()->getCurrentPropertyId();
+
+        $visits = Visit::query()
+            ->where('private_unit_id', $currentPropertyId)
+            ->orderBy('date_of_use', 'desc')
+            ->paginate(15)
+            ->through(function ($visit) {
+                return [
+                    'id' => $visit->id,
+                    'name' => $visit->name,
+                    'reason' => $visit->reason,
+                    'access_type' => $visit->access_type,
+                    'status' => $visit->status,
+                    'date_of_use' => $visit->date_of_use ? $visit->date_of_use->format('d/m/Y H:i') : 'N/A',
+                ];
+            });
+
+        return Inertia::render('Visits/Index', [
+            'visits' => $visits
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Visit $visit)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Visit $visit)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Visit $visit)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Visit $visit)
-    {
-        //
-    }
+    // Los demás métodos (create, store, etc.) irán aquí conforme los necesites
 }
