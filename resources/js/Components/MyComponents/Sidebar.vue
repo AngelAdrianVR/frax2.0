@@ -144,7 +144,7 @@ const menuItems = computed(() => [
         key: 'comunidad',
         icon: 'pi pi-users', 
         items: [
-            { name: 'Propiedades', route: 'admin.private-units.index' },
+            { name: 'Gestión de Propiedades', route: 'admin.private-units.index' },
             { name: 'Directorio / Residentes', route: 'users.index' },
             { name: 'Mascotas', route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.pets.index' : 'pets.index', },
             { name: 'Vehículos', route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.vehicles.index' : 'vehicles.index', },

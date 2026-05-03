@@ -22,7 +22,11 @@ return new class extends Migration
             $table->enum('status', ['Pendiente','Ingresado','Expirado','Cancelado'])->default('Pendiente');
             
             $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
-            $table->foreignId('visit_event_id')->nullable()->constrained()->onDelete('cascade'); // En caso de que sea parte de un evento
+            $table->foreignId('visit_event_id')->nullable()->constrained()->onDelete('cascade'); 
+            
+            // 🔥 Índices de rendimiento para búsquedas rápidas
+            $table->index(['private_unit_id', 'created_at']);
+            $table->index('status'); // Súper útil para que el guardia filtre rápido los "Pendientes"
             
             $table->timestamps();
         });

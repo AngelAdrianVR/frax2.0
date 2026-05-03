@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('color', 30);
             $table->string('tag_access', 50)->nullable(); // Tag RFID
             
-            $table->foreignId('resident_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('private_unit_id')->constrained()->onDelete('cascade');
             
             $table->timestamps();

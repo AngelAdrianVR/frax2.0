@@ -22,8 +22,12 @@ return new class extends Migration
             // Referencias (Nullables porque un acceso puede ser de diferentes tipos de actores)
             $table->foreignId('private_unit_id')->nullable()->constrained();
             $table->foreignId('user_id')->nullable()->constrained(); // Si fue un residente/guardia
-            $table->foreignId('visit_event_id')->nullable()->constrained(); // Si entró por evento
-            $table->foreignId('visit_id')->nullable()->constrained(); // Si fue una visita única
+            $table->foreignId('visit_event_id')->nullable()->constrained(); 
+            $table->foreignId('visit_id')->nullable()->constrained(); 
+            
+            // 🔥 Índices de rendimiento
+            $table->index(['private_unit_id', 'date_time']); // Para el historial de la casa
+            $table->index('date_time'); // Para el corte de turno del guardia
             
             $table->timestamps();
         });

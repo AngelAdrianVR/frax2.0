@@ -20,8 +20,10 @@ return new class extends Migration
             
             // Relaciones según diagrama
             $table->foreignId('billing_concept_id')->constrained(); 
-            $table->foreignId('resident_id')->nullable()->constrained(); 
-            // Sugerencia: Deberías considerar vincular esto a generated_fees en el futuro
+            $table->foreignId('user_id')->nullable()->constrained(); 
+            
+            // 🔥 Índices de rendimiento
+            $table->index(['user_id', 'payment_date']); // Para armar el estado de cuenta rápido
             
             $table->timestamps();
         });

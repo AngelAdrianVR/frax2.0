@@ -1,31 +1,51 @@
 <?php
 
-use App\Http\Controllers\AmenityController;
-use App\Http\Controllers\BankReconciliationController;
-use App\Http\Controllers\BillingConceptController;
-use App\Http\Controllers\GeneratedFeeController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\PaymentStatusController;
-use App\Http\Controllers\PetController;
-use App\Http\Controllers\PrivateUnitController;
-use App\Http\Controllers\ReservationController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\VehicleController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\RegisterInvitationController;
-use App\Http\Controllers\VisitController;
-use App\Http\Controllers\ParcelServiceController;
-use App\Http\Controllers\PatrolController;
-use App\Http\Controllers\CheckpointController;
-use App\Http\Controllers\SubdivisionController;
-use App\Http\Controllers\SlowPayerController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+
+// ==============================================================================
+// IMPORTACIONES DE CONTROLADORES (Organizados por tus nuevas carpetas)
+// ==============================================================================
+
+// ⚙️ Settings (Configuración)
+use App\Http\Controllers\Settings\RoleController;
+use App\Http\Controllers\Settings\SubdivisionController;
+
+// 🏘️ Community (Comunidad y Propiedades)
+use App\Http\Controllers\Community\UserController;
+use App\Http\Controllers\Community\PrivateUnitController;
+use App\Http\Controllers\Community\PrivateUnitContactController;
+use App\Http\Controllers\Community\VehicleController;
+use App\Http\Controllers\Community\PetController;
+
+// 💰 Finances (Finanzas y Cobranza)
+use App\Http\Controllers\Finances\GeneratedFeeController;
+use App\Http\Controllers\Finances\PaymentController;
+use App\Http\Controllers\Finances\BankReconciliationController;
+use App\Http\Controllers\Finances\BillingConceptController;
+
+// 🏊 Amenities (Amenidades y Reservas)
+use App\Http\Controllers\Amenities\AmenityController;
+use App\Http\Controllers\Amenities\ReservationController;
+
+// 🛡️ Gatehouse (Caseta y Accesos)
+use App\Http\Controllers\Gatehouse\RegisterInvitationController;
+use App\Http\Controllers\Gatehouse\VisitController;
+use App\Http\Controllers\Gatehouse\ParcelServiceController;
+
+// 🚓 Security (Seguridad y Rondines)
+use App\Http\Controllers\Security\PatrolController;
+use App\Http\Controllers\Security\CheckpointController;
+
+// ==============================================================================
+// RUTAS PÚBLICAS
+// ==============================================================================
 
 // Ruta Raíz: Muestra el estado de carga (animación)
 Route::get('/', function () {
+    // Nota: Si moviste Loading.vue, actualiza esto (ej: 'General/Loading')
     return Inertia::render('Loading');
 });
 
@@ -34,21 +54,19 @@ Route::get('/inicio', function () {
     return Inertia::render('Welcome'); 
 })->name('welcome');
 
-// ==========================================================================================
-// ZONA PROTEGIDA: Todas estas rutas requieren que el usuario haya iniciado sesión
-// ==========================================================================================
+
+// ==============================================================================
+// ZONA PROTEGIDA: Todas estas rutas requieren inicio de sesión verificado
+// ==============================================================================
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // --- DASHBOARD ---
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    // Semáforo del sidebar
-    Route::get('/payment-status', [PaymentStatusController::class, 'show'])->name('payment.status');
-
-    // Cambiar contexto de propiedad (multiples propiedades)
-    Route::post('/switch-property', function (Request $request) {
-        $request->validate(['property_id' => 'required']);
+    // --- SWITCH DE CONTEXTO (Cambio de Fraccionamiento/Propiedad) ---
+    Route::post('/switch-property', function (Request $request) {$request->validate(['property_id' => 'required']);
 
         $user = $request->user();
         $propertyId = $request->input('property_id');
@@ -65,7 +83,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             if (!$hasAdminAccess) {
                 abort(403, 'No tienes permisos administrativos en este fraccionamiento.');
             }
-            setPermissionsTeamId($targetSubdivisionId);
+            // Esto es vital para el manejo de "Teams" en Spatie
+            setPermissionsTeamId($targetSubdivisionId); 
         } else {
             $targetUnit = $user->privateUnits()->where('private_units.id', $propertyId)->first();
             if (!$targetUnit) {
@@ -84,13 +103,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return back();
     })->name('context.switch');
 
-    // --- Roles y permisos ---
+    // ==========================================
+    // ⚙️ MÓDULO: SETTINGS (Configuración global)
+    // ==========================================
+    Route::resource('subdivisions', SubdivisionController::class);
+    
     Route::resource('roles', RoleController::class);
     Route::post('/permissions', [RoleController::class, 'storePermission'])->name('permissions.store');
     Route::put('/permissions/{permission}', [RoleController::class, 'updatePermission'])->name('permissions.update');
     Route::delete('/permissions/{permission}', [RoleController::class, 'destroyPermission'])->name('permissions.destroy');
 
-    // --- Propiedades (Private Units) ---
+    // ==========================================
+    // 🏘️ MÓDULO: COMMUNITY (Propiedades y Residentes)
+    // ==========================================
+    
+    // Unidades Privadas (Casas/Lotes)
     Route::get('/admin/private-units', [PrivateUnitController::class, 'index'])->name('admin.private-units.index');
     Route::get('/admin/private-units/create', [PrivateUnitController::class, 'create'])->name('admin.private-units.create');
     Route::post('/admin/private-units', [PrivateUnitController::class, 'store'])->name('admin.private-units.store');
@@ -98,11 +125,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/admin/private-units/{privateUnit}', [PrivateUnitController::class, 'update'])->name('admin.private-units.update');
     Route::patch('/admin/private-units/{privateUnit}/toggle-status', [PrivateUnitController::class, 'toggleStatus'])->name('admin.private-units.toggle-status');
     Route::delete('/admin/private-units/{privateUnit}', [PrivateUnitController::class, 'destroy'])->name('admin.private-units.destroy');
-
-    // --- Morosos ---
-    Route::get('/slow-payers', [PrivateUnitController::class, 'slowPayersIndex'])->name('slowPayers.index');
-
-    // --- Vehículos ---
+    
+    // Vehículos
     Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
     Route::get('/admin/vehicles', [VehicleController::class, 'adminIndex'])->name('admin.vehicles.index');
     Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
@@ -110,11 +134,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
     Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
 
-    // --- Mascotas ---
-    Route::get('/pets/admin', [PetController::class, 'adminIndex'])->name('admin.pets.index');
+    // Mascotas
+    Route::get('/community/pets/admin', [PetController::class, 'adminIndex'])->name('admin.pets.index');
     Route::resource('pets', PetController::class);
 
-    // --- Amenidades ---
+    // Morosos (Relacionado a la comunidad)
+    Route::get('/slow-payers', [PrivateUnitController::class, 'slowPayersIndex'])->name('slowPayers.index');
+
+    // Directorio Comunitario y Pestañas
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/emergencies', [UserController::class, 'emergencies'])->name('users.emergencies');
+    Route::get('/users/services', [UserController::class, 'services'])->name('users.services');
+    
+    // Ajustes de privacidad del perfil
+    Route::get('/users/settings', [UserController::class, 'settings'])->name('users.settings');
+    Route::post('/users/settings', [UserController::class, 'updateSettings'])->name('users.settings.update');
+
+    // ==========================================
+    // 💰 MÓDULO: FINANCES (Finanzas)
+    // ==========================================
+    
+    // Cuotas y Conceptos
+    Route::get('/fees', [GeneratedFeeController::class, 'index'])->name('fees.index');
+    Route::get('/billing-concepts', [BillingConceptController::class, 'index'])->name('billing-concepts.index');
+    
+    // Pagos y Conciliaciones
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/bank-reconciliations', [BankReconciliationController::class, 'index'])->name('bank_reconciliations.index');
+
+    // Acciones financieras directas sobre las propiedades
+    Route::post('/propiedades/{privateUnit}/cargos-manuales', [GeneratedFeeController::class, 'storeManual'])->name('admin.fees.storeManual');
+    Route::post('/propiedades/{privateUnit}/abonos', [GeneratedFeeController::class, 'addBalance'])->name('admin.fees.addBalance');
+
+    // ==========================================
+    // 🏊 MÓDULO: AMENITIES (Amenidades)
+    // ==========================================
     Route::get('/amenities', [AmenityController::class, 'index'])->name('amenities.index');
     Route::get('/amenities/create', [AmenityController::class, 'create'])->name('amenities.create');
     Route::post('/amenities', [AmenityController::class, 'store'])->name('amenities.store');
@@ -122,28 +176,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/amenities/{amenity}', [AmenityController::class, 'update'])->name('amenities.update');
     Route::delete('/amenities/{amenity}', [AmenityController::class, 'destroy'])->name('amenities.destroy');
     Route::patch('/amenities/{amenity}/toggle', [AmenityController::class, 'toggleStatus'])->name('amenities.toggle');
+    
+    // Reservas de Amenidades
     Route::get('/amenities/{amenity}/availability', [AmenityController::class, 'availability'])->name('amenities.availability');
     Route::post('/amenities/{amenityId}/reservations', [AmenityController::class, 'storeReservation'])->name('reservations.store');
 
-    // --- Finanzas y Cuotas ---
-    Route::get('/fees', [GeneratedFeeController::class, 'index'])->name('fees.index');
-    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
-    Route::get('/bank-reconciliations', [BankReconciliationController::class, 'index'])->name('bank_reconciliations.index');
-    Route::get('/billing-concepts', [BillingConceptController::class, 'index'])->name('billing-concepts.index');
-
-    // --- Directorio / Residentes ---
-    Route::resource('users', UserController::class);
-
-    // --- Caseta y Accesos ---
+    // ==========================================
+    // 🛡️ MÓDULO: GATEHOUSE & SECURITY (Caseta)
+    // ==========================================
     Route::resource('register-invitations', RegisterInvitationController::class)->names('register_invitations');
     Route::resource('visits', VisitController::class);
     Route::resource('parcel-services', ParcelServiceController::class)->names('parcel_services');
     
-    // --- Seguridad ---
     Route::resource('patrols', PatrolController::class);
     Route::resource('checkpoints', CheckpointController::class);
 
-    // --- Configuración ---
-    Route::resource('subdivisions', SubdivisionController::class);
-
-}); 
+});

@@ -24,6 +24,8 @@ return new class extends Migration
                   ->constrained()
                   ->onDelete('cascade');
 
+            $table->string('role_in_subdivision')->nullable(); 
+
             // Opcional: Para saber cuál es el fraccionamiento activo actualmente en su sesión
             $table->boolean('is_current')->default(false);
 
