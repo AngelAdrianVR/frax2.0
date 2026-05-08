@@ -3,6 +3,8 @@
 namespace App\Models\Amenities;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Community\PrivateUnit;
+use App\Models\Finances\GeneratedFee;
 use Illuminate\Database\Eloquent\Relations\BelongsTo; // Import necesario para las relaciones
 
 class Reservation extends Model
@@ -32,11 +34,6 @@ class Reservation extends Model
     public function amenity(): BelongsTo
     { 
         return $this->belongsTo(Amenity::class, 'amenity_id'); 
-    }
-
-    public function resident(): BelongsTo
-    { 
-        return $this->belongsTo(Resident::class, 'resident_id'); 
     }
 
     // --- Nuevas Relaciones Agregadas ---

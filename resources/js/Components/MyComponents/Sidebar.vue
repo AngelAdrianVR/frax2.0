@@ -167,7 +167,8 @@ const menuItems = computed(() => [
         key: 'amenidades',
         icon: 'pi pi-calendar', 
         items: [
-            { name: 'Reservaciones y Amenidades', route: 'amenities.index' },
+            { name: 'Catálogo', route: 'amenities.index' },
+            { name: 'Reservaciones', route: 'reservations.index' },
         ]
     },
     {
@@ -221,14 +222,14 @@ const paymentStatusText = computed(() => {
 </script>
 
 <template>
-    <div v-if="isOpen" class="fixed inset-0 bg-gray-900/50 z-40 md:hidden transition-opacity" @click="$emit('toggleSidebar')"></div>
+    <div v-if="isOpen" class="fixed inset-0 bg-zinc-900/50 z-40 md:hidden transition-opacity" @click="$emit('toggleSidebar')"></div>
 
     <aside 
         ref="sidebarRef"
         :class="[
             'fixed top-0 left-0 z-50 h-screen transition-transform duration-300 ease-in-out shadow-xl border-r flex flex-col',
-            isOpen ? 'translate-x-0 w-72' : '-translate-x-full w-72 md:translate-x-0 md:w-20',
-            'bg-white border-gray-200 dark:bg-zinc-800/30 dark:border-slate-700/50'
+            isOpen ? 'tranzinc-x-0 w-72' : '-tranzinc-x-full w-72 md:tranzinc-x-0 md:w-20',
+            'bg-white border-zinc-200 dark:bg-zinc-800/30 dark:border-zinc-700/50'
         ]"
     >
         <div class="h-20 flex-none flex items-center justify-between px-6 z-10">
@@ -236,18 +237,18 @@ const paymentStatusText = computed(() => {
                 <Link :href="route('dashboard') || '#'" class="flex-shrink-0">
                     <ApplicationMark class="block h-8 w-auto text-blue-600 dark:text-blue-400" />
                 </Link>
-                <span v-if="isOpen" class="text-2xl font-bold tracking-tighter text-gray-900 dark:text-white">
+                <span v-if="isOpen" class="text-2xl font-bold tracking-tighter text-zinc-900 dark:text-white">
                     Frax<span class="text-blue-500">.</span>
                 </span>
             </div>
             
-            <button v-if="isOpen" @click="$emit('toggleSidebar')" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-slate-400 focus:outline-none ml-auto">
+            <button v-if="isOpen" @click="$emit('toggleSidebar')" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-500 dark:text-zinc-400 focus:outline-none ml-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
             </button>
         </div>
 
         <div v-if="!isOpen" class="w-full flex-none hidden md:flex justify-center mb-4">
-             <button @click="$emit('toggleSidebar')" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-slate-400">
+             <button @click="$emit('toggleSidebar')" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-500 dark:text-zinc-400">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
              </button>
         </div>
@@ -255,26 +256,26 @@ const paymentStatusText = computed(() => {
         <div class="px-4 mb-6 flex-none">
             <Link :href="route().has('profile.show') ? route('profile.show') : '#'" :class="[
                 'block relative rounded-2xl transition-all duration-300 border border-transparent group cursor-pointer',
-                isOpen ? 'p-4 bg-slate-50 dark:bg-slate-800/50 dark:border-slate-700/50 hover:bg-blue-50 dark:hover:bg-slate-800' : 'p-0 bg-transparent flex justify-center'
-            ]">
+                isOpen ? 'p-4 bg-zinc-50 dark:bg-zinc-800/50 dark:border-zinc-700/50 hover:bg-blue-50 dark:hover:bg-zinc-800' : 'p-0 bg-transparent flex justify-center'
+            ]"> 
                 <div class="flex items-center gap-4" :class="{'justify-center w-full': !isOpen}">
                     <div class="relative flex-shrink-0">
-                        <img class="h-10 w-10 md:h-14 md:w-14 rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-sm group-hover:border-blue-200 transition-colors" 
+                        <img class="h-10 w-10 md:h-14 md:w-14 rounded-full object-cover border-2 border-white dark:border-zinc-600 shadow-sm group-hover:border-blue-200 transition-colors" 
                                 :src="$page.props.auth?.user?.avatar || `https://ui-avatars.com/api/?name=${$page.props.auth?.user?.name}&color=7F9CF5&background=EBF4FF`" 
                                 alt="Avatar">
                         
                         <div v-if="userRole === 'Residente'" class="group/tooltip absolute -top-4 -right-0 md:right-2 cursor-help" :title="paymentStatusText">
-                            <div class="flex gap-0.5 bg-white dark:bg-slate-900 rounded-full px-1 py-0.5 shadow-sm border border-gray-100 dark:border-slate-700">
-                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'current' ? 'bg-green-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
-                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'late' ? 'bg-amber-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
-                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'defaulter' ? 'bg-red-500' : 'bg-gray-300 dark:bg-slate-700'"></div>
+                            <div class="flex gap-0.5 bg-white dark:bg-zinc-900 rounded-full px-1 py-0.5 shadow-sm border border-zinc-100 dark:border-zinc-700">
+                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'current' ? 'bg-green-500' : 'bg-zinc-300 dark:bg-zinc-700'"></div>
+                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'late' ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'"></div>
+                                <div class="w-2 h-2 rounded-full transition-all" :class="paymentStatus === 'defaulter' ? 'bg-red-500' : 'bg-zinc-300 dark:bg-zinc-700'"></div>
                             </div>
                         </div>
                     </div>
 
                     <div v-if="isOpen" class="overflow-hidden">
-                        <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 transition-colors">{{ $page.props.auth?.user?.name }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ userRole }}</p>
+                        <p class="text-sm font-bold text-zinc-800 dark:text-zinc-100 truncate group-hover:text-blue-600 transition-colors">{{ $page.props.auth?.user?.name }}</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ userRole }}</p>
                     </div>
                 </div>
             </Link>
@@ -286,7 +287,7 @@ const paymentStatusText = computed(() => {
                 @mouseenter="showTooltip('Dashboard', $event)" @mouseleave="hideTooltip"
                 :class="[
                     'flex items-center p-3 rounded-xl transition-all duration-200 mb-4 group relative',
-                    route().has('dashboard') && route().current('dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                    route().has('dashboard') && route().current('dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
                 ]"
             >
                 <i class="pi pi-home text-xl flex-shrink-0 w-6 text-center"></i>
@@ -294,7 +295,7 @@ const paymentStatusText = computed(() => {
             </Link>
 
             <div v-if="isOpen" class="px-2 mb-2 mt-4">
-                <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Módulos</p>
+                <p class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Módulos</p>
             </div>
 
             <div v-for="(category, index) in filteredMenuItems" :key="index" class="relative group">
@@ -303,7 +304,7 @@ const paymentStatusText = computed(() => {
                     @mouseenter="showTooltip(category.category, $event)" @mouseleave="hideTooltip"
                     :class="[
                         'w-full flex items-center p-3 rounded-xl transition-all duration-200',
-                        openCategories[category.key] || isCategoryActive(category.items) ? 'bg-slate-100 dark:bg-slate-800/60 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                        openCategories[category.key] || isCategoryActive(category.items) ? 'bg-zinc-100 dark:bg-zinc-800/60 text-blue-600 dark:text-blue-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
                     ]"
                 >
                     <i :class="[category.icon, 'text-xl flex-shrink-0 w-6 text-center']"></i>
@@ -316,14 +317,14 @@ const paymentStatusText = computed(() => {
                 </button>
 
                 <Teleport to="body">
-                    <div v-if="!isOpen && openCategories[category.key]" class="fixed z-[9999] bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 w-56 animate-fade-in-up sidebar-floating-dropdown" :style="{ top: `${dropdownPos.top}px`, left: `${dropdownPos.left + 12}px` }">
-                         <div class="px-4 py-2 border-b border-gray-100 dark:border-slate-700 mb-1">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ category.category }}</span>
+                    <div v-if="!isOpen && openCategories[category.key]" class="fixed z-[9999] bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-zinc-100 dark:border-zinc-700 py-2 w-56 animate-fade-in-up sidebar-floating-dropdown" :style="{ top: `${dropdownPos.top}px`, left: `${dropdownPos.left + 12}px` }">
+                         <div class="px-4 py-2 border-b border-zinc-100 dark:border-zinc-700 mb-1">
+                            <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ category.category }}</span>
                          </div>
                          <template v-for="item in category.items" :key="item.name">
                             <Link :href="route().has(item.route) ? route(item.route) : '#'" :class="[
                                     'flex items-center justify-between px-4 py-2 text-sm transition-colors mx-2 rounded-lg',
-                                    route().has(item.route) && route().current(item.route) ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400'
+                                    route().has(item.route) && route().current(item.route) ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 hover:text-blue-600 dark:hover:text-blue-400'
                                 ]">
                                 <span>{{ item.name }}</span>
                                 <span v-if="item.badge" class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm shadow-red-500/30">{{ item.badge }}</span>
@@ -337,7 +338,7 @@ const paymentStatusText = computed(() => {
                         <template v-for="item in category.items" :key="item.name">
                             <Link :href="route().has(item.route) ? route(item.route) : '#'" :class="[
                                     'flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors border-l-2',
-                                    route().has(item.route) && route().current(item.route) ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/10 font-medium' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                                    route().has(item.route) && route().current(item.route) ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/10 font-medium' : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
                                 ]">
                                 <span>{{ item.name }}</span>
                                 <span v-if="item.badge" class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm shadow-red-500/30">{{ item.badge }}</span>
@@ -348,8 +349,8 @@ const paymentStatusText = computed(() => {
             </div>
         </nav>
 
-        <div class="flex-none p-4 border-t border-gray-200 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md z-10">
-             <button @click="toggleTheme" class="w-full flex items-center justify-center gap-2 p-2 mb-2 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+        <div class="flex-none p-4 border-t border-zinc-200 dark:border-zinc-700/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md z-10">
+             <button @click="toggleTheme" class="w-full flex items-center justify-center gap-2 p-2 mb-2 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors">
                 <div v-if="isDark" class="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-yellow-400"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
                     <span v-if="isOpen" class="text-sm">Claro</span>
@@ -369,13 +370,13 @@ const paymentStatusText = computed(() => {
 
     <Teleport to="body">
         <transition name="fade">
-            <div v-if="hoveredTooltip && !isOpen" class="fixed z-[10000] px-2 py-1 text-xs font-medium text-white bg-slate-900 rounded shadow-lg pointer-events-none transform -translate-y-1/2 whitespace-nowrap" :style="{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }">{{ hoveredTooltip }}</div>
+            <div v-if="hoveredTooltip && !isOpen" class="fixed z-[10000] px-2 py-1 text-xs font-medium text-white bg-zinc-900 rounded shadow-lg pointer-events-none transform -tranzinc-y-1/2 whitespace-nowrap" :style="{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }">{{ hoveredTooltip }}</div>
         </transition>
     </Teleport>
 </template>
 
 <style scoped>
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInUp { from { opacity: 0; transform: tranzincY(10px); } to { opacity: 1; transform: tranzincY(0); } }
 .animate-fade-in-up { animation: fadeInUp 0.2s ease-out forwards; }
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

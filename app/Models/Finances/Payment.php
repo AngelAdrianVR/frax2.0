@@ -5,6 +5,7 @@ namespace App\Models\Finances;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Community\User;
 
 class Payment extends Model
 {

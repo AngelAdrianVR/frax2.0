@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class PrivateUnitController extends Controller
 {
-    /**
-     * Helper privado para obtener el ID del fraccionamiento actual.
-     */
     private function getCurrentSubdivisionId(Request $request)
     {
         $currentSubdivisionId = session('current_subdivision_id');
@@ -31,9 +28,6 @@ class PrivateUnitController extends Controller
         return $currentSubdivisionId;
     }
 
-    /**
-     * Muestra el listado de unidades privadas del fraccionamiento activo.
-     */
     public function index(Request $request)
     {
         $currentSubdivisionId = $this->getCurrentSubdivisionId($request);
@@ -44,23 +38,19 @@ class PrivateUnitController extends Controller
 
         $search = $request->input('search');
 
-        // --- 1. CÁLCULO DE KPIs (Estilo Dashboard) ---
         $totalUnits = PrivateUnit::where('subdivision_id', $currentSubdivisionId)->count();
         
-        // Ocupación: Casas con al menos un usuario (Dueño/Inquilino) asignado
         $occupiedUnits = PrivateUnit::where('subdivision_id', $currentSubdivisionId)
             ->whereHas('users')
             ->count();
         $occupancyRate = $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100) : 0;
 
-        // Caja Total (Suma de Deudas Pendientes de este fraccionamiento)
         $totalDebt = DB::table('generated_fees')
             ->join('private_units', 'generated_fees.private_unit_id', '=', 'private_units.id')
             ->where('private_units.subdivision_id', $currentSubdivisionId)
             ->whereIn('generated_fees.status', ['Pendiente', 'Parcial', 'Atrasada'])
             ->sum(DB::raw('generated_fees.total_amount - generated_fees.amount_paid'));
 
-        // Índice de Morosidad: Cuántas unidades están al corriente vs cuántas deben
         $debtorUnitsCount = PrivateUnit::where('subdivision_id', $currentSubdivisionId)
             ->whereHas('generatedFees', function($q) {
                 $q->whereIn('status', ['Pendiente', 'Parcial', 'Atrasada'])
@@ -79,7 +69,6 @@ class PrivateUnitController extends Controller
             'total_units' => $totalUnits
         ];
 
-        // --- 2. CONSULTA DE UNIDADES ---
         $units = PrivateUnit::query()
             ->where('subdivision_id', $currentSubdivisionId)
             ->with(['users' => function ($query) {
@@ -139,7 +128,58 @@ class PrivateUnitController extends Controller
         return Inertia::render('Community/PrivateUnits/Index', [
             'units' => $units,
             'filters' => $request->only(['search']),
-            'kpis' => $kpis // Pasamos los KPIs a la vista
+            'kpis' => $kpis
+        ]);
+    }
+
+    /**
+     * MÓDULO DE MOROSOS: Controlador sumamente ligero gracias al scope del modelo.
+     */
+    public function slowPayersIndex(Request $request)
+    {
+        $currentSubdivisionId = $this->getCurrentSubdivisionId($request);
+
+        if (!$currentSubdivisionId) {
+            return redirect()->back()->with('error', 'Fraccionamiento no encontrado.');
+        }
+
+        $search = $request->input('search');
+
+        // La consulta compleja y la suma de deudas ocurre en slowPayers() dentro del modelo.
+        $slowPayers = PrivateUnit::query()
+            ->where('subdivision_id', $currentSubdivisionId)
+            ->slowPayers() 
+            ->with(['users' => function ($query) {
+                $query->wherePivot('role_in_unit', 'Dueño')->select('users.id', 'users.name', 'users.phone', 'users.email');
+            }])
+            ->when($search, function ($query, $search) {
+                $query->where('unit_street', 'like', "%{$search}%")
+                      ->orWhere('lot_number', 'like', "%{$search}%")
+                      ->orWhereHas('users', function ($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+            })
+            ->orderByDesc('total_debt') // Ordenamos para que los que más deben aparezcan primero
+            ->paginate(20)
+            ->withQueryString();
+
+        $slowPayers->through(function ($unit) {
+            $owner = $unit->users->first();
+            return [
+                'id' => $unit->id,
+                'full_address' => trim("{$unit->unit_street} {$unit->exterior_number} Lote {$unit->lot_number}"),
+                'owner_name' => $owner ? $owner->name : 'Sin asignar',
+                'owner_phone' => $owner ? $owner->phone : null,
+                'owner_email' => $owner ? $owner->email : null,
+                'total_debt' => (float) $unit->total_debt,
+                'is_slow_payer' => $unit->is_slow_payer, 
+                'access_block' => $unit->access_block
+            ];
+        });
+
+        return Inertia::render('Finances/SlowPayers/Index', [
+            'slowPayers' => $slowPayers,
+            'filters' => $request->only(['search'])
         ]);
     }
 

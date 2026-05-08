@@ -45,7 +45,6 @@ class PrivateUnit extends Model
 
     /**
      * Usuarios asociados a la unidad (Dueños, inquilinos, etc).
-     * Relación Muchos a Muchos con tabla intermedia 'private_unit_user'.
      */
     public function users(): BelongsToMany
     {
@@ -91,13 +90,6 @@ class PrivateUnit extends Model
         return $this->hasMany(AccessLog::class, 'private_unit_id');
     }
 
-    // --- Operaciones ---
-
-    // public function reports(): HasMany
-    // {
-    //     return $this->hasMany(Report::class, 'private_unit_id');
-    // }
-
     public function parcelServices(): HasMany
     {
         return $this->hasMany(ParcelService::class, 'private_unit_id');
@@ -119,6 +111,18 @@ class PrivateUnit extends Model
         ]);
     }
 
+    /**
+     * LÓGICA ROBUSTA: Filtra únicamente las casas que tienen deuda (Morosos).
+     */
+    public function scopeSlowPayers(Builder $query)
+    {
+        return $query->whereHas('generatedFees', function ($q) {
+            $q->whereIn('status', ['Pendiente', 'Parcial', 'Atrasada'])
+              ->whereRaw('(total_amount - amount_paid) > 0')
+              ->where('expiration_date', '<', now()); // Solo cuenta las vencidas como morosidad
+        })->withTotalDebt(); // Trae automáticamente el cálculo de cuánto deben
+    }
+
     public function getIsDebtorAttribute()
     {
         if (isset($this->attributes['total_debt'])) {
@@ -135,9 +139,6 @@ class PrivateUnit extends Model
     // LÓGICA DE NEGOCIO
     // =========================================================================
 
-    /**
-     * Agrega saldo a favor a esta propiedad.
-     */
     public function addCreditBalance(float $amount, string $reference = null)
     {
         $this->credit_balance += $amount;

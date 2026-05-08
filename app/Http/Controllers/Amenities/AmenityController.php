@@ -65,7 +65,7 @@ class AmenityController extends Controller
             ];
         });
 
-        return Inertia::render('Amenities/Index', [
+        return Inertia::render('Amenities/Catalog/Index', [
             'amenities' => $amenities,
         ]);
     }
@@ -75,7 +75,7 @@ class AmenityController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Amenities/Create');
+        return Inertia::render('Amenities/Catalog/Create');
     }
 
     public function store(Request $request)
@@ -88,7 +88,6 @@ class AmenityController extends Controller
             'mode' => 'required|in:Exclusivo,Compartido',
             'photo' => 'nullable|image|max:5120',
             'rules' => 'nullable|array',
-            // Validamos que sea un array con estructura correcta
             'availability_schedule' => 'nullable|array', 
         ]);
 
@@ -129,7 +128,7 @@ class AmenityController extends Controller
             'is_active' => (bool) $amenity->is_active,
         ];
 
-        return Inertia::render('Amenities/Edit', [
+        return Inertia::render('Amenities/Catalog/Edit', [
             'amenity' => $amenityData
         ]);
     }
@@ -145,7 +144,6 @@ class AmenityController extends Controller
             'reservation_cost' => 'required|numeric|min:0',
             'capacity' => 'nullable|integer',
             'mode' => 'required|in:Exclusivo,Compartido',
-            // La foto es nullable en update; si no se envía, se mantiene la anterior
             'photo' => 'nullable|image|max:5120', 
             'rules' => 'nullable|array',
             'availability_schedule' => 'nullable|array', 

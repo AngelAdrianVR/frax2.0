@@ -3,6 +3,8 @@
 namespace App\Models\Gatehouse;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Community\PrivateUnit;
+use App\Models\Community\User;
 
 class RegisterInvitation extends Model
 {

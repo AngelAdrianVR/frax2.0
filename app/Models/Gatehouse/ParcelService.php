@@ -4,6 +4,8 @@ namespace App\Models\Gatehouse;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Community\PrivateUnit;
+use App\Models\Community\User;
 
 class ParcelService extends Model
 {

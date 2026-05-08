@@ -11,27 +11,45 @@ use Inertia\Inertia;
 class GeneratedFeeController extends Controller
 {
     /**
-     * Muestra las cuotas (Fees) del residente para la propiedad actual.
+     * Muestra las cuotas (Fees). 
+     * Si es residente, muestra las suyas. Si es admin, muestra todas las del fraccionamiento.
      */
     public function index(Request $request)
     {
         // 1. Obtener el contexto actual (Multi-tenancy)
         $currentPropertyId = $request->user()->getCurrentPropertyId();
 
-        if (!$currentPropertyId || is_string($currentPropertyId)) {
-            // Si es admin global o no tiene propiedad seleccionada, no mostrar nada o redirigir
-            return redirect()->route('dashboard')->with('error', 'Debes seleccionar una propiedad para ver tus cuotas.');
+        if (!$currentPropertyId) {
+            return redirect()->route('dashboard')->with('error', 'Debes seleccionar un contexto o propiedad.');
         }
 
-        // 2. Consulta de Cuotas
-        $fees = GeneratedFee::query()
-            ->with(['billingConcept:id,name']) // Eager loading para el nombre del concepto
-            ->where('private_unit_id', $currentPropertyId)
-            ->orderBy('expiration_date', 'desc') // Las más recientes primero
+        $query = GeneratedFee::query()->with(['billingConcept:id,name', 'privateUnit:id,name,subdivision_id']);
+        $statsQuery = GeneratedFee::query();
+
+        // 2. Lógica de visibilidad (Admin vs Residente)
+        if (is_string($currentPropertyId) && str_starts_with($currentPropertyId, 'admin_')) {
+            // Es administrador: filtramos por las cuotas de este fraccionamiento
+            $subdivisionId = (int) str_replace('admin_', '', $currentPropertyId);
+            
+            $query->whereHas('privateUnit', function ($q) use ($subdivisionId) {
+                $q->where('subdivision_id', $subdivisionId);
+            });
+            $statsQuery->whereHas('privateUnit', function ($q) use ($subdivisionId) {
+                $q->where('subdivision_id', $subdivisionId);
+            });
+        } else {
+            // Es residente: filtramos solo por su propiedad
+            $query->where('private_unit_id', $currentPropertyId);
+            $statsQuery->where('private_unit_id', $currentPropertyId);
+        }
+
+        // 3. Consulta de Cuotas Paginadas
+        $fees = $query->orderBy('expiration_date', 'desc')
             ->paginate(10)
             ->through(function ($fee) {
                 return [
                     'id' => $fee->id,
+                    'unit_name' => $fee->privateUnit->name ?? 'Propiedad', // Para que el admin identifique la casa
                     'concept_name' => $fee->billingConcept->name ?? 'Concepto General',
                     'payment_reference' => $fee->payment_reference,
                     'total_amount' => (float) $fee->total_amount,
@@ -39,14 +57,13 @@ class GeneratedFeeController extends Controller
                     'balance' => (float) ($fee->total_amount - $fee->amount_paid),
                     'status' => $fee->status, // Pendiente, Parcial, Pagado, Atrasada
                     'expiration_date' => $fee->expiration_date->format('Y-m-d'),
-                    'period' => $fee->start_period->translatedFormat('F Y'), // Ej: "Enero 2024"
+                    'period' => $fee->start_period->translatedFormat('F Y'),
                     'is_overdue' => $fee->expiration_date < now() && $fee->status !== 'Pagado',
                 ];
             });
 
-        // 3. Calcular Totales para las Tarjetas (KPIs)
-        $stats = GeneratedFee::where('private_unit_id', $currentPropertyId)
-            ->whereIn('status', ['Pendiente', 'Parcial', 'Atrasada'])
+        // 4. Calcular Totales para las Tarjetas (KPIs)
+        $stats = $statsQuery->whereIn('status', ['Pendiente', 'Parcial', 'Atrasada'])
             ->selectRaw('
                 SUM(total_amount - amount_paid) as total_debt,
                 COUNT(*) as pending_count,
@@ -54,7 +71,7 @@ class GeneratedFeeController extends Controller
             ')
             ->first();
 
-        return Inertia::render('Finances/GeneratedFeeds/Index', [
+        return Inertia::render('Finances/GeneratedFees/Index', [
             'fees' => $fees,
             'stats' => [
                 'total_debt' => (float) ($stats->total_debt ?? 0),
@@ -64,13 +81,81 @@ class GeneratedFeeController extends Controller
         ]);
     }
 
+    /**
+     * Muestra la pantalla de Checkout/Pago para una cuota específica.
+     */
+    public function pay(Request $request, GeneratedFee $fee)
+    {
+        $currentPropertyId = $request->user()->getCurrentPropertyId();
+        
+        $fee->load(['billingConcept:id,name', 'privateUnit:id,name,subdivision_id']);
+
+        // Validar permisos según el contexto
+        if (is_string($currentPropertyId) && str_starts_with($currentPropertyId, 'admin_')) {
+            $subdivisionId = (int) str_replace('admin_', '', $currentPropertyId);
+            if ($fee->privateUnit->subdivision_id !== $subdivisionId) {
+                abort(403, 'No tienes permiso para ver esta cuota.');
+            }
+        } else {
+            if ($fee->private_unit_id !== $currentPropertyId) {
+                abort(403, 'No tienes permiso para pagar esta cuota.');
+            }
+        }
+
+        // Si ya está pagada, regresarlo
+        if ($fee->status === 'Pagado') {
+            return redirect()->route('fees.index')->with('info', 'Esta cuota ya ha sido pagada en su totalidad.');
+        }
+
+        return Inertia::render('Finances/GeneratedFees/Pay', [
+            'fee' => [
+                'id' => $fee->id,
+                'unit_name' => $fee->privateUnit->name ?? 'Propiedad',
+                'concept_name' => $fee->billingConcept->name ?? 'Concepto General',
+                'payment_reference' => $fee->payment_reference,
+                'total_amount' => (float) $fee->total_amount,
+                'amount_paid' => (float) $fee->amount_paid,
+                'balance' => (float) ($fee->total_amount - $fee->amount_paid),
+                'expiration_date' => $fee->expiration_date->format('Y-m-d'),
+                'period' => $fee->start_period->translatedFormat('F Y'),
+                'is_overdue' => $fee->expiration_date < now() && $fee->status !== 'Pagado',
+            ]
+        ]);
+    }
+
+    /**
+     * Procesa la subida del comprobante y registra el pago en estado "Por Validar".
+     */
+    public function processPayment(Request $request, GeneratedFee $fee)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01|max:' . ($fee->total_amount - $fee->amount_paid),
+            'reference' => 'nullable|string|max:255',
+            'receipt_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
+        ]);
+
+        // 1. Guardar el archivo en storage/app/public/receipts
+        $path = $request->file('receipt_file')->store('receipts', 'public');
+
+        // 2. Aquí crearíamos el registro en la tabla de Payments (Pagos)
+        /*
+        \App\Models\Finances\Payment::create([
+            'generated_fee_id' => $fee->id,
+            'user_id' => $request->user()->id,
+            'amount' => $validated['amount'],
+            'reference' => $validated['reference'],
+            'receipt_path' => $path,
+            'status' => 'En Revisión' // El Admin debe aprobarlo para que se reste del saldo
+        ]);
+        */
+        
+        return redirect()->route('fees.index')->with('success', '¡Comprobante enviado! El administrador lo validará en breve.');
+    }
+
     // =========================================================================
     // MÉTODOS DE ADMINISTRADOR (Controlador Ligero)
     // =========================================================================
 
-    /**
-     * Genera un cargo o multa manual a una propiedad.
-     */
     public function storeManual(Request $request, PrivateUnit $privateUnit)
     {
         $validated = $request->validate([
@@ -79,15 +164,11 @@ class GeneratedFeeController extends Controller
             'notes' => 'nullable|string|max:255',
         ]);
 
-        // Delegamos la lógica pesada al Modelo (Fat Model)
         PrivateUnit::createManualCharge($privateUnit, $validated);
 
         return redirect()->back()->with('success', 'Cargo o multa generado correctamente.');
     }
 
-    /**
-     * Registra un pago adelantado o abono (Saldo a favor).
-     */
     public function addBalance(Request $request, PrivateUnit $privateUnit)
     {
         $validated = $request->validate([
@@ -95,7 +176,6 @@ class GeneratedFeeController extends Controller
             'reference' => 'required|string|max:255',
         ]);
 
-        // Delegamos la lógica al Modelo de la Propiedad (Fat Model)
         $privateUnit->addCreditBalance($validated['amount'], $validated['reference']);
 
         return redirect()->back()->with('success', 'Saldo a favor registrado exitosamente.');
