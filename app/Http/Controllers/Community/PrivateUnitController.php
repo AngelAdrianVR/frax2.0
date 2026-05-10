@@ -118,6 +118,7 @@ class PrivateUnitController extends Controller
                 'int_number' => $unit->int_number,
                 'full_address' => trim("{$unit->unit_street} {$unit->exterior_number}" . ($unit->int_number ? " Int. {$unit->int_number}" : "")),
                 'owner_name' => $owner ? $owner->name : 'Sin asignar',
+                'owner_id' => $owner ? $owner->id : null, // ID del dueño para asociar el pago
                 'status' => $unit->status,
                 'access_block' => $unit->access_block,
                 'payment_status' => $paymentStatus,
@@ -132,9 +133,6 @@ class PrivateUnitController extends Controller
         ]);
     }
 
-    /**
-     * MÓDULO DE MOROSOS: Controlador sumamente ligero gracias al scope del modelo.
-     */
     public function slowPayersIndex(Request $request)
     {
         $currentSubdivisionId = $this->getCurrentSubdivisionId($request);
@@ -145,7 +143,6 @@ class PrivateUnitController extends Controller
 
         $search = $request->input('search');
 
-        // La consulta compleja y la suma de deudas ocurre en slowPayers() dentro del modelo.
         $slowPayers = PrivateUnit::query()
             ->where('subdivision_id', $currentSubdivisionId)
             ->slowPayers() 
@@ -159,7 +156,7 @@ class PrivateUnitController extends Controller
                           $q->where('name', 'like', "%{$search}%");
                       });
             })
-            ->orderByDesc('total_debt') // Ordenamos para que los que más deben aparezcan primero
+            ->orderByDesc('total_debt') 
             ->paginate(20)
             ->withQueryString();
 

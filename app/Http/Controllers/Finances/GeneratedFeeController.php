@@ -11,37 +11,13 @@ use Inertia\Inertia;
 class GeneratedFeeController extends Controller
 {
     /**
-     * Muestra las cuotas (Fees). 
-     * Si es residente, muestra las suyas. Si es admin, muestra todas las del fraccionamiento.
+     * Muestra TODAS las cuotas (Fees) de la base de datos sin filtros.
      */
     public function index(Request $request)
     {
-        // 1. Obtener el contexto actual (Multi-tenancy)
-        $currentPropertyId = $request->user()->getCurrentPropertyId();
-
-        if (!$currentPropertyId) {
-            return redirect()->route('dashboard')->with('error', 'Debes seleccionar un contexto o propiedad.');
-        }
-
-        $query = GeneratedFee::query()->with(['billingConcept:id,name', 'privateUnit:id,name,subdivision_id']);
+        // Consulta global: trae todas las cuotas sin importar el rol
+        $query = GeneratedFee::query()->with(['billingConcept:id,name', 'privateUnit']);
         $statsQuery = GeneratedFee::query();
-
-        // 2. Lógica de visibilidad (Admin vs Residente)
-        if (is_string($currentPropertyId) && str_starts_with($currentPropertyId, 'admin_')) {
-            // Es administrador: filtramos por las cuotas de este fraccionamiento
-            $subdivisionId = (int) str_replace('admin_', '', $currentPropertyId);
-            
-            $query->whereHas('privateUnit', function ($q) use ($subdivisionId) {
-                $q->where('subdivision_id', $subdivisionId);
-            });
-            $statsQuery->whereHas('privateUnit', function ($q) use ($subdivisionId) {
-                $q->where('subdivision_id', $subdivisionId);
-            });
-        } else {
-            // Es residente: filtramos solo por su propiedad
-            $query->where('private_unit_id', $currentPropertyId);
-            $statsQuery->where('private_unit_id', $currentPropertyId);
-        }
 
         // 3. Consulta de Cuotas Paginadas
         $fees = $query->orderBy('expiration_date', 'desc')
@@ -49,16 +25,17 @@ class GeneratedFeeController extends Controller
             ->through(function ($fee) {
                 return [
                     'id' => $fee->id,
-                    'unit_name' => $fee->privateUnit->name ?? 'Propiedad', // Para que el admin identifique la casa
-                    'concept_name' => $fee->billingConcept->name ?? 'Concepto General',
+                    // Intenta buscar number (o name si existiera en un futuro) para identificar la casa, con null-safe operator
+                    'unit_name' => $fee->privateUnit?->number ?? $fee->privateUnit?->name ?? 'Propiedad', 
+                    'concept_name' => $fee->billingConcept?->name ?? 'Concepto General',
                     'payment_reference' => $fee->payment_reference,
                     'total_amount' => (float) $fee->total_amount,
                     'amount_paid' => (float) $fee->amount_paid,
                     'balance' => (float) ($fee->total_amount - $fee->amount_paid),
                     'status' => $fee->status, // Pendiente, Parcial, Pagado, Atrasada
-                    'expiration_date' => $fee->expiration_date->format('Y-m-d'),
-                    'period' => $fee->start_period->translatedFormat('F Y'),
-                    'is_overdue' => $fee->expiration_date < now() && $fee->status !== 'Pagado',
+                    'expiration_date' => $fee->expiration_date ? $fee->expiration_date->format('Y-m-d') : 'N/A',
+                    'period' => $fee->start_period ? $fee->start_period->translatedFormat('F Y') : 'N/A',
+                    'is_overdue' => $fee->expiration_date && $fee->expiration_date < now() && $fee->status !== 'Pagado',
                 ];
             });
 
@@ -71,12 +48,13 @@ class GeneratedFeeController extends Controller
             ')
             ->first();
 
-        return Inertia::render('Finances/GeneratedFees/Index', [
+        return Inertia::render('Finances/GeneratedFeeds/Index', [
             'fees' => $fees,
             'stats' => [
-                'total_debt' => (float) ($stats->total_debt ?? 0),
-                'pending_count' => (int) ($stats->pending_count ?? 0),
-                'next_due_date' => $stats->next_due_date ? \Carbon\Carbon::parse($stats->next_due_date)->translatedFormat('d M Y') : 'Al día',
+                // Agregamos ?-> para evitar errores si la base de datos está completamente vacía
+                'total_debt' => (float) ($stats?->total_debt ?? 0),
+                'pending_count' => (int) ($stats?->pending_count ?? 0),
+                'next_due_date' => $stats?->next_due_date ? \Carbon\Carbon::parse($stats->next_due_date)->translatedFormat('d M Y') : 'Al día',
             ],
         ]);
     }
@@ -86,39 +64,28 @@ class GeneratedFeeController extends Controller
      */
     public function pay(Request $request, GeneratedFee $fee)
     {
-        $currentPropertyId = $request->user()->getCurrentPropertyId();
-        
-        $fee->load(['billingConcept:id,name', 'privateUnit:id,name,subdivision_id']);
+        // También aquí actualizamos el eager loading
+        $fee->load(['billingConcept:id,name', 'privateUnit']);
 
-        // Validar permisos según el contexto
-        if (is_string($currentPropertyId) && str_starts_with($currentPropertyId, 'admin_')) {
-            $subdivisionId = (int) str_replace('admin_', '', $currentPropertyId);
-            if ($fee->privateUnit->subdivision_id !== $subdivisionId) {
-                abort(403, 'No tienes permiso para ver esta cuota.');
-            }
-        } else {
-            if ($fee->private_unit_id !== $currentPropertyId) {
-                abort(403, 'No tienes permiso para pagar esta cuota.');
-            }
-        }
+        // Se eliminó la validación de permisos (abort 403) para que cualquier usuario pueda ver la vista de pago.
 
         // Si ya está pagada, regresarlo
         if ($fee->status === 'Pagado') {
             return redirect()->route('fees.index')->with('info', 'Esta cuota ya ha sido pagada en su totalidad.');
         }
 
-        return Inertia::render('Finances/GeneratedFees/Pay', [
+        return Inertia::render('Finances/GeneratedFeeds/Pay', [
             'fee' => [
                 'id' => $fee->id,
-                'unit_name' => $fee->privateUnit->name ?? 'Propiedad',
-                'concept_name' => $fee->billingConcept->name ?? 'Concepto General',
+                'unit_name' => $fee->privateUnit?->number ?? $fee->privateUnit?->name ?? 'Propiedad',
+                'concept_name' => $fee->billingConcept?->name ?? 'Concepto General',
                 'payment_reference' => $fee->payment_reference,
                 'total_amount' => (float) $fee->total_amount,
                 'amount_paid' => (float) $fee->amount_paid,
                 'balance' => (float) ($fee->total_amount - $fee->amount_paid),
-                'expiration_date' => $fee->expiration_date->format('Y-m-d'),
-                'period' => $fee->start_period->translatedFormat('F Y'),
-                'is_overdue' => $fee->expiration_date < now() && $fee->status !== 'Pagado',
+                'expiration_date' => $fee->expiration_date ? $fee->expiration_date->format('Y-m-d') : 'N/A',
+                'period' => $fee->start_period ? $fee->start_period->translatedFormat('F Y') : 'N/A',
+                'is_overdue' => $fee->expiration_date && $fee->expiration_date < now() && $fee->status !== 'Pagado',
             ]
         ]);
     }

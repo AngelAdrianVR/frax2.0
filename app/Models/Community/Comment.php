@@ -6,15 +6,21 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Reaction extends Model
+class Comment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
         'post_id',
-        'type'
+        'content'
     ];
+
+    protected $appends = [
+        'created_at_human'
+    ];
+
+    // --- Relaciones ---
 
     public function user()
     {
@@ -24,5 +30,12 @@ class Reaction extends Model
     public function post()
     {
         return $this->belongsTo(Post::class);
+    }
+
+    // --- Accessors ---
+
+    public function getCreatedAtHumanAttribute()
+    {
+        return $this->created_at->diffForHumans();
     }
 }

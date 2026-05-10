@@ -2,7 +2,7 @@
     <AppLayout :title="'Gestión de Propiedades'">
         <ConfirmDialog></ConfirmDialog>
 
-        <!-- Fondo estilo iOS: Gris muy claro (#F2F2F7 en hex, usamos zinc-50) -->
+        <!-- Fondo estilo iOS -->
         <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300 font-sans tracking-tight">
             
             <div class="max-w-7xl mx-auto">
@@ -19,7 +19,6 @@
                     </div>
                     
                     <div class="flex gap-3 w-full md:w-auto">
-                        <!-- Buscador -->
                         <div class="relative w-full md:w-72">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="pi pi-search text-gray-400 text-sm"></i>
@@ -39,8 +38,6 @@
 
                 <!-- ================= KPIs ESTILO iOS ================= -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    
-                    <!-- KPI: Índice de Morosidad -->
                     <div class="bg-white dark:bg-[#1C1C1E] rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex items-center gap-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center bg-blue-50 text-blue-500 dark:bg-blue-500/20 dark:text-blue-400">
                             <i class="pi pi-chart-pie text-xl"></i>
@@ -52,7 +49,6 @@
                         </div>
                     </div>
 
-                    <!-- KPI: Caja Total (Deudas) -->
                     <div class="bg-white dark:bg-[#1C1C1E] rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex items-center gap-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center bg-red-50 text-red-500 dark:bg-red-500/20 dark:text-red-400">
                             <i class="pi pi-wallet text-xl"></i>
@@ -64,7 +60,6 @@
                         </div>
                     </div>
 
-                    <!-- KPI: Ocupación -->
                     <div class="bg-white dark:bg-[#1C1C1E] rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex items-center gap-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center bg-green-50 text-green-500 dark:bg-green-500/20 dark:text-green-400">
                             <i class="pi pi-home text-xl"></i>
@@ -75,11 +70,9 @@
                             <p class="text-[11px] text-gray-400 font-medium">{{ kpis.occupied_units }} de {{ kpis.total_units }} casas habitadas</p>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- ================= LISTA DE PROPIEDADES ================= -->
-                
                 <div v-if="units.data.length === 0" class="bg-white dark:bg-[#1C1C1E] rounded-[24px] shadow-sm p-12 text-center border border-black/5 dark:border-white/5">
                     <div class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600 mb-4">
                         <i class="pi pi-home" style="font-size: 3rem"></i>
@@ -101,19 +94,21 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-zinc-800 bg-white dark:bg-[#1C1C1E]">
+                                <!-- Toda la fila es un enlace (cursor-pointer) -->
                                 <tr 
                                     v-for="unit in units.data" 
                                     :key="unit.id"
-                                    class="hover:bg-gray-50/80 dark:hover:bg-[#2C2C2E]/50 transition-colors group"
+                                    @click="$inertia.visit(route('admin.private-units.show', unit.id))"
+                                    class="hover:bg-gray-50/80 dark:hover:bg-[#2C2C2E]/50 transition-colors group cursor-pointer"
                                 >
                                     <!-- Celda Unidad -->
-                                    <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="$inertia.visit(route('admin.private-units.show', unit.id))">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-gray-500 dark:text-gray-400">
                                                 <i class="pi pi-home"></i>
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-bold text-gray-900 dark:text-white">
+                                                <div class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                                     {{ unit.unit_street }} {{ unit.exterior_number }}
                                                 </div>
                                                 <div class="text-xs text-gray-400 dark:text-gray-500 font-medium">
@@ -125,7 +120,7 @@
                                     </td>
                                     
                                     <!-- Celda Propietario -->
-                                    <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="$inertia.visit(route('admin.private-units.show', unit.id))">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 dark:text-gray-200 font-medium" :class="{'italic text-gray-400': unit.owner_name === 'Sin asignar'}">
                                             {{ unit.owner_name }}
                                         </div>
@@ -134,7 +129,6 @@
                                     <!-- Celda Estado -->
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <div class="flex flex-col items-center gap-1.5">
-                                            <!-- Semáforo iOS Style -->
                                             <span 
                                                 class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide"
                                                 :class="{
@@ -151,14 +145,13 @@
                                         </div>
                                     </td>
                                     
-                                    <!-- Celda Acciones Rápidas -->
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <!-- Celda Acciones Rápidas (El .stop evita que el click navegue al Show de la casa) -->
+                                    <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                                         <div class="flex items-center justify-end gap-1.5">
-                                            <!-- Botones iOS sutiles -->
                                             <button @click="quickAction(unit, 'statement')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-400 transition-all tooltip" title="Ver Estado de Cuenta">
                                                 <i class="pi pi-file-pdf"></i>
                                             </button>
-                                            <button @click="quickAction(unit, 'pay')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-500/20 dark:hover:text-green-400 transition-all tooltip" title="Registrar Pago">
+                                            <button @click="openPaymentModal(unit)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-500/20 dark:hover:text-green-400 transition-all tooltip" title="Registrar Pago">
                                                 <i class="pi pi-dollar"></i>
                                             </button>
                                             <button @click="quickAction(unit, 'remind')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/20 dark:hover:text-amber-400 transition-all tooltip" title="Enviar Recordatorio">
@@ -179,12 +172,13 @@
 
                     <!-- VISTA MÓVIL (Cards) -->
                     <div class="md:hidden grid grid-cols-1 gap-4">
+                        <!-- Toda la tarjeta es clicable con cursor-pointer -->
                         <div 
                             v-for="unit in units.data" 
                             :key="unit.id" 
-                            class="bg-white dark:bg-[#1C1C1E] rounded-[20px] shadow-sm overflow-hidden border border-black/5 dark:border-white/5 p-5 relative"
+                            @click="$inertia.visit(route('admin.private-units.show', unit.id))"
+                            class="bg-white dark:bg-[#1C1C1E] rounded-[20px] shadow-sm overflow-hidden border border-black/5 dark:border-white/5 p-5 relative cursor-pointer"
                         >
-                            <!-- Indicador de estado lateral (iOS Style dot) -->
                             <div class="absolute top-5 right-5 w-3 h-3 rounded-full shadow-sm"
                                 :class="{
                                     'bg-[#34C759]': unit.payment_status === 'green',
@@ -193,16 +187,17 @@
                                 }">
                             </div>
 
-                            <div @click="$inertia.visit(route('admin.private-units.show', unit.id))" class="cursor-pointer">
+                            <div>
                                 <h3 class="text-lg font-bold text-gray-900 dark:text-white pr-6">{{ unit.unit_street }} {{ unit.exterior_number }}</h3>
                                 <p class="text-xs text-gray-500 font-medium mt-0.5">Lote: {{ unit.lot_number }} | Propietario: {{ unit.owner_name }}</p>
                             </div>
 
-                            <div class="mt-4 flex gap-2">
+                            <!-- El .stop evita que estos botones te lleven a la vista completa -->
+                            <div class="mt-4 flex gap-2" @click.stop>
                                 <button @click="quickAction(unit, 'statement')" class="flex-1 bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
                                     <i class="pi pi-file-pdf"></i> Edo. Cta
                                 </button>
-                                <button @click="quickAction(unit, 'pay')" class="flex-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                                <button @click="openPaymentModal(unit)" class="flex-1 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
                                     <i class="pi pi-dollar"></i> Pagar
                                 </button>
                                 <button @click="openEditModal(unit)" class="w-10 bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 text-gray-600 dark:text-gray-300 rounded-xl flex items-center justify-center transition">
@@ -232,12 +227,72 @@
             </div>
         </div>
 
+        <!-- MODAL DE REGISTRO DE PAGO ESTILO iOS -->
+        <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <div @click="closePaymentModal" class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
+            <div class="relative bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all flex flex-col">
+                
+                <!-- Modal Header -->
+                <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-b border-black/5 dark:border-white/5 flex justify-between items-center rounded-t-[32px]">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Registrar Pago</h3>
+                        <p class="text-xs text-gray-500 font-medium mt-0.5">Propiedad: {{ selectedPaymentUnit?.unit_street }} {{ selectedPaymentUnit?.exterior_number }}</p>
+                    </div>
+                    <button @click="closePaymentModal" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#1C1C1E] text-gray-500 flex items-center justify-center hover:bg-gray-200 transition">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto space-y-5 bg-[#F2F2F7] dark:bg-[#1C1C1E]">
+                    <div class="bg-white dark:bg-[#2C2C2E] rounded-[20px] p-5 border border-black/5 dark:border-white/5 space-y-4">
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Monto (MXN)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 font-bold">$</span>
+                                <input v-model="paymentForm.amount" type="number" step="0.01" placeholder="0.00" class="pl-8 w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-green-500 transition-shadow">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Método de Pago</label>
+                            <select v-model="paymentForm.payment_method" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 text-sm bg-gray-50 dark:bg-[#1C1C1E] font-medium focus:ring-green-500 transition-shadow">
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
+                                <option value="Cheque">Cheque</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fecha de Pago</label>
+                            <input v-model="paymentForm.payment_date" type="date" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-green-500 transition-shadow">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Folio o Referencia <span class="text-[10px] text-gray-400 normal-case">(Opcional)</span></label>
+                            <input v-model="paymentForm.transaction_folio" type="text" placeholder="Ej. TR-98273" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-green-500 transition-shadow">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-t border-black/5 dark:border-white/5 flex justify-end gap-3 rounded-b-[32px]">
+                    <button @click="closePaymentModal" class="px-5 py-2.5 bg-gray-100 dark:bg-[#1C1C1E] hover:bg-gray-200 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-bold transition">Cancelar</button>
+                    <button @click="submitPayment" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md text-sm font-bold transition-all flex items-center gap-2" :disabled="processingPayment">
+                        <i v-if="processingPayment" class="pi pi-spin pi-spinner"></i>
+                        {{ processingPayment ? 'Procesando...' : 'Guardar Pago' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- MODAL DE EDICIÓN ESTILO iOS -->
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <div @click="closeModal" class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
             <div class="relative bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
                 
-                <!-- Modal Header -->
                 <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-b border-black/5 dark:border-white/5 flex justify-between items-center rounded-t-[32px]">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white">
                         Editar Propiedad
@@ -247,7 +302,6 @@
                     </button>
                 </div>
                 
-                <!-- Modal Body -->
                 <div class="p-6 overflow-y-auto space-y-5 bg-[#F2F2F7] dark:bg-[#1C1C1E]">
                     
                     <div class="bg-white dark:bg-[#2C2C2E] rounded-[20px] p-5 border border-black/5 dark:border-white/5 grid grid-cols-2 gap-4">
@@ -296,7 +350,6 @@
                                 <span class="text-sm font-bold text-red-600 dark:text-red-400 block">Bloqueo de Seguridad</span>
                                 <span class="text-xs text-gray-500">Bloquear acceso en plumas y caseta</span>
                             </div>
-                            <!-- Toggle switch iOS style -->
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" v-model="form.access_block" class="sr-only peer">
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-[#1C1C1E] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#FF453A] border border-gray-300 dark:border-zinc-600"></div>
@@ -305,7 +358,6 @@
                     </div>
                 </div>
 
-                <!-- Modal Footer -->
                 <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-t border-black/5 dark:border-white/5 flex justify-end gap-3 rounded-b-[32px]">
                     <button @click="closeModal" class="px-5 py-2.5 bg-gray-100 dark:bg-[#1C1C1E] hover:bg-gray-200 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-bold transition">Cancelar</button>
                     <button @click="submitUpdate" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md text-sm font-bold transition-all flex items-center gap-2" :disabled="processing">
@@ -336,7 +388,7 @@ export default {
     props: {
         units: Object,
         filters: Object,
-        kpis: Object // Recibimos los KPIs desde el controlador
+        kpis: Object 
     },
     data() {
         return {
@@ -352,6 +404,18 @@ export default {
                 square_meters: 0,
                 status: 'Activo',
                 access_block: false,
+            },
+            
+            // Estado para el Modal de Pago
+            showPaymentModal: false,
+            processingPayment: false,
+            selectedPaymentUnit: null,
+            paymentForm: {
+                user_id: '',
+                amount: '',
+                payment_method: 'Transferencia',
+                payment_date: new Date().toISOString().split('T')[0], // Fecha de hoy por defecto
+                transaction_folio: ''
             }
         }
     },
@@ -398,17 +462,46 @@ export default {
                 onError: () => this.processing = false
             });
         },
-        // Método para manejar las acciones rápidas
+
+        /* ========= LÓGICA DE PAGOS ========= */
+        openPaymentModal(unit) {
+            if (!unit.owner_id) {
+                alert('No se puede registrar el pago: Esta casa no tiene un propietario asignado.');
+                return;
+            }
+            this.selectedPaymentUnit = unit;
+            this.paymentForm = {
+                user_id: unit.owner_id,
+                amount: '',
+                payment_method: 'Transferencia',
+                payment_date: new Date().toISOString().split('T')[0],
+                transaction_folio: ''
+            };
+            this.showPaymentModal = true;
+        },
+        closePaymentModal() {
+            this.showPaymentModal = false;
+            this.selectedPaymentUnit = null;
+        },
+        submitPayment() {
+            this.processingPayment = true;
+            // Mandamos los datos al nuevo controlador de pagos
+            router.post(route('admin.payments.store'), this.paymentForm, {
+                onSuccess: () => {
+                    this.processingPayment = false;
+                    this.closePaymentModal();
+                },
+                onError: () => {
+                    this.processingPayment = false;
+                }
+            });
+        },
+        /* =================================== */
+
         quickAction(unit, actionType) {
-            // Aquí puedes integrar tus rutas reales o abrir modales
             switch(actionType) {
                 case 'statement':
-                    // Ejemplo: router.visit(route('admin.fees.statement', unit.id));
                     alert(`Ir al Estado de Cuenta de la unidad ${unit.unit_street} ${unit.exterior_number}`);
-                    break;
-                case 'pay':
-                    // Ejemplo: router.visit(route('admin.fees.pay', unit.id));
-                    alert(`Abrir modal de registrar pago para ${unit.unit_street} ${unit.exterior_number}`);
                     break;
                 case 'remind':
                     this.confirm.require({
@@ -419,7 +512,6 @@ export default {
                         rejectLabel: 'Cancelar',
                         acceptClass: 'p-button-primary',
                         accept: () => {
-                            // router.post(route('admin.fees.remind', unit.id));
                             alert("Recordatorio enviado con éxito.");
                         }
                     });

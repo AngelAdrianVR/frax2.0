@@ -59,7 +59,7 @@ class ReservationController extends Controller
 
         // Si es residente, solo ve sus propias reservaciones
         if (!$isAdmin) {
-            $unitId = method_exists($user, 'getCurrentPropertyId') ? $user->getCurrentPropertyId() : ($user->resident->private_unit_id ?? null);
+            $unitId = method_exists($user, 'getCurrentPropertyId') ? $user->getCurrentPropertyId() : ($user->private_unit_id ?? null);
             $query->where(function($q) use ($user, $unitId) {
                 $q->where('user_id', $user->id)
                   ->orWhere('private_unit_id', $unitId);
@@ -294,7 +294,7 @@ class ReservationController extends Controller
         }
 
         $user = $request->user();
-        $unitId = method_exists($user, 'getCurrentPropertyId') ? $user->getCurrentPropertyId() : ($user->resident->private_unit_id ?? null);
+        $unitId = method_exists($user, 'getCurrentPropertyId') ? $user->getCurrentPropertyId() : ($user->private_unit_id ?? null);
 
         $totalCost = $amenity->reservation_cost; 
 

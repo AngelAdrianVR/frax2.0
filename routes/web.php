@@ -19,6 +19,7 @@ use App\Http\Controllers\Community\PrivateUnitController;
 use App\Http\Controllers\Community\PrivateUnitContactController;
 use App\Http\Controllers\Community\VehicleController;
 use App\Http\Controllers\Community\PetController;
+use App\Http\Controllers\Community\NoticeBoardController;
 
 // 💰 Finances (Finanzas y Cobranza)
 use App\Http\Controllers\Finances\GeneratedFeeController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\Gatehouse\ParcelServiceController;
 // 🚓 Security (Seguridad y Rondines)
 use App\Http\Controllers\Security\PatrolController;
 use App\Http\Controllers\Security\CheckpointController;
+use App\Models\Finances\Payment;
 
 // ==============================================================================
 // RUTAS PÚBLICAS
@@ -104,7 +106,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ⚙️ MÓDULO: SETTINGS
     // ==========================================
     Route::resource('subdivisions', SubdivisionController::class);
-    
     Route::resource('roles', RoleController::class);
     Route::post('/permissions', [RoleController::class, 'storePermission'])->name('permissions.store');
     Route::put('/permissions/{permission}', [RoleController::class, 'updatePermission'])->name('permissions.update');
@@ -153,14 +154,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
+    Route::prefix('community/notice-board')->name('notice-board.')->group(function () {
+    Route::get('/', [NoticeBoardController::class, 'index'])->name('index');
+    Route::post('/', [NoticeBoardController::class, 'store'])->name('store');
+    Route::delete('/{post}', [NoticeBoardController::class, 'destroy'])->name('destroy');
+    Route::post('/{post}/react', [NoticeBoardController::class, 'toggleReact'])->name('react');
+    });
+
     // ==========================================
     // 💰 MÓDULO: FINANCES
     // ==========================================
     Route::get('/fees', [GeneratedFeeController::class, 'index'])->name('fees.index');
-    Route::get('fees/{fee}/pay', [GeneratedFeeController::class, 'pay'])->name('fees.pay');
-    Route::post('fees/{fee}/process', [GeneratedFeeController::class, 'processPayment'])->name('fees.process');
+    Route::get('/fees/{fee}/pay', [GeneratedFeeController::class, 'pay'])->name('fees.pay');
+    Route::post('/fees/{fee}/process', [GeneratedFeeController::class, 'processPayment'])->name('fees.process');
     Route::resource('billing-concepts', BillingConceptController::class);
-    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::resource('payments', PaymentController::class);
     Route::get('/bank-reconciliations', [BankReconciliationController::class, 'index'])->name('bank_reconciliations.index');
     Route::post('/propiedades/{privateUnit}/cargos-manuales', [GeneratedFeeController::class, 'storeManual'])->name('admin.fees.storeManual');
     Route::post('/propiedades/{privateUnit}/abonos', [GeneratedFeeController::class, 'addBalance'])->name('admin.fees.addBalance');

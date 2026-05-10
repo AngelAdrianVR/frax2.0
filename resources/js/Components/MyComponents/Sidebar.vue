@@ -144,6 +144,7 @@ const menuItems = computed(() => [
         key: 'comunidad',
         icon: 'pi pi-users', 
         items: [
+            { name: 'Muro de avisos', route: 'notice-board.index'},
             { name: 'Gestión de Propiedades', route: 'admin.private-units.index' },
             { name: 'Directorio / Residentes', route: 'users.index' },
             { name: 'Mascotas', route: ['Admin', 'Empleado'].includes(userRole.value) ? 'admin.pets.index' : 'pets.index', },
@@ -154,7 +155,7 @@ const menuItems = computed(() => [
         category: 'Finanzas',
         key: 'finanzas',
         icon: 'pi pi-wallet', 
-        items: [
+        items: [ 
             { name: 'Mi Estado de Cuenta', route: 'fees.index'}, 
             { name: 'Ingresos y Pagos', route: 'payments.index'}, 
             { name: 'Morosos', route: 'slowPayers.index'},
@@ -176,9 +177,9 @@ const menuItems = computed(() => [
         key: 'caseta',
         icon: 'pi pi-id-card', 
         items: [
-            { name: 'Mis Invitaciones', route: 'register_invitations.index'},
+            { name: 'Mis Invitaciones', route: 'register-invitations.index'},
             { name: 'Bitácora de Visitas', route: 'visits.index'},
-            { name: 'Paquetería', route: 'parcel_services.index'},
+            { name: 'Paquetería', route: 'parcel-services.index'},
         ]
     },
     {

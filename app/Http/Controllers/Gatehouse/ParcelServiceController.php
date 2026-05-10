@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Gatehouse;
 
 use App\Models\Gatehouse\ParcelService;
-use App\Models\Community\PrivateUnit; // Importado para mandar las casas a los select de Vue
+use App\Models\Community\PrivateUnit;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
