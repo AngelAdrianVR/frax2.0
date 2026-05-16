@@ -1,149 +1,254 @@
 <script setup>
-import { ref } from 'vue';
-import { useForm, router } from '@inertiajs/vue3';
-// Asumiendo que tienes un Layout principal, impórtalo aquí si es necesario
-// import AppLayout from '@/Layouts/AppLayout.vue'; 
+import { ref, computed } from 'vue';
+import { router, usePage, Link } from '@inertiajs/vue3';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useConfirm } from "primevue/useconfirm";
+import CreatePostBox from '@/Components/CreatePostBox.vue'; // <-- Importamos nuestro nuevo componente ligero
 
 const props = defineProps({
     posts: Object
 });
 
-const form = useForm({
-    content: '',
-    type: 'general',
-    is_pinned: false,
+const page = usePage();
+const confirm = useConfirm();
+
+const isAdmin = computed(() => {
+    const role = page.props.auth.user.role;
+    return ['Admin', 'Administrador', 'Empleado'].includes(role);
 });
 
-const submitPost = () => {
-    form.post(route('notice-board.store'), {
-        preserveScroll: true,
-        onSuccess: () => form.reset('content'),
-    });
-};
-
+// --- Lógica de Interacciones ---
 const toggleLike = (postId) => {
-    router.post(route('notice-board.react', postId), {}, {
-        preserveScroll: true,
+    router.post(route('notice-board.react', postId), {}, { preserveScroll: true });
+};
+
+const confirmDelete = (postId) => {
+    confirm.require({
+        message: '¿Estás seguro de que deseas eliminar esta publicación?',
+        header: 'Eliminar Publicación',
+        icon: 'pi pi-exclamation-triangle text-red-500',
+        acceptLabel: 'Sí, eliminar',
+        rejectLabel: 'Cancelar',
+        acceptClass: 'p-button-danger',
+        accept: () => { router.delete(route('notice-board.destroy', postId), { preserveScroll: true }); }
     });
 };
 
-const deletePost = (postId) => {
-    if (confirm('¿Estás seguro de que deseas eliminar esta publicación?')) {
-        router.delete(route('notice-board.destroy', postId), {
-            preserveScroll: true,
-        });
-    }
+// --- Lógica de Encuestas ---
+const submitVote = (optionId) => {
+    router.post(route('notice-board.poll.vote', optionId), {}, {
+        preserveScroll: true
+    });
+};
+
+// --- Lógica de Comentarios ---
+const activeComments = ref({});
+const newComments = ref({});
+const processingComments = ref({});
+
+const toggleCommentSection = (postId) => { activeComments.value[postId] = !activeComments.value[postId]; };
+
+const submitComment = (postId) => {
+    if (!newComments.value[postId]?.trim()) return;
+    processingComments.value[postId] = true;
+    router.post(route('notice-board.comment.store', postId), {
+        content: newComments.value[postId]
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            newComments.value[postId] = '';
+            processingComments.value[postId] = false;
+            activeComments.value[postId] = true; 
+        },
+        onError: () => { processingComments.value[postId] = false; }
+    });
+};
+
+const getInitials = (name) => {
+    if (!name) return '?';
+    return name.charAt(0).toUpperCase();
 };
 </script>
 
 <template>
-    <!-- Contenedor principal con fondo gris claro típico de iOS -->
-    <div class="min-h-screen bg-[#F2F2F7] py-8 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mx-auto space-y-6">
+    <AppLayout title="Muro de Avisos">
+        <ConfirmDialog></ConfirmDialog>
+
+        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300 font-sans tracking-tight">
             
-            <!-- Título de la sección -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold tracking-tight text-gray-900">Muro de Avisos</h1>
-                <p class="text-gray-500 mt-1">Entérate de lo que sucede en tu comunidad</p>
-            </div>
+            <div class="max-w-3xl mx-auto space-y-6">
+                
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Muro de Avisos</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Entérate de lo que sucede en tu comunidad y participa en encuestas.</p>
+                </div>
 
-            <!-- Tarjeta para crear publicación (Estilo iOS: bordes súper redondeados, sombra suave) -->
-            <div class="bg-white rounded-3xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
-                <form @submit.prevent="submitPost">
-                    <div class="flex items-start space-x-4">
-                        <!-- Avatar del usuario actual (Placeholder si no tienes foto) -->
-                        <div class="flex-shrink-0">
-                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                                {{ $page.props.auth.user.name.charAt(0) }}
-                            </div>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <textarea 
-                                v-model="form.content"
-                                rows="3" 
-                                class="block w-full rounded-2xl border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6 resize-none transition-all" 
-                                placeholder="¿Qué quieres compartir con los vecinos?"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 flex items-center justify-between pl-14">
-                        <div class="flex space-x-2">
-                            <!-- Aquí podrías agregar botones para subir imágenes en el futuro -->
-                        </div>
-                        <button 
-                            type="submit" 
-                            :disabled="form.processing || !form.content.trim()"
-                            class="inline-flex items-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                            Publicar
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <!-- Usamos el componente externo para que este archivo no pese 1000 líneas -->
+                <CreatePostBox />
 
-            <!-- Feed de Publicaciones -->
-            <div class="space-y-5">
-                <div v-for="post in posts.data" :key="post.id" class="bg-white rounded-3xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] transition-all">
-                    
-                    <!-- Badge de Aviso Oficial (Fijado) -->
-                    <div v-if="post.is_pinned || post.type === 'announcement'" class="mb-3 flex items-center">
-                        <span class="inline-flex items-center gap-x-1.5 rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
-                            <svg class="h-3 w-3 fill-current" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v7h1a1 1 0 010 2h-1v4.5a1.5 1.5 0 01-3 0V12H7a1 1 0 010-2h1V3a1 1 0 011-1z"/></svg>
-                            Aviso de Administración
-                        </span>
+                <!-- Feed de Publicaciones -->
+                <div class="space-y-4">
+                    <div v-if="posts.data.length === 0" class="bg-white dark:bg-[#1C1C1E] rounded-[24px] shadow-sm p-12 text-center border border-black/5 dark:border-white/5">
+                        <div class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600 mb-4">
+                            <i class="pi pi-comments" style="font-size: 3rem"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Aún no hay publicaciones</h3>
+                        <p class="mt-1 text-sm text-gray-500">¡Sé el primero en compartir algo con tu comunidad!</p>
                     </div>
 
-                    <!-- Cabecera del Post -->
-                    <div class="flex justify-between items-start">
-                        <div class="flex space-x-3">
-                            <div class="flex-shrink-0">
-                                <img v-if="post.user.profile_photo_url" :src="post.user.profile_photo_url" alt="" class="h-10 w-10 rounded-full bg-gray-100">
-                                <div v-else class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
-                                    {{ post.user.name.charAt(0) }}
+                    <div v-for="post in posts.data" :key="post.id" class="bg-white dark:bg-[#1C1C1E] rounded-[24px] p-5 md:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 transition-colors relative overflow-hidden">
+                        
+                        <!-- Etiqueta lateral -->
+                        <div v-if="post.is_pinned" class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+                        <div v-else-if="post.type === 'alert'" class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
+
+                        <!-- Badge -->
+                        <div v-if="post.is_pinned || post.type !== 'general'" class="mb-4 flex items-center">
+                            <span class="inline-flex items-center gap-x-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                                :class="{
+                                    'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400': post.is_pinned && post.type !== 'alert',
+                                    'bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400': post.type === 'announcement' && !post.is_pinned,
+                                    'bg-red-50 text-red-700 dark:bg-red-500/20 dark:text-red-400': post.type === 'alert'
+                                }">
+                                <i :class="post.type === 'alert' ? 'pi pi-exclamation-triangle' : 'pi pi-megaphone'" class="text-[10px]"></i>
+                                {{ post.type === 'alert' ? 'Alerta' : (post.is_pinned ? 'Aviso Fijado' : 'Comunicado') }}
+                            </span>
+                        </div>
+
+                        <!-- Cabecera -->
+                        <div class="flex justify-between items-start">
+                            <div class="flex space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-400">
+                                        {{ getInitials(post.user.name) }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ post.user.name }}</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{{ post.created_at_human || 'Recientemente' }}</p>
                                 </div>
                             </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">{{ post.user.name }}</p>
-                                <p class="text-xs text-gray-500">{{ post.created_at_human }}</p>
+                            
+                            <button v-if="$page.props.auth.user.id === post.user_id || isAdmin" @click="confirmDelete(post.id)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
+                                <i class="pi pi-trash text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- Texto -->
+                        <div class="mt-4 text-gray-800 dark:text-gray-200 text-[15px] leading-relaxed whitespace-pre-wrap">
+                            {{ post.content }}
+                        </div>
+
+                        <!-- RENDERIZADO DE ENCUESTA (Estilo iOS / WhatsApp) -->
+                        <div v-if="post.poll_options && post.poll_options.length > 0" class="mt-5 bg-gray-50 dark:bg-[#2C2C2E]/40 rounded-2xl p-4 border border-gray-100 dark:border-zinc-700/50">
+                            <div class="space-y-2.5">
+                                <button 
+                                    v-for="option in post.poll_options" :key="option.id"
+                                    @click="!post.user_has_voted_any ? submitVote(option.id) : null"
+                                    :disabled="post.user_has_voted_any"
+                                    class="relative w-full overflow-hidden rounded-xl border transition-all text-left group"
+                                    :class="[
+                                        option.has_voted ? 'border-indigo-500 dark:border-indigo-400' : 'border-gray-200 dark:border-zinc-600',
+                                        !post.user_has_voted_any ? 'hover:border-indigo-400 hover:shadow-sm cursor-pointer' : 'cursor-default'
+                                    ]"
+                                >
+                                    <!-- Barra de Progreso (solo visible si ya votaste) -->
+                                    <div 
+                                        v-if="post.user_has_voted_any"
+                                        class="absolute inset-y-0 left-0 bg-indigo-100 dark:bg-indigo-500/20 transition-all duration-700 ease-out" 
+                                        :style="{ width: option.percentage + '%' }"
+                                    ></div>
+                                    
+                                    <div class="relative z-10 flex justify-between items-center px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <!-- Círculo de Check/Radio -->
+                                            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                                                :class="option.has_voted ? 'border-indigo-500 bg-indigo-500 dark:border-indigo-400 dark:bg-indigo-400' : 'border-gray-300 dark:border-zinc-500 group-hover:border-indigo-400'">
+                                                <i v-if="option.has_voted" class="pi pi-check text-white dark:text-zinc-900" style="font-size: 0.6rem; font-weight: bold;"></i>
+                                            </div>
+                                            <span class="text-sm font-medium" :class="option.has_voted ? 'text-indigo-900 dark:text-indigo-100 font-bold' : 'text-gray-700 dark:text-gray-200'">
+                                                {{ option.text }}
+                                            </span>
+                                        </div>
+                                        <span v-if="post.user_has_voted_any" class="text-sm font-bold" :class="option.has_voted ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500'">
+                                            {{ option.percentage }}%
+                                        </span>
+                                    </div>
+                                </button>
+                            </div>
+                            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                {{ post.poll_total_votes }} votos en total
                             </div>
                         </div>
-                        
-                        <!-- Menú de Opciones (Eliminar) -->
-                        <button v-if="$page.props.auth.user.id === post.user_id || $page.props.auth.user.roles?.includes('admin')" 
-                                @click="deletePost(post.id)"
-                                class="text-gray-400 hover:text-red-500 transition-colors rounded-full p-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                            </svg>
-                        </button>
-                    </div>
 
-                    <!-- Contenido -->
-                    <div class="mt-4 text-gray-800 text-[15px] leading-relaxed whitespace-pre-wrap">
-                        {{ post.content }}
-                    </div>
+                        <!-- Acciones -->
+                        <div class="mt-5 pt-3 flex items-center space-x-6">
+                            <button @click="toggleLike(post.id)" :class="post.has_liked ? 'text-rose-500' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="flex items-center space-x-2 text-sm font-bold transition-colors group">
+                                <div :class="post.has_liked ? 'bg-rose-50 dark:bg-rose-500/10' : 'bg-gray-50 dark:bg-[#2C2C2E] group-hover:bg-gray-100 dark:group-hover:bg-zinc-700'" class="w-8 h-8 flex items-center justify-center rounded-full transition-colors">
+                                    <i class="pi" :class="post.has_liked ? 'pi-heart-fill' : 'pi-heart'"></i>
+                                </div>
+                                <span>{{ post.likes_count > 0 ? post.likes_count : 'Me gusta' }}</span>
+                            </button>
+                            
+                            <button @click="toggleCommentSection(post.id)" :class="activeComments[post.id] ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="flex items-center space-x-2 text-sm font-bold transition-colors group">
+                                <div :class="activeComments[post.id] ? 'bg-indigo-50 dark:bg-indigo-500/10' : 'bg-gray-50 dark:bg-[#2C2C2E] group-hover:bg-gray-100 dark:group-hover:bg-zinc-700'" class="w-8 h-8 flex items-center justify-center rounded-full transition-colors">
+                                    <i class="pi pi-comment"></i>
+                                </div>
+                                <span>{{ post.comments?.length || 0 }} Comentarios</span>
+                            </button>
+                        </div>
 
-                    <!-- Botones de Acción (Like) -->
-                    <div class="mt-5 border-t border-gray-100 pt-3 flex items-center space-x-6">
-                        <button 
-                            @click="toggleLike(post.id)"
-                            :class="post.has_liked ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'"
-                            class="flex items-center space-x-2 text-sm font-medium transition-colors group">
-                            <div :class="post.has_liked ? 'bg-blue-50' : 'bg-gray-50 group-hover:bg-gray-100'" class="p-2 rounded-full transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" :fill="post.has_liked ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.556.5.96a8.958 8.958 0 00-1.302 4.665c0 1.194.232 2.333.654 3.375z" />
-                                </svg>
+                        <!-- SECCIÓN DE COMENTARIOS (Oculto por defecto) -->
+                        <div v-if="activeComments[post.id]" class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800/50">
+                            <!-- Input para nuevo comentario -->
+                            <div class="flex gap-3 items-center mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                        {{ getInitials($page.props.auth.user.name) }}
+                                    </div>
+                                </div>
+                                <div class="flex-1 relative">
+                                    <input v-model="newComments[post.id]" @keyup.enter="submitComment(post.id)" type="text" placeholder="Escribe un comentario..." class="w-full rounded-full border-gray-200 dark:border-zinc-700 bg-white dark:bg-[#1C1C1E] text-sm py-2.5 pl-4 pr-12 focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white shadow-sm transition-all" :disabled="processingComments[post.id]">
+                                    <button @click="submitComment(post.id)" :disabled="!newComments[post.id]?.trim() || processingComments[post.id]" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-indigo-600 text-white disabled:opacity-50 hover:bg-indigo-700 transition-all shadow-sm">
+                                        <i v-if="processingComments[post.id]" class="pi pi-spin pi-spinner text-xs"></i>
+                                        <i v-else class="pi pi-send text-xs ml-0.5 mt-0.5"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <span>{{ post.likes_count > 0 ? post.likes_count : 'Me gusta' }}</span>
-                        </button>
+
+                            <div class="space-y-4">
+                                <div v-for="comment in post.comments" :key="comment.id" class="flex gap-3">
+                                    <div class="flex-shrink-0 mt-1">
+                                        <div class="h-8 w-8 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-zinc-400">
+                                            {{ getInitials(comment.user?.name) }}
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 bg-gray-50 dark:bg-[#2C2C2E] rounded-2xl px-4 py-3">
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ comment.user?.name }}</span>
+                                            <span class="text-[10px] text-gray-500 font-medium">{{ comment.created_at_human || 'Recientemente' }}</span>
+                                        </div>
+                                        <p class="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ comment.content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            </div>
 
-            <!-- Paginación Simple (Opcional visualmente) -->
-            <div v-if="posts.links.length > 3" class="mt-6 flex justify-center">
-                <!-- Aquí puedes integrar tu componente de paginación de Inertia -->
-            </div>
+                <!-- Paginación -->
+                <div v-if="posts.links && posts.links.length > 3" class="mt-8 flex justify-center pb-8">
+                    <div class="flex flex-wrap gap-1 bg-white dark:bg-[#1C1C1E] p-1 rounded-2xl shadow-sm border border-black/5 dark:border-white/5">
+                        <template v-for="(link, key) in posts.links" :key="key">
+                            <div v-if="link.url === null" class="px-3 py-1.5 text-sm text-gray-300 dark:text-zinc-600 rounded-xl" v-html="link.label" />
+                            <Link v-else :href="link.url" class="px-3 py-1.5 text-sm rounded-xl transition-all font-medium" :class="link.active ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2C2C2E]'" v-html="link.label" />
+                        </template>
+                    </div>
+                </div>
 
+            </div>
         </div>
-    </div>
+    </AppLayout>
 </template>

@@ -162,4 +162,10 @@ class User extends Authenticatable
         $unit = PrivateUnit::find($propertyId);
         return $unit ? $unit->subdivision_id : null;
     }
+
+    public function posts()
+    {
+        return $this->hasMany(\App\Models\Community\Post::class);
+    }
+    
 }

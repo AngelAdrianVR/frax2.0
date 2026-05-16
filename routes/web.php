@@ -159,6 +159,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/', [NoticeBoardController::class, 'store'])->name('store');
     Route::delete('/{post}', [NoticeBoardController::class, 'destroy'])->name('destroy');
     Route::post('/{post}/react', [NoticeBoardController::class, 'toggleReact'])->name('react');
+    Route::post('/{post}/comment', [NoticeBoardController::class, 'storeComment'])->name('comment.store');
+    Route::post('/poll-option/{pollOption}/vote', [NoticeBoardController::class, 'vote'])->name('poll.vote');
     });
 
     // ==========================================

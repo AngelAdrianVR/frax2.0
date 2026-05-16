@@ -3,6 +3,7 @@
 namespace App\Models\Community;
 
 use App\Models\Community\User;
+use App\Models\Community\PollOption;
 use App\Models\Community\Comment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -83,4 +84,10 @@ class Post extends Model
             return true; // Reacción agregada
         }
     }
+
+    public function pollOptions()
+    {
+        return $this->hasMany(PollOption::class);
+    }
+
 }
