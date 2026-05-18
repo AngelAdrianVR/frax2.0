@@ -2,7 +2,7 @@
     <AppLayout :title="'Control Vehicular'">
         <ConfirmDialog></ConfirmDialog>
 
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
+        <div class="min-h-screen text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
             
             <!-- Encabezado Admin -->
             <div class="max-w-7xl mx-auto mb-1 flex flex-col md:flex-row justify-between items-center gap-4">

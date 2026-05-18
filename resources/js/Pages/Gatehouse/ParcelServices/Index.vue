@@ -48,7 +48,7 @@ const deleteParcel = (id) => {
         <Toast />
         <ConfirmDialog />
 
-        <div class="py-12 bg-[#F2F2F7] dark:bg-zinc-900 min-h-screen">
+        <div class="py-12  min-h-screen">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
                 <!-- Header Estilo iOS -->

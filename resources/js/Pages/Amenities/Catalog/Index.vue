@@ -97,10 +97,10 @@ const getTodaySchedule = (schedule) => {
         <Toast />
         <ConfirmDialog />
 
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 transition-colors duration-300">
+        <div class="min-h-screen transition-colors duration-300">
             <Head title="Amenidades" />
 
-            <header class="sticky top-0 z-10 bg-white/80 dark:bg-zinc-900 backdrop-blur-md">
+            <header class="sticky top-0 z-10 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Amenidades</h2>
                     <!-- Se eliminó el v-if="isAdmin" para que todos puedan ver el botón -->

@@ -15,18 +15,24 @@ class Post extends Model
     protected $fillable = [
         'user_id',
         'content',
+        'image_path',
         'type',
-        'is_pinned'
+        'is_pinned',
+        'is_multiple_choice',
+        'is_poll_closed',
     ];
 
     protected $casts = [
         'is_pinned' => 'boolean',
+        'is_multiple_choice' => 'boolean',
+        'is_poll_closed' => 'boolean',
     ];
 
     protected $appends = [
         'created_at_human',
         'likes_count',
-        'has_liked'
+        'has_liked',
+        'image_url'
     ];
 
     // --- Relaciones ---
@@ -88,6 +94,11 @@ class Post extends Model
     public function pollOptions()
     {
         return $this->hasMany(PollOption::class);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
     }
 
 }

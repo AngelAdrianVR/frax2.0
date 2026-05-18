@@ -63,10 +63,19 @@ class PrivateUnit extends Model
         return $this->hasMany(Vehicle::class, 'private_unit_id'); 
     }
 
-    public function pets(): HasMany 
+    public function pets(): HasMany
     {
-        return $this->hasMany(Pet::class, 'private_unit_id'); 
+        return $this->hasMany(Pet::class, 'private_unit_id');
     }
+
+    /**
+     * Los tags o dispositivos de acceso asignados a la unidad.
+     */
+    public function tags(): HasMany
+    {
+        return $this->hasMany(Tag::class, 'private_unit_id');
+    }
+
 
     // --- Seguridad y Accesos ---
 

@@ -22,7 +22,7 @@ const getStatusColor = (status) => {
 
 <template>
     <AppLayout title="Bitácora de Visitas">
-        <div class="py-8 md:py-12 bg-[#F2F2F7] dark:bg-zinc-900 min-h-screen">
+        <div class="py-8 md:py-12 min-h-screen">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
                 <!-- Encabezado y Acciones -->

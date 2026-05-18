@@ -73,7 +73,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-zinc-900 transition-colors duration-300 font-sans">
+    <div class="min-h-screen bg-gray-50 dark:bg-zinc-950 transition-colors duration-300 font-sans">
         <Head :title="title" />
         <Banner />
 
@@ -81,7 +81,7 @@ onUnmounted(() => {
         <div 
             v-if="isMobile && isSidebarOpen" 
             @click="toggleSidebar"
-            class="fixed inset-0 z-30 bg-zinc-900/60 backdrop-blur-sm transition-opacity"
+            class="fixed inset-0 z-30 bg-zinc-950/60 backdrop-blur-sm transition-opacity"
         ></div>
 
         <!-- Sidebar -->

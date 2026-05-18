@@ -4,7 +4,7 @@
         <ConfirmDialog></ConfirmDialog>
 
         <!-- Contenedor Principal -->
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
+        <div class="min-h-screen p-4 sm:p-8 transition-colors duration-300">
             
             <!-- Encabezado -->
             <div class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">

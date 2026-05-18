@@ -61,7 +61,7 @@
             <ConfirmDialog></ConfirmDialog>
             <Toast />
 
-            <div class="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen transition-colors duration-300">
+            <div class="py-12 min-h-screen transition-colors duration-300">
                 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     
                     <!-- Encabezado y Navegación de Pestañas -->

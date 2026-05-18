@@ -15,39 +15,59 @@ const showVehicleModal = ref(false);
 const showTagModal = ref(false);
 const showPetModal = ref(false);
 
-const vehicleForm = useForm({ plate: '', brand: '', model: '', color: '', tag_access: '' });
-const tagForm = useForm({ tag_code: '' });
-const petForm = useForm({ name: '', species: 'Perro', race: '' });
+// SOLUCIÓN: Agregamos private_unit_id a la inicialización de los formularios
+const vehicleForm = useForm({ private_unit_id: props.unit.id, plate: '', brand: '', model: '', color: '', tag_access: '' });
+const tagForm = useForm({ private_unit_id: props.unit.id, tag_code: '' });
+const petForm = useForm({ private_unit_id: props.unit.id, name: '', species: 'Perro', race: '' });
 
 const submitVehicle = () => {
-    vehicleForm.post(route('admin.private-units.vehicles.store', props.unit.id), { 
+    // CORRECCIÓN: Ruta directa
+    vehicleForm.post(route('admin.vehicles.store'), { 
         preserveScroll: true,
         onSuccess: () => {
             showVehicleModal.value = false;
             vehicleForm.reset();
+            // Restaurar el id después del reset
+            vehicleForm.private_unit_id = props.unit.id; 
             toast.add({ severity: 'success', summary: 'Vehículo guardado', detail: 'El auto se registró correctamente.', life: 3000 });
+        },
+        onError: (errors) => {
+            const errorMsg = Object.values(errors)[0] || 'Verifica los datos del vehículo.';
+            toast.add({ severity: 'error', summary: 'Error al guardar', detail: errorMsg, life: 5000 });
         }
     });
 };
 
 const submitTag = () => {
-    tagForm.post(route('admin.private-units.tags.store', props.unit.id), { 
+    // CORRECCIÓN: Ruta directa
+    tagForm.post(route('admin.tags.store'), { 
         preserveScroll: true,
         onSuccess: () => {
             showTagModal.value = false;
             tagForm.reset();
+            tagForm.private_unit_id = props.unit.id;
             toast.add({ severity: 'success', summary: 'Tag asignado', detail: 'Dispositivo vinculado a la propiedad.', life: 3000 });
+        },
+        onError: (errors) => {
+            const errorMsg = Object.values(errors)[0] || 'Verifica la información del tag.';
+            toast.add({ severity: 'error', summary: 'Error al guardar', detail: errorMsg, life: 5000 });
         }
     });
 };
 
 const submitPet = () => {
-    petForm.post(route('admin.private-units.pets.store', props.unit.id), { 
+    // CORRECCIÓN: Ruta directa
+    petForm.post(route('admin.pets.store'), { 
         preserveScroll: true,
         onSuccess: () => {
             showPetModal.value = false;
             petForm.reset();
+            petForm.private_unit_id = props.unit.id;
             toast.add({ severity: 'success', summary: 'Mascota registrada', detail: 'La mascota se guardó con éxito.', life: 3000 });
+        },
+        onError: (errors) => {
+            const errorMsg = Object.values(errors)[0] || 'Verifica los datos de la mascota.';
+            toast.add({ severity: 'error', summary: 'Error al guardar', detail: errorMsg, life: 5000 });
         }
     });
 };
@@ -92,7 +112,7 @@ const deleteResource = (routeUrl, type) => {
                             </div>
                         </div>
                     </div>
-                    <button @click="deleteResource(route('admin.private-units.vehicles.destroy', car.id), 'vehículo')" class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100 transition"><i class="pi pi-trash"></i></button>
+                    <button @click="deleteResource(route('admin.vehicles.destroy', car.id), 'vehículo')" class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100 transition"><i class="pi pi-trash"></i></button>
                 </div>
             </div>
         </section>
@@ -113,7 +133,7 @@ const deleteResource = (routeUrl, type) => {
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">Activo</span>
-                        <button @click="deleteResource(route('admin.private-units.tags.destroy', tag.id), 'tag')" class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"><i class="pi pi-trash"></i></button>
+                        <button @click="deleteResource(route('admin.tags.destroy', tag.id), 'tag')" class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"><i class="pi pi-trash"></i></button>
                     </div>
                 </div>
             </div>
@@ -136,7 +156,7 @@ const deleteResource = (routeUrl, type) => {
                             <p class="text-[12px] text-gray-500">{{ pet.species }} - {{ pet.race }}</p>
                         </div>
                     </div>
-                    <button @click="deleteResource(route('admin.private-units.pets.destroy', pet.id), 'mascota')" class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100 transition"><i class="pi pi-trash"></i></button>
+                    <button @click="deleteResource(route('admin.pets.destroy', pet.id), 'mascota')" class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100 transition"><i class="pi pi-trash"></i></button>
                 </div>
             </div>
         </section>
@@ -154,6 +174,9 @@ const deleteResource = (routeUrl, type) => {
                         <input v-model="vehicleForm.color" type="text" placeholder="Color" class="rounded-xl bg-gray-50 dark:bg-[#2C2C2E] border-none focus:ring-indigo-500 text-sm dark:text-white" required>
                         <input v-model="vehicleForm.tag_access" type="text" placeholder="Tag (Opcional)" class="rounded-xl bg-gray-50 dark:bg-[#2C2C2E] border-none focus:ring-indigo-500 text-sm dark:text-white">
                     </div>
+                    <!-- Mensaje de error de validación Inertia -->
+                    <div v-if="vehicleForm.errors.private_unit_id" class="text-xs text-red-500 mt-1">{{ vehicleForm.errors.private_unit_id }}</div>
+                    
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" @click="showVehicleModal = false" class="px-4 py-2 text-gray-500 text-sm font-bold">Cancelar</button>
                         <button type="submit" :disabled="vehicleForm.processing" class="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-bold disabled:opacity-50">Guardar</button>

@@ -3,7 +3,7 @@
         <ConfirmDialog></ConfirmDialog>
 
         <!-- Fondo estilo iOS -->
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300 font-sans tracking-tight">
+        <div class="min-h-screen text-gray-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300 font-sans tracking-tight">
             
             <div class="max-w-7xl mx-auto">
                 
@@ -94,14 +94,13 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-zinc-800 bg-white dark:bg-[#1C1C1E]">
-                                <!-- Toda la fila es un enlace (cursor-pointer) -->
+                                <!-- SOLUCIÓN DE CLIC: Se quitó @click.stop del <td> para que toda la fila mande al show -->
                                 <tr 
                                     v-for="unit in units.data" 
                                     :key="unit.id"
                                     @click="$inertia.visit(route('admin.private-units.show', unit.id))"
                                     class="hover:bg-gray-50/80 dark:hover:bg-[#2C2C2E]/50 transition-colors group cursor-pointer"
                                 >
-                                    <!-- Celda Unidad -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-gray-500 dark:text-gray-400">
@@ -119,14 +118,12 @@
                                         </div>
                                     </td>
                                     
-                                    <!-- Celda Propietario -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 dark:text-gray-200 font-medium" :class="{'italic text-gray-400': unit.owner_name === 'Sin asignar'}">
                                             {{ unit.owner_name }}
                                         </div>
                                     </td>
 
-                                    <!-- Celda Estado -->
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <div class="flex flex-col items-center gap-1.5">
                                             <span 
@@ -145,24 +142,25 @@
                                         </div>
                                     </td>
                                     
-                                    <!-- Celda Acciones Rápidas (El .stop evita que el click navegue al Show de la casa) -->
-                                    <td class="px-6 py-4 whitespace-nowrap" @click.stop>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <!-- Se agregan prevent y stop a los botones individuales -->
                                         <div class="flex items-center justify-end gap-1.5">
-                                            <button @click="quickAction(unit, 'statement')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-400 transition-all tooltip" title="Ver Estado de Cuenta">
+                                            <button @click.prevent.stop="quickAction(unit, 'statement')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-400 transition-all tooltip" title="Ver Estado de Cuenta">
                                                 <i class="pi pi-file-pdf"></i>
                                             </button>
-                                            <button @click="openPaymentModal(unit)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-500/20 dark:hover:text-green-400 transition-all tooltip" title="Registrar Pago">
+                                            <button @click.prevent.stop="openPaymentModal(unit)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-500/20 dark:hover:text-green-400 transition-all tooltip" title="Registrar Pago">
                                                 <i class="pi pi-dollar"></i>
                                             </button>
-                                            <button @click="quickAction(unit, 'remind')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/20 dark:hover:text-amber-400 transition-all tooltip" title="Enviar Recordatorio">
+                                            <button @click.prevent.stop="quickAction(unit, 'remind')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/20 dark:hover:text-amber-400 transition-all tooltip" title="Enviar Recordatorio">
                                                 <i class="pi pi-bell"></i>
                                             </button>
                                             
                                             <div class="w-px h-5 bg-gray-200 dark:bg-zinc-700 mx-1"></div>
 
-                                            <button @click="openEditModal(unit)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-zinc-700 dark:hover:text-white transition-all tooltip" title="Editar Unidad">
-                                                <i class="pi pi-ellipsis-h"></i>
-                                            </button>
+                                            <!-- Reemplazo de modal de edición por enlace a la nueva vista de Edit -->
+                                            <Link :href="route('admin.private-units.edit', unit.id)" @click.prevent.stop class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-zinc-700 dark:hover:text-white transition-all tooltip" title="Editar Unidad">
+                                                <i class="pi pi-pencil"></i>
+                                            </Link>
                                         </div>
                                     </td>
                                 </tr>
@@ -172,7 +170,6 @@
 
                     <!-- VISTA MÓVIL (Cards) -->
                     <div class="md:hidden grid grid-cols-1 gap-4">
-                        <!-- Toda la tarjeta es clicable con cursor-pointer -->
                         <div 
                             v-for="unit in units.data" 
                             :key="unit.id" 
@@ -192,17 +189,17 @@
                                 <p class="text-xs text-gray-500 font-medium mt-0.5">Lote: {{ unit.lot_number }} | Propietario: {{ unit.owner_name }}</p>
                             </div>
 
-                            <!-- El .stop evita que estos botones te lleven a la vista completa -->
-                            <div class="mt-4 flex gap-2" @click.stop>
-                                <button @click="quickAction(unit, 'statement')" class="flex-1 bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                            <div class="mt-4 flex gap-2">
+                                <button @click.prevent.stop="quickAction(unit, 'statement')" class="flex-1 bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
                                     <i class="pi pi-file-pdf"></i> Edo. Cta
                                 </button>
-                                <button @click="openPaymentModal(unit)" class="flex-1 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                                <button @click.prevent.stop="openPaymentModal(unit)" class="flex-1 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
                                     <i class="pi pi-dollar"></i> Pagar
                                 </button>
-                                <button @click="openEditModal(unit)" class="w-10 bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 text-gray-600 dark:text-gray-300 rounded-xl flex items-center justify-center transition">
+                                <!-- Cambio al link de Edit -->
+                                <Link :href="route('admin.private-units.edit', unit.id)" @click.prevent.stop class="w-10 bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 text-gray-600 dark:text-gray-300 rounded-xl flex items-center justify-center transition">
                                     <i class="pi pi-pencil"></i>
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -232,7 +229,6 @@
             <div @click="closePaymentModal" class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
             <div class="relative bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transform transition-all flex flex-col">
                 
-                <!-- Modal Header -->
                 <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-b border-black/5 dark:border-white/5 flex justify-between items-center rounded-t-[32px]">
                     <div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white">Registrar Pago</h3>
@@ -243,7 +239,6 @@
                     </button>
                 </div>
                 
-                <!-- Modal Body -->
                 <div class="p-6 overflow-y-auto space-y-5 bg-[#F2F2F7] dark:bg-[#1C1C1E]">
                     <div class="bg-white dark:bg-[#2C2C2E] rounded-[20px] p-5 border border-black/5 dark:border-white/5 space-y-4">
                         
@@ -277,92 +272,11 @@
                     </div>
                 </div>
 
-                <!-- Modal Footer -->
                 <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-t border-black/5 dark:border-white/5 flex justify-end gap-3 rounded-b-[32px]">
                     <button @click="closePaymentModal" class="px-5 py-2.5 bg-gray-100 dark:bg-[#1C1C1E] hover:bg-gray-200 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-bold transition">Cancelar</button>
                     <button @click="submitPayment" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md text-sm font-bold transition-all flex items-center gap-2" :disabled="processingPayment">
                         <i v-if="processingPayment" class="pi pi-spin pi-spinner"></i>
                         {{ processingPayment ? 'Procesando...' : 'Guardar Pago' }}
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL DE EDICIÓN ESTILO iOS -->
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-            <div @click="closeModal" class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
-            <div class="relative bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
-                
-                <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-b border-black/5 dark:border-white/5 flex justify-between items-center rounded-t-[32px]">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                        Editar Propiedad
-                    </h3>
-                    <button @click="closeModal" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#1C1C1E] text-gray-500 flex items-center justify-center hover:bg-gray-200 transition">
-                        <i class="pi pi-times"></i>
-                    </button>
-                </div>
-                
-                <div class="p-6 overflow-y-auto space-y-5 bg-[#F2F2F7] dark:bg-[#1C1C1E]">
-                    
-                    <div class="bg-white dark:bg-[#2C2C2E] rounded-[20px] p-5 border border-black/5 dark:border-white/5 grid grid-cols-2 gap-4">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Calle / Avenida</label>
-                            <input v-model="form.unit_street" type="text" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-indigo-500 transition-shadow">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Núm. Exterior</label>
-                            <input v-model="form.exterior_number" type="text" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-indigo-500 transition-shadow">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Núm. Interior</label>
-                            <input v-model="form.int_number" type="text" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-indigo-500 transition-shadow">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Lote</label>
-                            <input v-model="form.lot_number" type="text" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-indigo-500 transition-shadow">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">M2 Const.</label>
-                            <input v-model="form.square_meters" type="number" step="0.01" class="w-full rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-[#1C1C1E] text-sm focus:ring-2 focus:ring-indigo-500 transition-shadow">
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-[#2C2C2E] rounded-[20px] p-5 border border-black/5 dark:border-white/5 space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-sm font-bold text-gray-900 dark:text-white block">Estado del Sistema</span>
-                                <span class="text-xs text-gray-500">¿Esta casa está habilitada en la app?</span>
-                            </div>
-                            <select v-model="form.status" class="rounded-xl dark:text-white border-gray-200 dark:border-zinc-600 text-sm bg-gray-50 dark:bg-[#1C1C1E] font-medium focus:ring-indigo-500">
-                                <option value="Activo">🟢 Activa</option>
-                                <option value="Inactivo">⚪ Inactiva</option>
-                            </select>
-                        </div>
-
-                        <div class="h-px bg-gray-100 dark:bg-zinc-700 w-full"></div>
-
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-sm font-bold text-red-600 dark:text-red-400 block">Bloqueo de Seguridad</span>
-                                <span class="text-xs text-gray-500">Bloquear acceso en plumas y caseta</span>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" v-model="form.access_block" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-[#1C1C1E] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#FF453A] border border-gray-300 dark:border-zinc-600"></div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="px-6 py-5 bg-white dark:bg-[#2C2C2E] border-t border-black/5 dark:border-white/5 flex justify-end gap-3 rounded-b-[32px]">
-                    <button @click="closeModal" class="px-5 py-2.5 bg-gray-100 dark:bg-[#1C1C1E] hover:bg-gray-200 rounded-xl text-gray-700 dark:text-gray-300 text-sm font-bold transition">Cancelar</button>
-                    <button @click="submitUpdate" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md text-sm font-bold transition-all flex items-center gap-2" :disabled="processing">
-                        <i v-if="processing" class="pi pi-spin pi-spinner"></i>
-                        {{ processing ? 'Guardando...' : 'Guardar Cambios' }}
                     </button>
                 </div>
             </div>
@@ -393,20 +307,7 @@ export default {
     data() {
         return {
             search: this.filters.search || '',
-            showModal: false,
-            processing: false,
-            form: {
-                id: null,
-                lot_number: '',
-                unit_street: '',
-                exterior_number: '',
-                int_number: '',
-                square_meters: 0,
-                status: 'Activo',
-                access_block: false,
-            },
             
-            // Estado para el Modal de Pago
             showPaymentModal: false,
             processingPayment: false,
             selectedPaymentUnit: null,
@@ -414,7 +315,7 @@ export default {
                 user_id: '',
                 amount: '',
                 payment_method: 'Transferencia',
-                payment_date: new Date().toISOString().split('T')[0], // Fecha de hoy por defecto
+                payment_date: new Date().toISOString().split('T')[0],
                 transaction_folio: ''
             }
         }
@@ -432,38 +333,7 @@ export default {
         formatCurrency(value) {
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value || 0);
         },
-        resetForm() {
-            this.form = {
-                id: null,
-                lot_number: '',
-                unit_street: '',
-                exterior_number: '',
-                int_number: '',
-                square_meters: 0,
-                status: 'Activo',
-                access_block: false
-            };
-        },
-        openEditModal(unit) {
-            this.form = { ...unit }; 
-            this.showModal = true;
-        },
-        closeModal() {
-            this.showModal = false;
-            this.resetForm();
-        },
-        submitUpdate() {
-            this.processing = true;
-            router.put(route('admin.private-units.update', this.form.id), this.form, {
-                onSuccess: () => { 
-                    this.processing = false; 
-                    this.closeModal(); 
-                },
-                onError: () => this.processing = false
-            });
-        },
 
-        /* ========= LÓGICA DE PAGOS ========= */
         openPaymentModal(unit) {
             if (!unit.owner_id) {
                 alert('No se puede registrar el pago: Esta casa no tiene un propietario asignado.');
@@ -485,7 +355,6 @@ export default {
         },
         submitPayment() {
             this.processingPayment = true;
-            // Mandamos los datos al nuevo controlador de pagos
             router.post(route('admin.payments.store'), this.paymentForm, {
                 onSuccess: () => {
                     this.processingPayment = false;
@@ -496,7 +365,6 @@ export default {
                 }
             });
         },
-        /* =================================== */
 
         quickAction(unit, actionType) {
             switch(actionType) {

@@ -20,6 +20,7 @@ use App\Http\Controllers\Community\PrivateUnitContactController;
 use App\Http\Controllers\Community\VehicleController;
 use App\Http\Controllers\Community\PetController;
 use App\Http\Controllers\Community\NoticeBoardController;
+use App\Http\Controllers\Community\TagController;
 
 // 💰 Finances (Finanzas y Cobranza)
 use App\Http\Controllers\Finances\GeneratedFeeController;
@@ -61,7 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- DASHBOARD ---
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard/Index'); // <--- Ruta actualizada
     })->name('dashboard');
 
     // --- SWITCH DE CONTEXTO ---
@@ -116,6 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==========================================
     
     // Unidades Privadas
+    Route::resource('private-units', PrivateUnitController::class)->names('admin.private-units');
     Route::get('/admin/private-units', [PrivateUnitController::class, 'index'])->name('admin.private-units.index');
     Route::get('/admin/private-units/create', [PrivateUnitController::class, 'create'])->name('admin.private-units.create');
     Route::post('/admin/private-units', [PrivateUnitController::class, 'store'])->name('admin.private-units.store');
@@ -128,13 +130,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
     Route::get('/admin/vehicles', [VehicleController::class, 'adminIndex'])->name('admin.vehicles.index');
     Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
-    Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+    Route::post('/vehicles', [VehicleController::class, 'store'])->name('admin.vehicles.store');
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
     Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
 
     // Mascotas
     Route::get('/community/pets/admin', [PetController::class, 'adminIndex'])->name('admin.pets.index');
+    Route::post('/pets', [VehicleController::class, 'store'])->name('admin.vehicles.store');
     Route::resource('pets', PetController::class);
+
+    // AGREGA ESTAS LÍNEAS PARA MASCOTAS:
+    Route::post('/pets', [PetController::class, 'store'])->name('admin.pets.store');
+    Route::delete('/pets/{pet}', [PetController::class, 'destroy'])->name('admin.pets.destroy');
+
+    // AGREGA ESTAS LÍNEAS PARA TAGS (Para que tampoco te dé error ese botón):
+    Route::post('/tags', [TagController::class, 'store'])->name('admin.tags.store');
+    Route::delete('/tags/{tag}', [TagController::class, 'destroy'])->name('admin.tags.destroy');
 
     // Morosos
     Route::get('/slow-payers', [PrivateUnitController::class, 'slowPayersIndex'])->name('slowPayers.index');
@@ -157,9 +168,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('community/notice-board')->name('notice-board.')->group(function () {
     Route::get('/', [NoticeBoardController::class, 'index'])->name('index');
     Route::post('/', [NoticeBoardController::class, 'store'])->name('store');
+    Route::put('/{post}', [NoticeBoardController::class, 'update'])->name('update');
     Route::delete('/{post}', [NoticeBoardController::class, 'destroy'])->name('destroy');
     Route::post('/{post}/react', [NoticeBoardController::class, 'toggleReact'])->name('react');
     Route::post('/{post}/comment', [NoticeBoardController::class, 'storeComment'])->name('comment.store');
+
     Route::post('/poll-option/{pollOption}/vote', [NoticeBoardController::class, 'vote'])->name('poll.vote');
     });
 
@@ -172,6 +185,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('billing-concepts', BillingConceptController::class);
     Route::resource('payments', PaymentController::class);
     Route::get('/bank-reconciliations', [BankReconciliationController::class, 'index'])->name('bank_reconciliations.index');
+    Route::put('/bank-reconciliations/{bankReconciliation}', [BankReconciliationController::class, 'update'])->name('bank-reconciliations.update');
     Route::post('/propiedades/{privateUnit}/cargos-manuales', [GeneratedFeeController::class, 'storeManual'])->name('admin.fees.storeManual');
     Route::post('/propiedades/{privateUnit}/abonos', [GeneratedFeeController::class, 'addBalance'])->name('admin.fees.addBalance');
 

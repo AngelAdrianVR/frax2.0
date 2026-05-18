@@ -37,7 +37,7 @@ const deleteCheckpoint = (id) => {
         <Toast />
         <ConfirmDialog />
 
-        <div class="py-12 bg-zinc-50 dark:bg-zinc-900 min-h-screen">
+        <div class="py-12 min-h-screen">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 px-4 sm:px-0 gap-4">

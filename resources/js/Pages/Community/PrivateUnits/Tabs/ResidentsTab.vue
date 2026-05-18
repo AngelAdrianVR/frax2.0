@@ -56,7 +56,8 @@ const unlinkUser = (userId) => {
             <button @click="showLinkUserModal = true" class="text-[13px] font-semibold text-indigo-600 hover:text-indigo-800">+ Vincular Usuario</button>
         </div>
         
-        <div v-if="!unit.users || unit.users.length === 0" class="bg-white dark:bg-[#1C1C1E] rounded-[20px] p-8 text-center border border-black/5 dark:border-white/5">
+        <!-- SOLUCIÓN FREEZE: Verificación segura de la existencia del array -->
+        <div v-if="!unit || !unit.users || unit.users.length === 0" class="bg-white dark:bg-[#1C1C1E] rounded-[20px] p-8 text-center border border-black/5 dark:border-white/5">
             <i class="pi pi-users text-4xl text-gray-300 mb-2 block"></i>
             <p class="text-gray-500 text-sm">No hay residentes registrados en esta propiedad.</p>
         </div>
@@ -70,19 +71,19 @@ const unlinkUser = (userId) => {
                     <div>
                         <p class="text-[15px] font-semibold text-gray-900 dark:text-white">{{ user.name }}</p>
                         <div class="flex items-center gap-2 mt-0.5">
+                            <!-- SOLUCIÓN FREEZE: Verificación de encadenamiento opcional user.pivot?.role_in_unit -->
                             <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
-                                {{ user.pivot.role_in_unit }}
+                                {{ user.pivot?.role_in_unit || 'Residente' }}
                             </span>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Acciones Rápidas -->
                 <div class="flex gap-2">
-                    <a v-if="user.phone" :href="`https://wa.me/52${user.phone.replace(/\\D/g,'')}`" target="_blank" class="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-100 flex items-center justify-center transition tooltip" title="WhatsApp">
+                    <a v-if="user.phone" :href="`https://wa.me/52${user.phone.replace(/\D/g,'')}`" target="_blank" class="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-100 flex items-center justify-center transition tooltip" title="WhatsApp">
                         <i class="pi pi-whatsapp"></i>
                     </a>
-                    <!-- Redirige al directorio filtrando por su nombre -->
+                    <!-- Se asume que route('directory.index') está configurado. Si no existe, lanza el error. -->
                     <Link :href="route('directory.index', { search: user.name })" class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 hover:bg-indigo-100 flex items-center justify-center transition tooltip" title="Ver en Directorio">
                         <i class="pi pi-id-card text-sm"></i>
                     </Link>
@@ -93,7 +94,6 @@ const unlinkUser = (userId) => {
             </div>
         </div>
 
-        <!-- Modal Vincular Usuario -->
         <div v-if="showLinkUserModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
             <div class="bg-white dark:bg-[#1C1C1E] rounded-3xl p-6 w-full max-w-sm shadow-2xl">
                 <h3 class="text-lg font-bold mb-4 dark:text-white">Vincular Usuario</h3>

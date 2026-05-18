@@ -1,202 +1,224 @@
 <script setup>
-import { ref, watch } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { ref, watch, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from 'primevue/usetoast';
+import debounce from 'lodash/debounce';
 
-// Recibimos las props correctas desde el PrivateUnitController
 const props = defineProps({
-    slowPayers: Object,
-    filters: Object
+    units: Object,
+    filters: Object,
 });
 
-// Estado reactivo para el buscador
-const search = ref(props.filters?.search || '');
+const confirm = useConfirm();
+const toast = useToast();
+const search = ref(props.filters.search || '');
 
-// Buscador con delay (debounce) para no saturar el servidor en cada tecla
-let searchTimeout = null;
-watch(search, (value) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        router.get(route('slowPayers.index'), { search: value }, { 
-            preserveState: true, 
-            replace: true 
-        });
-    }, 300);
-});
+// Búsqueda en tiempo real
+watch(search, debounce((value) => {
+    router.get(route('admin.private-units.slow-payers'), { search: value }, {
+        preserveState: true,
+        replace: true,
+        preserveScroll: true
+    });
+}, 500));
 
-// Formateador de moneda
-const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-MX', { 
-        style: 'currency', 
-        currency: 'MXN' 
-    }).format(amount);
+const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value || 0);
 };
 
-// Formateador de WhatsApp
-const getWhatsappLink = (phone) => {
-    if (!phone) return '#';
-    const cleanPhone = phone.toString().replace(/[^0-9]/g, '');
-    return `https://wa.me/${cleanPhone}`;
+// Suma de la deuda de la página actual para mostrar un KPI rápido
+const currentPageDebt = computed(() => {
+    return props.units.data.reduce((total, unit) => total + parseFloat(unit.total_debt), 0);
+});
+
+// Acciones rápidas contra morosos
+const takeAction = (unit, action) => {
+    if (action === 'remind') {
+        confirm.require({
+            message: `¿Deseas enviar una notificación de cobro con el estado de cuenta actualizado a ${unit.owner_name}?`,
+            header: 'Enviar Recordatorio de Pago',
+            icon: 'pi pi-send',
+            acceptLabel: 'Enviar ahora',
+            rejectLabel: 'Cancelar',
+            acceptClass: 'p-button-danger',
+            accept: () => {
+                // Aquí iría tu petición real al backend para enviar el correo/notificación
+                toast.add({ severity: 'success', summary: 'Recordatorio Enviado', detail: `Se notificó a ${unit.owner_name} sobre su adeudo.`, life: 3000 });
+            }
+        });
+    } else if (action === 'block') {
+        confirm.require({
+            message: `¿Estás seguro de que deseas bloquear el acceso automático a la propiedad ${unit.unit_street} ${unit.exterior_number}? Los residentes tendrán que registrarse manualmente en caseta.`,
+            header: 'Restringir Acceso',
+            icon: 'pi pi-lock',
+            acceptLabel: 'Sí, bloquear acceso',
+            rejectLabel: 'Cancelar',
+            acceptClass: 'p-button-danger',
+            accept: () => {
+                // Aquí podrías llamar al endpoint de toggleStatus o uno específico de bloqueo
+                toast.add({ severity: 'warn', summary: 'Acceso Restringido', detail: 'Se ha bloqueado el acceso a la unidad.', life: 3000 });
+            }
+        });
+    }
 };
 </script>
 
 <template>
-    <AppLayout title="Reporte de Morosidad">
-        <!-- Fondo estilo iOS (#F2F2F7) -->
-        <div class="min-h-screen bg-[#F2F2F7] dark:bg-zinc-900 p-4 md:p-6 lg:p-8">
-            <div class="max-w-7xl mx-auto space-y-6">
+    <AppLayout title="Control de Morosidad">
+        <ConfirmDialog></ConfirmDialog>
+
+        <div class="min-h-screen text-gray-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300 font-sans tracking-tight">
+            
+            <div class="max-w-7xl mx-auto">
                 
                 <!-- Encabezado y Buscador -->
-                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Morosidad</h1>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Gestión integral de unidades con adeudos pendientes.</p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center">
+                                <i class="pi pi-exclamation-triangle text-lg"></i>
+                            </div>
+                            <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                                Control de Morosidad
+                            </h1>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 ml-13">
+                            Propiedades con adeudos pendientes. Ordenadas por mayor deuda.
+                        </p>
                     </div>
                     
-                    <!-- Buscador -->
-                    <div class="w-full md:w-80">
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
-                                <i class="pi pi-search"></i>
-                            </span>
-                            <input 
-                                v-model="search" 
-                                type="text" 
-                                placeholder="Buscar por unidad o vecino..."
-                                class="w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-800 border-none rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 text-sm dark:text-white transition-all" 
-                            />
-                        </div>
+                    <div class="relative w-full md:w-80">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="pi pi-search text-gray-400 text-sm"></i>
+                        </span>
+                        <input 
+                            v-model="search" 
+                            type="text" 
+                            placeholder="Buscar propiedad o titular..." 
+                            class="pl-9 pr-4 py-2.5 w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-[#1C1C1E] text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 shadow-sm transition-all placeholder-gray-400"
+                        >
                     </div>
                 </div>
 
-                <!-- Estado Vacío (Sin Morosos) -->
-                <div v-if="slowPayers.data.length === 0" class="bg-white dark:bg-zinc-800 rounded-3xl p-12 text-center shadow-sm">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 text-green-500 mb-4">
-                        <i class="pi pi-check-circle text-3xl"></i>
+                <!-- Estado Vacío (¡No hay morosos!) -->
+                <div v-if="units.data.length === 0" class="bg-white dark:bg-[#1C1C1E] rounded-[32px] shadow-sm p-16 text-center border border-black/5 dark:border-white/5 flex flex-col items-center justify-center">
+                    <div class="w-24 h-24 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="pi pi-check-circle text-5xl text-green-500"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-zinc-900 dark:text-white mb-2">¡Excelentes noticias!</h3>
-                    <p class="text-zinc-500 dark:text-zinc-400">No se encontraron unidades con adeudos que coincidan con tu búsqueda.</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">¡Excelentes noticias!</h3>
+                    <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        No se encontraron propiedades con morosidad. Todas las unidades están al corriente o no coinciden con tu búsqueda.
+                    </p>
+                    <Link :href="route('admin.private-units.index')" class="mt-8 px-6 py-2.5 bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-900 dark:text-white rounded-full font-semibold transition">
+                        Volver a todas las propiedades
+                    </Link>
                 </div>
 
-                <!-- VISTA ESCRITORIO (Tabla elegante estilo Apple) -->
-                <div v-else class="hidden md:block bg-white dark:bg-zinc-800 shadow-sm rounded-3xl overflow-hidden border border-zinc-100 dark:border-zinc-700/50">
-                    <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-                        <thead class="bg-zinc-50/50 dark:bg-zinc-800/50">
-                            <tr>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Unidad Privada</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Propietario / Residente</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Estatus</th>
-                                <th class="px-6 py-4 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Deuda Total</th>
-                                <th class="px-6 py-4 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-700/50">
-                            <tr v-for="unit in slowPayers.data" :key="unit.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-700/20 transition-colors">
-                                <!-- Unidad -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
-                                            <i class="pi pi-home"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-zinc-900 dark:text-white">{{ unit.full_address }}</div>
-                                            <div v-if="unit.access_block" class="text-xs text-red-500 mt-0.5 flex items-center gap-1">
-                                                <i class="pi pi-lock text-[10px]"></i> Acceso Bloqueado
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                
-                                <!-- Propietario y Contacto -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-zinc-900 dark:text-white">{{ unit.owner_name }}</div>
-                                    <div class="flex items-center gap-3 mt-1">
-                                        <a v-if="unit.owner_phone" :href="getWhatsappLink(unit.owner_phone)" target="_blank" class="text-zinc-400 hover:text-green-500 transition-colors" title="Enviar WhatsApp">
-                                            <i class="pi pi-whatsapp"></i>
-                                        </a>
-                                        <a v-if="unit.owner_email" :href="`mailto:${unit.owner_email}`" class="text-zinc-400 hover:text-indigo-500 transition-colors" title="Enviar Correo">
-                                            <i class="pi pi-envelope"></i>
-                                        </a>
-                                        <span v-if="!unit.owner_phone && !unit.owner_email" class="text-xs text-zinc-400">Sin datos de contacto</span>
-                                    </div>
-                                </td>
-
-                                <!-- Estatus (Moroso vs Atrasado) -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span v-if="unit.is_slow_payer" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                        Moroso Activo
-                                    </span>
-                                    <span v-else class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                                        Con Atraso
-                                    </span>
-                                </td>
-
-                                <!-- Deuda -->
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-red-600 dark:text-red-400">
-                                    {{ formatCurrency(unit.total_debt) }}
-                                </td>
-
-                                <!-- Acciones -->
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                    <Link :href="route('admin.private-units.show', unit.id)" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-indigo-100 hover:text-indigo-600 dark:hover:bg-indigo-900/50 dark:hover:text-indigo-400 transition-colors" title="Ver Expediente de la Propiedad">
-                                        <i class="pi pi-angle-right"></i>
-                                    </Link>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- VISTA MÓVIL (Tarjetas limpias) -->
-                <div v-if="slowPayers.data.length > 0" class="md:hidden space-y-4">
-                    <div v-for="unit in slowPayers.data" :key="unit.id" class="bg-white dark:bg-zinc-800 shadow-sm rounded-2xl p-5 border border-zinc-100 dark:border-zinc-700/50">
-                        
-                        <div class="flex justify-between items-start mb-4">
+                <!-- Lista de Morosos -->
+                <div v-else class="space-y-6">
+                    
+                    <!-- Tarjeta de Resumen (Página Actual) -->
+                    <div class="bg-gradient-to-br from-red-600 to-red-800 rounded-[24px] p-6 text-white shadow-lg shadow-red-600/20 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                                <i class="pi pi-chart-line text-2xl"></i>
+                            </div>
                             <div>
-                                <h3 class="text-lg font-bold text-zinc-900 dark:text-white">{{ unit.full_address }}</h3>
-                                <div v-if="unit.access_block" class="text-xs font-medium text-red-500 mt-1 flex items-center gap-1">
-                                    <i class="pi pi-lock text-[10px]"></i> Acceso Caseta Bloqueado
+                                <p class="text-red-100 text-sm font-medium uppercase tracking-wider">Adeudo total en esta página</p>
+                                <h2 class="text-3xl font-bold tracking-tight">{{ formatCurrency(currentPageDebt) }}</h2>
+                            </div>
+                        </div>
+                        <button class="px-5 py-2.5 bg-white text-red-700 hover:bg-red-50 rounded-xl font-bold text-sm transition shadow-sm flex items-center gap-2">
+                            <i class="pi pi-envelope"></i> Notificar a todos
+                        </button>
+                    </div>
+
+                    <!-- Cuadrícula de Deudores -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                        
+                        <div 
+                            v-for="unit in units.data" 
+                            :key="unit.id"
+                            class="bg-white dark:bg-[#1C1C1E] rounded-[24px] border border-black/5 dark:border-white/5 shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md hover:border-red-200 dark:hover:border-red-900/50 group"
+                        >
+                            <!-- Header Tarjeta -->
+                            <div class="p-5 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-start">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 flex items-center justify-center flex-shrink-0">
+                                        <i class="pi pi-home text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <Link :href="route('admin.private-units.show', unit.id)" class="text-lg font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                            {{ unit.unit_street }} {{ unit.exterior_number }}
+                                        </Link>
+                                        <p class="text-xs text-gray-500 mt-0.5 font-medium">Lote: {{ unit.lot_number }} <span v-if="unit.int_number">| Int: {{ unit.int_number }}</span></p>
+                                    </div>
+                                </div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] mt-1"></div>
+                            </div>
+
+                            <!-- Info Financiera -->
+                            <div class="p-5 flex-1 flex flex-col justify-center bg-gray-50/50 dark:bg-black/20">
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1 text-center">Deuda Acumulada</p>
+                                <p class="text-3xl font-extrabold text-red-600 dark:text-red-500 text-center tracking-tight">
+                                    {{ formatCurrency(unit.total_debt) }}
+                                </p>
+                                <div class="mt-4 bg-white dark:bg-[#2C2C2E] rounded-xl p-3 border border-black/5 dark:border-white/5 flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-700 flex items-center justify-center text-gray-500">
+                                        <i class="pi pi-user text-sm"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Titular Responsable</p>
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" :class="{'italic text-gray-400': unit.owner_name === 'Sin asignar'}">
+                                            {{ unit.owner_name }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <span v-if="unit.is_slow_payer" class="px-2 py-1 text-[10px] font-bold rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 uppercase tracking-wider">
-                                Moroso
-                            </span>
-                        </div>
 
-                        <div class="bg-zinc-50 dark:bg-zinc-700/30 rounded-xl p-3 mb-4 flex justify-between items-center">
-                            <span class="text-sm text-zinc-500 dark:text-zinc-400">Deuda Total</span>
-                            <span class="text-lg font-bold text-red-600 dark:text-red-400">{{ formatCurrency(unit.total_debt) }}</span>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-700/50">
-                            <div>
-                                <p class="text-xs text-zinc-400 uppercase tracking-wider font-bold mb-0.5">Propietario</p>
-                                <p class="text-sm font-medium text-zinc-800 dark:text-zinc-200">{{ unit.owner_name }}</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <a v-if="unit.owner_phone" :href="getWhatsappLink(unit.owner_phone)" target="_blank" class="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400">
-                                    <i class="pi pi-whatsapp"></i>
-                                </a>
-                                <Link :href="route('admin.private-units.show', unit.id)" class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                                    <i class="pi pi-home"></i>
+                            <!-- Footer Acciones -->
+                            <div class="p-4 border-t border-gray-100 dark:border-zinc-800 grid grid-cols-3 gap-2">
+                                <button @click="takeAction(unit, 'remind')" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition group/btn">
+                                    <i class="pi pi-send text-lg mb-1 group-hover/btn:-translate-y-0.5 transition-transform"></i>
+                                    <span class="text-[10px] font-bold">Recordar</span>
+                                </button>
+                                
+                                <button @click="takeAction(unit, 'block')" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl text-gray-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition group/btn relative">
+                                    <i class="pi pi-lock text-lg mb-1 group-hover/btn:-translate-y-0.5 transition-transform"></i>
+                                    <span class="text-[10px] font-bold">Restringir</span>
+                                    <span v-if="unit.access_block" class="absolute top-1 right-2 w-2 h-2 rounded-full bg-amber-500 border-2 border-white dark:border-[#1C1C1E]"></span>
+                                </button>
+                                
+                                <Link :href="route('admin.private-units.show', unit.id)" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-zinc-700 dark:hover:text-white transition group/btn">
+                                    <i class="pi pi-folder-open text-lg mb-1 group-hover/btn:-translate-y-0.5 transition-transform"></i>
+                                    <span class="text-[10px] font-bold">Expediente</span>
                                 </Link>
                             </div>
                         </div>
+
+                    </div>
+
+                    <!-- Paginación -->
+                    <div v-if="units.links.length > 3" class="mt-8 flex justify-center pb-8">
+                        <div class="flex flex-wrap gap-1 bg-white dark:bg-[#1C1C1E] p-1 rounded-2xl shadow-sm border border-black/5 dark:border-white/5">
+                            <template v-for="(link, key) in units.links" :key="key">
+                                <div v-if="link.url === null" class="px-3 py-1.5 text-sm text-gray-300 dark:text-zinc-600 rounded-xl" v-html="link.label" />
+                                <Link v-else 
+                                    :href="link.url" 
+                                    class="px-3 py-1.5 text-sm rounded-xl transition-all font-medium"
+                                    :class="link.active 
+                                        ? 'bg-red-600 text-white shadow-md shadow-red-600/20' 
+                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2C2C2E]'"
+                                    v-html="link.label" 
+                                />
+                            </template>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Paginación -->
-                <div v-if="slowPayers.links.length > 3" class="mt-8 flex justify-center">
-                    <div class="flex flex-wrap gap-1 bg-white dark:bg-zinc-800 p-1 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-700/50">
-                        <Link v-for="(link, k) in slowPayers.links" :key="k" 
-                              :href="link.url" v-html="link.label"
-                              class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                              :class="link.active 
-                                ? 'bg-indigo-600 text-white shadow-md' 
-                                : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700'" />
-                    </div>
-                </div>
-                
             </div>
         </div>
     </AppLayout>

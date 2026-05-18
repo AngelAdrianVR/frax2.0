@@ -25,16 +25,20 @@ class NoticeBoardController extends Controller
         // 2. Procesamos la data para que Vue la entienda perfectamente
         $posts->getCollection()->transform(function ($post) {
             if ($post->pollOptions && $post->pollOptions->count() > 0) {
-                $totalVotes = $post->pollOptions->sum(function($option) {
-                    return $option->votes->count();
-                });
+                // Obtenemos cuántas personas únicas han votado
+                $voterIds = collect();
+                foreach($post->pollOptions as $option) {
+                    $voterIds = $voterIds->merge($option->votes->pluck('user_id'));
+                }
+                $uniqueVotersCount = $voterIds->unique()->count();
                 
-                $post->poll_total_votes = $totalVotes;
+                $post->poll_total_votes = $uniqueVotersCount;
                 
-                $post->pollOptions->transform(function ($option) use ($totalVotes) {
+                $post->pollOptions->transform(function ($option) use ($uniqueVotersCount) {
                     $optionCount = $option->votes->count();
                     $option->votes_count = $optionCount;
-                    $option->percentage = $totalVotes > 0 ? round(($optionCount / $totalVotes) * 100) : 0;
+                    // El porcentaje ahora es basado en personas
+                    $option->percentage = $uniqueVotersCount > 0 ? round(($optionCount / $uniqueVotersCount) * 100) : 0;
                     $option->has_voted = $option->votes->where('user_id', auth()->id())->isNotEmpty();
                     return $option;
                 });
@@ -57,14 +61,23 @@ class NoticeBoardController extends Controller
             'content' => 'required|string|max:1000',
             'type' => 'nullable|in:general,announcement,alert',
             'is_pinned' => 'nullable|boolean',
-            'poll_options' => 'nullable|array|max:5', // Validamos la encuesta
-            'poll_options.*' => 'nullable|string|max:100'
+            'is_multiple_choice' => 'nullable|boolean',
+            'poll_options' => 'nullable|array|max:5',
+            'poll_options.*' => 'nullable|string|max:100',
+            'image' => 'nullable|image|max:5120', 
         ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('notice-board', 'public');
+        }
 
         $post = $request->user()->posts()->create([
             'content' => $validated['content'],
             'type' => $validated['type'] ?? 'general',
             'is_pinned' => $validated['is_pinned'] ?? false,
+            'is_multiple_choice' => $validated['is_multiple_choice'] ?? false,
+            'image_path' => $imagePath,
         ]);
 
         // 3. Si vienen opciones, las guardamos en la tabla de encuestas
@@ -85,16 +98,42 @@ class NoticeBoardController extends Controller
         return back()->with('success', 'Publicación eliminada.');
     }
 
+    // Aquí está la función update completa y corregida para manejar el check de "Fijar"
+    public function update(Request $request, Post $post)
+    {
+        // Validamos que sea el dueño de la publicación o un admin
+        $isAdmin = auth()->user()->hasRole('admin') || in_array(auth()->user()->role, ['Admin', 'Administrador', 'Empleado']);
+        
+        if (auth()->id() !== $post->user_id && !$isAdmin) {
+            abort(403, 'No tienes permiso para editar esta publicación.');
+        }
+
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000',
+            'is_pinned' => 'nullable|boolean', // Permitimos validar la casilla
+            'is_poll_closed' => 'nullable|boolean',
+        ]);
+
+        // Actualizamos. Si viene el valor is_pinned lo usamos, si no, conservamos el actual.
+        $post->update([
+            'content' => $validated['content'],
+            'is_pinned' => $request->has('is_pinned') ? $validated['is_pinned'] : $post->is_pinned,
+            'is_poll_closed' => $request->has('is_poll_closed') ? $validated['is_poll_closed'] : $post->is_poll_closed,
+        ]);
+
+        return back()->with('success', 'Publicación actualizada.');
+    }
+
     public function toggleReact(Post $post)
     {
-        // 4. SOLUCIÓN ERROR 1366: Pasamos el ID del usuario correctamente
+        // SOLUCIÓN ERROR 1366: Pasamos el ID del usuario correctamente
         $post->toggleReaction(auth()->id(), 'like');
         return back();
     }
 
     public function storeComment(Request $request, Post $post)
     {
-        // 5. Agregamos el guardado de comentarios que faltaba
+        // Agregamos el guardado de comentarios que faltaba
         $validated = $request->validate([
             'content' => 'required|string|max:500'
         ]);
@@ -109,21 +148,26 @@ class NoticeBoardController extends Controller
 
     public function vote(Request $request, PollOption $pollOption)
     {
-        // 6. Agregamos la lógica para votar en la encuesta
         $user_id = auth()->id();
         $post = $pollOption->post;
 
-        $hasVotedInThisPost = $post->pollOptions()->whereHas('votes', function ($q) use ($user_id) {
-            $q->where('user_id', $user_id);
-        })->exists();
+        if ($post->is_multiple_choice) {
+            // Si es múltiple, alternamos el voto (poner/quitar)
+            $existingVote = $pollOption->votes()->where('user_id', $user_id)->first();
+            if ($existingVote) {
+                $existingVote->delete();
+            } else {
+                $pollOption->votes()->create(['user_id' => $user_id]);
+            }
+        } else {
+            // Si es única, eliminamos votos anteriores en esta encuesta y guardamos el nuevo (Cambio de voto)
+            $postOptionIds = $post->pollOptions->pluck('id');
+            \App\Models\Community\PollVote::whereIn('poll_option_id', $postOptionIds)
+                ->where('user_id', $user_id)
+                ->delete();
 
-        if ($hasVotedInThisPost) {
-            return back()->with('error', 'Ya has votado en esta encuesta.');
+            $pollOption->votes()->create(['user_id' => $user_id]);
         }
-
-        $pollOption->votes()->create([
-            'user_id' => $user_id
-        ]);
 
         return back();
     }
