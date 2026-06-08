@@ -32,14 +32,17 @@ use App\Http\Controllers\Finances\BillingConceptController;
 use App\Http\Controllers\Amenities\AmenityController;
 use App\Http\Controllers\Amenities\ReservationController;
 
-// 🛡️ Gatehouse (Caseta y Accesos)
-use App\Http\Controllers\Gatehouse\RegisterInvitationController;
-use App\Http\Controllers\Gatehouse\VisitController;
-use App\Http\Controllers\Gatehouse\ParcelServiceController;
-
-// 🚓 Security (Seguridad y Rondines)
-use App\Http\Controllers\Security\PatrolController;
-use App\Http\Controllers\Security\CheckpointController;
+// 🛡️ AccessControl (Caseta, Accesos, Seguridad y Rondines — UNIFICADO)
+use App\Http\Controllers\AccessControl\DashboardController;
+use App\Http\Controllers\AccessControl\AccessLogController;
+use App\Http\Controllers\AccessControl\VisitController;
+use App\Http\Controllers\AccessControl\VisitEventController;
+use App\Http\Controllers\AccessControl\ParcelServiceController;
+use App\Http\Controllers\AccessControl\RegisterInvitationController;
+use App\Http\Controllers\AccessControl\FrequentVisitorController;
+use App\Http\Controllers\AccessControl\PatrolController;
+use App\Http\Controllers\AccessControl\CheckpointController;
+use App\Http\Controllers\AccessControl\IncidentController;
 use App\Models\Finances\Payment;
 
 // ==============================================================================
@@ -211,12 +214,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
 
     // ==========================================
-    // 🛡️ MÓDULO: GATEHOUSE & SECURITY
+    // 🛡️ MÓDULO: ACCESSCONTROL (Caseta + Seguridad UNIFICADO)
     // ==========================================
-    Route::resource('register-invitations', RegisterInvitationController::class);
+
+    // 🎯 Dashboard Unificado del Guardia
+    Route::get('/access-control', [DashboardController::class, 'index'])->name('access-control.dashboard');
+
+    // 📋 Bitácora Universal de Accesos
+    Route::get('/access-logs', [AccessLogController::class, 'index'])->name('access-logs.index');
+    Route::post('/access-logs', [AccessLogController::class, 'store'])->name('access-logs.store');
+    Route::get('/access-logs/{accessLog}', [AccessLogController::class, 'show'])->name('access-logs.show');
+    Route::put('/access-logs/{accessLog}', [AccessLogController::class, 'update'])->name('access-logs.update');
+    Route::delete('/access-logs/{accessLog}', [AccessLogController::class, 'destroy'])->name('access-logs.destroy');
+    Route::post('/access-logs/{accessLog}/checkout', [AccessLogController::class, 'checkout'])->name('access-logs.checkout');
+
+    // 👥 Visitas
     Route::resource('visits', VisitController::class);
+    Route::post('/visits/{visit}/ingreso', [VisitController::class, 'registrarIngreso'])->name('visits.ingreso');
+    Route::post('/visits/{visit}/salida', [VisitController::class, 'registrarSalida'])->name('visits.salida');
+
+    // 🎉 Eventos de Visita
+    Route::resource('visit-events', VisitEventController::class);
+
+    // 📦 Paquetería
     Route::resource('parcel-services', ParcelServiceController::class);
+    Route::post('/parcel-services/{parcel_service}/entregar', [ParcelServiceController::class, 'marcarEntregado'])->name('parcel-services.entregar');
+
+    // ✉️ Invitaciones de Registro
+    Route::resource('register-invitations', RegisterInvitationController::class);
+
+    // 🔁 Visitantes Frecuentes
+    Route::resource('frequent-visitors', FrequentVisitorController::class);
+
+    // 🚨 Incidencias
+    Route::resource('incidents', IncidentController::class);
+    Route::post('/incidents/{incident}/resolver', [IncidentController::class, 'resolver'])->name('incidents.resolver');
+    Route::post('/incidents/{incident}/atender', [IncidentController::class, 'iniciarAtencion'])->name('incidents.atender');
+
+    // 🛡️ Rondines
     Route::resource('patrols', PatrolController::class);
+    Route::post('/patrols/{patrol}/finalizar', [PatrolController::class, 'finalizar'])->name('patrols.finalizar');
+
+    // 📍 Puntos de Control
     Route::resource('checkpoints', CheckpointController::class);
 
 });

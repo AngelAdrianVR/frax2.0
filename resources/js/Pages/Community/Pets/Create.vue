@@ -1,41 +1,41 @@
 <template>
     <AppLayout :title="'Registrar mascota'">
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
+        <div class="p-4 sm:p-8">
             <Toast position="top-right" />
 
             <div class="max-w-4xl mx-auto">
                 <!-- Encabezado -->
                 <div class="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight">
                             Nueva Mascota
                         </h1>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                        <p class="text-sm text-zinc-400 mt-1">
                             Registra una nueva mascota y su documentación.
                         </p>
                     </div>
                     <Link 
                         :href="isAdmin ? route('admin.pets.index') : route('pets.index')" 
-                        class="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors flex items-center gap-2 text-sm font-medium"
+                        class="text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-2 text-sm font-medium"
                     >
                         <i class="pi pi-arrow-left text-xs"></i> Volver
                     </Link>
                 </div>
 
                 <!-- Formulario -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                <div class="bg-zinc-900 border border-zinc-800/60 rounded-xl overflow-hidden">
                     <form @submit.prevent="submit" class="p-6 sm:p-8 space-y-8">
                         
                         <!-- 1. INFORMACIÓN BÁSICA -->
                         <div>
-                            <h3 class="text-lg font-bold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
-                                <i class="pi pi-id-card text-blue-500"></i> Información Básica
+                            <h3 class="text-sm font-medium text-zinc-200 mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#0E63B1]"></span> Información Básica
                             </h3>
                             
                             <!-- Admin Selector -->
-                            <div v-if="isAdmin && privateUnits.length > 0" class="p-4 mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-                                <label for="private_unit" class="text-sm font-bold text-blue-800 dark:text-blue-300 block mb-2">
-                                    Asignar a Propiedad (Modo Admin) <span class="text-red-500">*</span>
+                            <div v-if="isAdmin && privateUnits.length > 0" class="p-4 mb-6 bg-zinc-800/50 rounded-xl border border-zinc-700/40">
+                                <label for="private_unit" class="text-xs font-medium text-zinc-400 uppercase tracking-wider block mb-2">
+                                    Asignar a Propiedad (Modo Admin) <span class="text-red-400">*</span>
                                 </label>
                                 <Dropdown
                                     id="private_unit"
@@ -47,40 +47,41 @@
                                     placeholder="Buscar calle, número o lote..."
                                     class="w-full"
                                     :class="{'p-invalid': form.errors.private_unit_id}"
+                                    panelClass="!bg-zinc-800 !border-zinc-700"
                                 />
-                                <small v-if="form.errors.private_unit_id" class="text-red-500 text-xs mt-1">
+                                <small v-if="form.errors.private_unit_id" class="text-red-400 text-xs mt-1">
                                     {{ form.errors.private_unit_id }}
                                 </small>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Nombre -->
-                                <div class="flex flex-col gap-2">
-                                    <label for="name" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                        Nombre <span class="text-red-500">*</span>
+                                <div class="flex flex-col gap-1.5">
+                                    <label for="name" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                                        Nombre <span class="text-red-400">*</span>
                                     </label>
                                     <InputText id="name" v-model="form.name" placeholder="Ej. Firulais" :class="{'p-invalid': form.errors.name}" class="w-full" />
-                                    <small v-if="form.errors.name" class="text-red-500 text-xs mt-1">{{ form.errors.name }}</small>
+                                    <small v-if="form.errors.name" class="text-red-400 text-xs mt-1">{{ form.errors.name }}</small>
                                 </div>
 
                                 <!-- Especie -->
-                                <div class="flex flex-col gap-2">
-                                    <label for="species" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                        Especie <span class="text-red-500">*</span>
+                                <div class="flex flex-col gap-1.5">
+                                    <label for="species" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                                        Especie <span class="text-red-400">*</span>
                                     </label>
                                     <Dropdown id="species" v-model="form.species" :options="speciesOptions" placeholder="Seleccionar..." :class="{'p-invalid': form.errors.species}" class="w-full" />
-                                    <small v-if="form.errors.species" class="text-red-500 text-xs mt-1">{{ form.errors.species }}</small>
+                                    <small v-if="form.errors.species" class="text-red-400 text-xs mt-1">{{ form.errors.species }}</small>
                                 </div>
 
                                 <!-- Raza -->
-                                <div class="flex flex-col gap-2">
-                                    <label for="race" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Raza</label>
+                                <div class="flex flex-col gap-1.5">
+                                    <label for="race" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Raza</label>
                                     <InputText id="race" v-model="form.race" placeholder="Ej. Labrador" :class="{'p-invalid': form.errors.race}" class="w-full" />
                                 </div>
 
-                                <!-- Chip ID (Nuevo) -->
-                                <div class="flex flex-col gap-2">
-                                    <label for="chip_id" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                                <!-- Chip ID -->
+                                <div class="flex flex-col gap-1.5">
+                                    <label for="chip_id" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                                         No. de Chip / Identificación
                                     </label>
                                     <InputText id="chip_id" v-model="form.additionals.chip_id" placeholder="Opcional" class="w-full" />
@@ -88,32 +89,32 @@
                             </div>
                         </div>
 
-                        <hr class="border-zinc-100 dark:border-zinc-700">
+                        <hr class="border-zinc-800/60">
 
                         <!-- 2. DETALLES ADICIONALES -->
                         <div>
-                            <h3 class="text-lg font-bold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
-                                <i class="pi pi-heart text-red-500"></i> Salud y Registro
+                            <h3 class="text-sm font-medium text-zinc-200 mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Salud y Registro
                             </h3>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <!-- Pedigree -->
-                                <div class="flex flex-col gap-2">
-                                    <label for="pedigree" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">No. Pedigree / Registro</label>
+                                <div class="flex flex-col gap-1.5">
+                                    <label for="pedigree" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">No. Pedigree / Registro</label>
                                     <InputText id="pedigree" v-model="form.additionals.pedigree" placeholder="Opcional" class="w-full" />
                                 </div>
 
                                 <!-- Checkboxes de estado -->
                                 <div class="flex flex-col gap-3 justify-center">
-                                    <div class="flex items-center gap-3 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-700/50">
+                                    <div class="flex items-center gap-3 p-3 border border-zinc-700/40 rounded-xl bg-zinc-800/50">
                                         <Checkbox v-model="form.additionals.sterilized" :binary="true" inputId="sterilized" />
-                                        <label for="sterilized" class="text-sm font-medium text-zinc-700 dark:text-zinc-200 cursor-pointer select-none">
+                                        <label for="sterilized" class="text-sm font-medium text-zinc-300 cursor-pointer select-none">
                                             Mascota Esterilizada
                                         </label>
                                     </div>
-                                    <div class="flex items-center gap-3 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-700/50">
+                                    <div class="flex items-center gap-3 p-3 border border-zinc-700/40 rounded-xl bg-zinc-800/50">
                                         <Checkbox v-model="form.additionals.vaccinated" :binary="true" inputId="vaccinated" />
-                                        <label for="vaccinated" class="text-sm font-medium text-zinc-700 dark:text-zinc-200 cursor-pointer select-none">
+                                        <label for="vaccinated" class="text-sm font-medium text-zinc-300 cursor-pointer select-none">
                                             Esquema de Vacunación Completo
                                         </label>
                                     </div>
@@ -121,20 +122,20 @@
                             </div>
 
                             <!-- Notas / Observaciones -->
-                            <div class="flex flex-col gap-2">
-                                <label for="notes" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Observaciones / Alergias</label>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="notes" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Observaciones / Alergias</label>
                                 <Textarea id="notes" v-model="form.additionals.notes" rows="3" placeholder="Detalles médicos relevantes, comportamiento, etc." class="w-full" autoResize />
                             </div>
                         </div>
 
-                        <hr class="border-zinc-100 dark:border-zinc-700">
+                        <hr class="border-zinc-800/60">
 
                         <!-- 3. DOCUMENTOS Y FOTOS -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <!-- Foto de Perfil -->
                             <div>
-                                <h3 class="text-lg font-bold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
-                                    <i class="pi pi-camera text-green-500"></i> Fotografía
+                                <h3 class="text-sm font-medium text-zinc-200 mb-4 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Fotografía
                                 </h3>
                                 <div class="flex flex-col gap-4">
                                     <FileUpload 
@@ -149,21 +150,21 @@
                                         @select="onPhotoSelect"
                                     />
                                     <div v-if="photoPreview" class="relative group w-32 h-32">
-                                        <img :src="photoPreview" class="w-full h-full object-cover rounded-lg border border-zinc-200 shadow-sm" />
+                                        <img :src="photoPreview" class="w-full h-full object-cover rounded-lg border border-zinc-700 shadow-sm" />
                                         <button type="button" @click="removePhoto" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
                                             <i class="pi pi-times text-xs"></i>
                                         </button>
                                     </div>
-                                    <small v-if="form.errors.photo" class="text-red-500">{{ form.errors.photo }}</small>
+                                    <small v-if="form.errors.photo" class="text-red-400">{{ form.errors.photo }}</small>
                                 </div>
                             </div>
 
                             <!-- Documentos -->
                             <div>
-                                <h3 class="text-lg font-bold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
-                                    <i class="pi pi-folder-open text-yellow-500"></i> Documentación
+                                <h3 class="text-sm font-medium text-zinc-200 mb-4 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span> Documentación
                                 </h3>
-                                <div class="bg-zinc-50 dark:bg-zinc-700/30 p-4 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-600">
+                                <div class="bg-zinc-800/50 p-4 rounded-xl border border-dashed border-zinc-700/60">
                                     <FileUpload 
                                         name="documents[]" 
                                         mode="advanced" 
@@ -178,8 +179,8 @@
                                     >
                                         <template #empty>
                                             <div class="flex flex-col items-center justify-center p-4 text-center">
-                                                <i class="pi pi-cloud-upload text-4xl text-zinc-400 mb-2"></i>
-                                                <p class="text-sm text-zinc-500">Arrastra aquí cartillas de vacunación, certificados o PDFs.</p>
+                                                <i class="pi pi-cloud-upload text-4xl text-zinc-500 mb-2"></i>
+                                                <p class="text-sm text-zinc-400">Arrastra aquí cartillas de vacunación, certificados o PDFs.</p>
                                             </div>
                                         </template>
                                     </FileUpload>
@@ -191,10 +192,10 @@
                         </div>
 
                         <!-- Botones -->
-                        <div class="border-t border-zinc-100 dark:border-zinc-700 pt-6 flex justify-end gap-3">
+                        <div class="border-t border-zinc-800/60 pt-6 flex justify-end gap-3">
                             <Link 
                                 :href="isAdmin ? route('admin.pets.index') : route('pets.index')" 
-                                class="px-5 py-2.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 font-medium transition-colors text-sm"
+                                class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm"
                             >
                                 Cancelar
                             </Link>
@@ -203,7 +204,7 @@
                                 label="Guardar Registro Completo" 
                                 icon="pi pi-check" 
                                 :loading="form.processing" 
-                                class="p-button-primary"
+                                class="!bg-[#0E63B1] !border-[#0E63B1] hover:!bg-[#0c5599] !rounded-xl !text-sm !font-medium !px-5 !py-2.5"
                             />
                         </div>
                     </form>

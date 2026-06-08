@@ -63,7 +63,7 @@ const confirmDelete = () => {
         <Toast position="bottom-right" />
 
         <!-- Fondo iOS #F2F2F7 -->
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 pb-12 transition-colors duration-300 font-sans tracking-tight">
+        <div class="min-h-screen pb-12 transition-colors duration-300 font-sans tracking-tight">
             
             <!-- Header Blur (iOS Navigation Bar) -->
             <div class="top-0 z-40">

@@ -38,7 +38,7 @@
 
                 <!-- ================= KPIs ESTILO iOS ================= -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div class="bg-white dark:bg-[#1C1C1E] rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex items-center gap-4">
+                    <div class="bg-white dark:bg-zinc-900 rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-zinc-900 flex items-center gap-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center bg-blue-50 text-blue-500 dark:bg-blue-500/20 dark:text-blue-400">
                             <i class="pi pi-chart-pie text-xl"></i>
                         </div>
@@ -49,7 +49,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1C1C1E] rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex items-center gap-4">
+                    <div class="bg-white dark:bg-zinc-900 rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-zinc-900 flex items-center gap-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center bg-red-50 text-red-500 dark:bg-red-500/20 dark:text-red-400">
                             <i class="pi pi-wallet text-xl"></i>
                         </div>
@@ -60,7 +60,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1C1C1E] rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex items-center gap-4">
+                    <div class="bg-white dark:bg-zinc-900 rounded-[24px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-zinc-900 flex items-center gap-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center bg-green-50 text-green-500 dark:bg-green-500/20 dark:text-green-400">
                             <i class="pi pi-home text-xl"></i>
                         </div>
@@ -73,7 +73,7 @@
                 </div>
 
                 <!-- ================= LISTA DE PROPIEDADES ================= -->
-                <div v-if="units.data.length === 0" class="bg-white dark:bg-[#1C1C1E] rounded-[24px] shadow-sm p-12 text-center border border-black/5 dark:border-white/5">
+                <div v-if="units.data.length === 0" class="bg-white dark:bg-zinc-900 rounded-[24px] shadow-sm p-12 text-center border border-black/5 dark:border-zinc-900">
                     <div class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600 mb-4">
                         <i class="pi pi-home" style="font-size: 3rem"></i>
                     </div>
@@ -83,9 +83,9 @@
 
                 <div v-else>
                     <!-- TABLA ADMIN (Desktop) -->
-                    <div class="hidden md:block overflow-hidden rounded-[24px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-black/5 dark:border-white/5 bg-white dark:bg-[#1C1C1E]">
+                    <div class="hidden md:block overflow-hidden rounded-[24px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-black/5 dark:border-zinc-900 bg-white dark:bg-zinc-900">
                         <table class="min-w-full divide-y divide-gray-100 dark:divide-zinc-800">
-                            <thead class="bg-black/10 dark:bg-white/10 backdrop-blur-md">
+                            <thead class="bg-zinc-50 dark:bg-zinc-800 backdrop-blur-md">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-[11px] font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Unidad</th>
                                     <th scope="col" class="px-6 py-4 text-left text-[11px] font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Propietario</th>
@@ -93,17 +93,17 @@
                                     <th scope="col" class="px-6 py-4 text-right text-[11px] font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Acciones Rápidas</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-zinc-800 bg-white dark:bg-[#1C1C1E]">
+                            <tbody class="divide-y divide-gray-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                                 <!-- SOLUCIÓN DE CLIC: Se quitó @click.stop del <td> para que toda la fila mande al show -->
                                 <tr 
                                     v-for="unit in units.data" 
                                     :key="unit.id"
                                     @click="$inertia.visit(route('admin.private-units.show', unit.id))"
-                                    class="hover:bg-gray-50/80 dark:hover:bg-[#2C2C2E]/50 transition-colors group cursor-pointer"
+                                    class="hover:bg-gray-50/80 dark:hover:bg-zinc-800/50 transition-colors group cursor-pointer"
                                 >
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-gray-500 dark:text-gray-400">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
                                                 <i class="pi pi-home"></i>
                                             </div>
                                             <div class="ml-4">

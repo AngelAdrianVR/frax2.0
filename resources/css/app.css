@@ -2,67 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-[x-cloak] {
-    display: none;
-}
+[x-cloak] { display: none; }
 
-/* =========================================
-   SCROLLBAR MODERNA (Invisible style)
-   ========================================= */
+/* ═══════════════════════════════════════════
+   GLOBAL PREMIUM STYLES — Frax 2.0
+   ═══════════════════════════════════════════ */
 
-/* Configuración base para scroll suave en toda la app */
+/* Smooth scrolling */
 html {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Firefox --- */
+/* Font rendering optimization */
+body {
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* ── Scrollbar premium (subtle, floating) ── */
 html {
-    scrollbar-width: thin; /* Barra delgada */
-    scrollbar-color: transparent transparent; /* [Thumb] [Track] - Invisible por defecto */
-    transition: scrollbar-color 0.3s ease;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
 }
 
-/* Al pasar el mouse sobre la ventana, aparece sutilmente */
 html:hover {
-    /* Usamos tu azul (#146ada) o un tono similar compatible */
-    scrollbar-color: #146ada transparent; 
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
 }
 
-/* --- WebKit (Chrome, Edge, Safari) --- */
-
-/* 1. El contenedor de la barra */
 ::-webkit-scrollbar {
-    width: 3px;  /* Ancho vertical elegante (ni muy fino ni muy grueso) */
-    height: 3px; /* Alto horizontal */
+    width: 4px;
+    height: 4px;
 }
 
-/* 2. El carril (Track) - Siempre transparente para efecto flotante */
 ::-webkit-scrollbar-track {
-    background: transparent; 
-    margin-top: 2px;
-    margin-bottom: 2px;
+    background: transparent;
 }
 
-/* 3. La barra (Thumb) - Estado INVISIBLE por defecto */
 ::-webkit-scrollbar-thumb {
     background-color: transparent;
-    border-radius: 20px;       /* Bordes totalmente redondeados */
-    border: 2px solid transparent; /* Margen transparente interno */
-    background-clip: content-box; /* Hace que el color se recorte dentro del borde */
+    border-radius: 20px;
 }
 
-/* 4. Estado VISIBLE (Al pasar mouse por la página) */
-/* Usamos body:hover para que se active al usar la app */
 body:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(20, 106, 218, 0.4); /* Azul semitransparente (#146ada con opacidad) */
+    background-color: rgba(148, 163, 184, 0.25);
 }
 
-/* 5. Estado INTERACTIVO (Al pasar mouse sobre la propia barra) */
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #146ada !important; /* Azul sólido e intenso al querer arrastrar */
+    background-color: rgba(148, 163, 184, 0.45);
 }
 
-/* 6. Esquina transparente */
 ::-webkit-scrollbar-corner {
     background: transparent;
+}
+
+/* ── Selection color ── */
+::selection {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: inherit;
+}
+
+.dark ::selection {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Focus ring premium ── */
+*:focus-visible {
+    outline: 2px solid rgba(0, 0, 0, 0.15);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.dark *:focus-visible {
+    outline-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Tabular numbers for data ── */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Ring utility ── */
+.ring-subtle {
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+}
+
+.dark .ring-subtle {
+    box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.06);
 }

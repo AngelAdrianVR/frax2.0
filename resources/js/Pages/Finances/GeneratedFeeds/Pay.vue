@@ -59,7 +59,7 @@ const formatCurrency = (value) => {
                     
                     <!-- Columna Izquierda: Detalles del Recibo (Checkout) -->
                     <div class="lg:col-span-5">
-                        <div class="bg-white dark:bg-zinc-800 rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-700/50 relative overflow-hidden">
+                        <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-900/50 relative overflow-hidden">
                             <!-- Patrón decorativo de recibo -->
                             <div class="absolute top-0 left-0 right-0 h-2 flex justify-around">
                                 <div v-for="i in 20" :key="i" class="w-2 h-2 bg-zinc-50 dark:bg-zinc-900 rounded-b-full"></div>
@@ -105,7 +105,7 @@ const formatCurrency = (value) => {
 
                     <!-- Columna Derecha: Método de Pago y Formulario -->
                     <div class="lg:col-span-7">
-                        <div class="bg-white dark:bg-zinc-800 rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-700/50">
+                        <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-900/50">
                             <h3 class="text-xl font-bold text-zinc-900 dark:text-white mb-6">Método de Pago</h3>
                             
                             <!-- Tabs de Método de Pago -->

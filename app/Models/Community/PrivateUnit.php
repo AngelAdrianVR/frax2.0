@@ -3,11 +3,12 @@
 namespace App\Models\Community;
 
 use App\Models\Settings\Subdivision;
-use App\Models\Gatehouse\Visit;
-use App\Models\Gatehouse\VisitEvent;
-use App\Models\Gatehouse\FrequentVisitor;
-use App\Models\Gatehouse\AccessLog;
-use App\Models\Gatehouse\ParcelService;
+use App\Models\AccessControl\Visit;
+use App\Models\AccessControl\VisitEvent;
+use App\Models\AccessControl\FrequentVisitor;
+use App\Models\AccessControl\AccessLog;
+use App\Models\AccessControl\ParcelService;
+use App\Models\AccessControl\Incident;
 use App\Models\Finances\GeneratedFee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -102,6 +103,11 @@ class PrivateUnit extends Model
     public function parcelServices(): HasMany
     {
         return $this->hasMany(ParcelService::class, 'private_unit_id');
+    }
+
+    public function incidents(): HasMany
+    {
+        return $this->hasMany(Incident::class, 'private_unit_id');
     }
 
     // --- Finanzas ---

@@ -3,10 +3,11 @@
 namespace App\Models\Community;
 
 use App\Models\Settings\Subdivision;
-use App\Models\Security\Patrol;
+use App\Models\AccessControl\Patrol;
 use App\Models\Community\Vehicle;
-use App\Models\Gatehouse\ParcelService;
-use App\Models\Gatehouse\AccessLog;
+use App\Models\AccessControl\ParcelService;
+use App\Models\AccessControl\AccessLog;
+use App\Models\AccessControl\Incident;
 use App\Models\Finances\Payment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -116,6 +117,11 @@ class User extends Authenticatable
     public function accessLogs(): HasMany
     {
         return $this->hasMany(AccessLog::class, 'user_id');
+    }
+
+    public function reportedIncidents(): HasMany
+    {
+        return $this->hasMany(Incident::class, 'reported_by_user_id');
     }
 
     // --- Helpers ------------------------------------

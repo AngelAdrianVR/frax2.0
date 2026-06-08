@@ -1,27 +1,27 @@
 <template>
     <AppLayout title="Registrar vehículo">
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
+        <div class="p-4 sm:p-8">
             <Toast position="top-right" />
 
             <div class="max-w-3xl mx-auto">
                 <div class="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight">
                             Nuevo Vehículo
                         </h1>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                        <p class="text-sm text-zinc-400 mt-1">
                             Ingresa los datos del vehículo para registrarlo en tu unidad.
                         </p>
                     </div>
                     <Back />
                 </div>
 
-                <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                <div class="bg-zinc-900 border border-zinc-800/60 rounded-xl overflow-hidden">
                     <form @submit.prevent="submit" class="p-6 sm:p-8 space-y-6">
                         
-                        <div v-if="isAdmin && privateUnits.length > 0" class="p-4 mb-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-                            <label for="private_unit" class="text-sm font-bold text-blue-800 dark:text-blue-300 block mb-2">
-                                Asignar a Propiedad (Modo Admin) <span class="text-red-500">*</span>
+                        <div v-if="isAdmin && privateUnits.length > 0" class="p-4 mb-4 bg-zinc-800/50 rounded-xl border border-zinc-700/40">
+                            <label for="private_unit" class="text-xs font-medium text-zinc-400 uppercase tracking-wider block mb-2">
+                                Asignar a Propiedad (Modo Admin) <span class="text-red-400">*</span>
                             </label>
                             <Dropdown
                                 id="private_unit"
@@ -34,19 +34,19 @@
                                 class="w-full"
                                 :class="{'p-invalid': form.errors.private_unit_id}"
                             />
-                            <small class="text-zinc-500 dark:text-zinc-400 block mt-1">
+                            <small class="text-zinc-500 block mt-1">
                                 Selecciona la casa a la cual pertenecerá este vehículo.
                             </small>
-                            <small v-if="form.errors.private_unit_id" class="text-red-500 text-xs mt-1">
+                            <small v-if="form.errors.private_unit_id" class="text-red-400 text-xs mt-1">
                                 {{ form.errors.private_unit_id }}
                             </small>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             
-                            <div class="flex flex-col gap-2">
-                                <label for="plate" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                    Placa / Matrícula <span class="text-red-500">*</span>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="plate" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                                    Placa / Matrícula <span class="text-red-400">*</span>
                                 </label>
                                 <InputText 
                                     id="plate" 
@@ -55,34 +55,31 @@
                                     :class="{'p-invalid': form.errors.plate}"
                                     class="w-full"
                                 />
-                                <small v-if="form.errors.plate" class="text-red-500 text-xs mt-1">
+                                <small v-if="form.errors.plate" class="text-red-400 text-xs mt-1">
                                     {{ form.errors.plate }}
                                 </small>
                             </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label for="tag" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                            <div class="flex flex-col gap-1.5">
+                                <label for="tag" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                                     Tag de Acceso
-                                    <i class="pi pi-wifi z-10" />
                                 </label>
-                                <span class="p-input-icon-left w-full">
-                                    <InputText 
-                                        id="tag" 
-                                        v-model="form.tag_access" 
-                                        placeholder="Código del sensor" 
-                                        :class="{'p-invalid': form.errors.tag_access}"
-                                        class="w-full"
-                                    />
-                                </span>
-                                <small class="text-zinc-400 dark:text-zinc-500 text-xs">Opcional. Para acceso automatizado.</small>
-                                <small v-if="form.errors.tag_access" class="text-red-500 text-xs">
+                                <InputText 
+                                    id="tag" 
+                                    v-model="form.tag_access" 
+                                    placeholder="Código del sensor" 
+                                    :class="{'p-invalid': form.errors.tag_access}"
+                                    class="w-full"
+                                />
+                                <small class="text-zinc-500 text-xs">Opcional. Para acceso automatizado.</small>
+                                <small v-if="form.errors.tag_access" class="text-red-400 text-xs">
                                     {{ form.errors.tag_access }}
                                 </small>
                             </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label for="brand" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                    Marca <span class="text-red-500">*</span>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="brand" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                                    Marca <span class="text-red-400">*</span>
                                 </label>
                                 <InputText 
                                     id="brand" 
@@ -91,14 +88,14 @@
                                     :class="{'p-invalid': form.errors.brand}"
                                     class="w-full"
                                 />
-                                <small v-if="form.errors.brand" class="text-red-500 text-xs mt-1">
+                                <small v-if="form.errors.brand" class="text-red-400 text-xs mt-1">
                                     {{ form.errors.brand }}
                                 </small>
                             </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label for="model" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                    Modelo <span class="text-red-500">*</span>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="model" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                                    Modelo <span class="text-red-400">*</span>
                                 </label>
                                 <InputText 
                                     id="model" 
@@ -107,14 +104,14 @@
                                     :class="{'p-invalid': form.errors.model}"
                                     class="w-full"
                                 />
-                                <small v-if="form.errors.model" class="text-red-500 text-xs mt-1">
+                                <small v-if="form.errors.model" class="text-red-400 text-xs mt-1">
                                     {{ form.errors.model }}
                                 </small>
                             </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label for="color" class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                    Color <span class="text-red-500">*</span>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="color" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                                    Color <span class="text-red-400">*</span>
                                 </label>
                                 <div class="flex gap-2 relative">
                                     <InputText 
@@ -135,21 +132,21 @@
                                         />
                                         
                                         <div 
-                                            class="w-10 h-10 rounded border border-zinc-300 dark:border-zinc-600 shadow-sm transition-colors duration-200"
+                                            class="w-10 h-10 rounded-xl border border-zinc-600 shadow-sm transition-colors duration-200"
                                             :style="{ backgroundColor: finalColorPreview }"
                                             title="Clic para seleccionar un color personalizado"
                                         ></div>
                                     </div>
                                 </div>
-                                <small v-if="form.errors.color" class="text-red-500 text-xs mt-1">
+                                <small v-if="form.errors.color" class="text-red-400 text-xs mt-1">
                                     {{ form.errors.color }}
                                 </small>
                             </div>
 
                         </div>
 
-                        <div class="border-t border-zinc-100 dark:border-zinc-700 pt-6 mt-2">
-                            <label class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2 block">
+                        <div class="border-t border-zinc-800/60 pt-6 mt-2">
+                            <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2 block">
                                 Fotografía del Vehículo (opcional)
                             </label>
                             
@@ -169,13 +166,13 @@
                                     <small class="text-zinc-500 block mt-2">
                                         Formatos: JPG, PNG. Máx 5MB.
                                     </small>
-                                    <small v-if="form.errors.photo" class="text-red-500 text-xs mt-1 block">
+                                    <small v-if="form.errors.photo" class="text-red-400 text-xs mt-1 block">
                                         {{ form.errors.photo }}
                                     </small>
                                 </div>
                                 
                                 <div v-if="photoPreview" class="relative group">
-                                    <img :src="photoPreview" alt="Preview" class="h-24 w-24 object-cover rounded-lg border border-zinc-200 shadow-sm" />
+                                    <img :src="photoPreview" alt="Preview" class="h-24 w-24 object-cover rounded-lg border border-zinc-700 shadow-sm" />
                                     <button 
                                         type="button"
                                         @click="removePhoto"
@@ -188,10 +185,10 @@
                             </div>
                         </div>
 
-                        <div class="border-t border-zinc-100 dark:border-zinc-700 pt-6 flex justify-end gap-3">
+                        <div class="border-t border-zinc-800/60 pt-6 flex justify-end gap-3">
                             <Link 
                                 href="/vehicles" 
-                                class="px-5 py-2.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 font-medium transition-colors text-sm"
+                                class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm"
                             >
                                 Cancelar
                             </Link>
@@ -200,7 +197,7 @@
                                 label="Guardar Vehículo" 
                                 icon="pi pi-check" 
                                 :loading="form.processing" 
-                                class="p-button-primary"
+                                class="!bg-[#0E63B1] !border-[#0E63B1] hover:!bg-[#0c5599] !rounded-xl !text-sm !font-medium !px-5 !py-2.5"
                             />
                         </div>
                     </form>
