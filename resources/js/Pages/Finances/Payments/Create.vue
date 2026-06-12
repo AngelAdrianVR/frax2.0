@@ -1,6 +1,10 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useForm, Link } from '@inertiajs/vue3';
+import Select from 'primevue/select';
+import InputNumber from 'primevue/inputnumber';
+import Button from 'primevue/button';
+
 
 const props = defineProps({
     users: Array,
@@ -10,14 +14,17 @@ const props = defineProps({
 const form = useForm({
     amount: '',
     payment_method: 'Transferencia',
-    payment_date: new Date().toISOString().slice(0, 16), // Formato YYYY-MM-DDTHH:mm
+    payment_date: new Date(), // Objeto Date nativo para evitar errores de parseo
     transaction_folio: '',
     user_id: '',
     billing_concept_id: ''
 });
 
 const submit = () => {
-    form.post(route('payments.store'));
+    form.post(route('payments.store'), {
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
 </script>
 
@@ -30,7 +37,7 @@ const submit = () => {
                     <Link :href="route('payments.index')" class="text-sm text-zinc-400 hover:text-zinc-200 font-medium flex items-center gap-1 transition-colors">
                         &larr; Volver a Pagos
                     </Link>
-                    <h1 class="text-lg font-medium text-zinc-100 tracking-tight mt-2">Registrar Nuevo Pago</h1>
+                    <h1 class="text-lg font-medium text-zinc-100 tracking-tight mt-2 m-0">Registrar nuevo pago</h1>
                     <p class="text-sm text-zinc-400 mt-1">Ingresa los detalles de la transacción recibida.</p>
                 </div>
 
@@ -40,22 +47,14 @@ const submit = () => {
                         <!-- Residente y Concepto -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Residente (Obligatorio)</label>
-                                <select v-model="form.user_id" required
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600">
-                                    <option value="" disabled>Selecciona un residente...</option>
-                                    <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
-                                </select>
+                                <label class="text-xs font-medium text-zinc-400">Residente (obligatorio)</label>
+                                <Select v-model="form.user_id" :options="users" optionLabel="name" optionValue="id" placeholder="Selecciona un residente..." class="w-full" />
                                 <p v-if="form.errors.user_id" class="text-sm text-red-400">{{ form.errors.user_id }}</p>
                             </div>
                             
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Concepto de Cobro</label>
-                                <select v-model="form.billing_concept_id"
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600">
-                                    <option value="">Abono Libre / General</option>
-                                    <option v-for="concept in concepts" :key="concept.id" :value="concept.id">{{ concept.name }}</option>
-                                </select>
+                                <label class="text-xs font-medium text-zinc-400">Concepto de cobro</label>
+                                <Select v-model="form.billing_concept_id" :options="concepts" optionLabel="name" optionValue="id" placeholder="Abono Libre / General" :showClear="true" class="w-full" />
                                 <p v-if="form.errors.billing_concept_id" class="text-sm text-red-400">{{ form.errors.billing_concept_id }}</p>
                             </div>
                         </div>
@@ -63,21 +62,14 @@ const submit = () => {
                         <!-- Monto y Método -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Monto ($ MXN)</label>
-                                <input v-model="form.amount" type="number" step="0.01" min="0.01" required placeholder="0.00"
-                                       class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
+                                <label class="text-xs font-medium text-zinc-400">Monto ($ MXN)</label>
+                                <InputNumber v-model="form.amount" :min="0.01" :maxFractionDigits="2" :currency="'MXN'" :locale="'es-MX'" mode="currency" placeholder="$0.00" class="w-full" />
                                 <p v-if="form.errors.amount" class="text-sm text-red-400">{{ form.errors.amount }}</p>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Método de Pago</label>
-                                <select v-model="form.payment_method" required
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600">
-                                    <option value="Transferencia">Transferencia Bancaria</option>
-                                    <option value="Efectivo">Efectivo</option>
-                                    <option value="Tarjeta">Tarjeta (Terminal)</option>
-                                    <option value="Cheque">Cheque</option>
-                                </select>
+                                <label class="text-xs font-medium text-zinc-400">Método de pago</label>
+                                <Select v-model="form.payment_method" :options="['Transferencia', 'Efectivo', 'Tarjeta', 'Cheque']" placeholder="Selecciona un método" class="w-full" />
                                 <p v-if="form.errors.payment_method" class="text-sm text-red-400">{{ form.errors.payment_method }}</p>
                             </div>
                         </div>
@@ -85,16 +77,21 @@ const submit = () => {
                         <!-- Fecha y Folio -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Fecha y Hora del Pago</label>
-                                <input v-model="form.payment_date" type="datetime-local" required
-                                       class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
+                                <label class="text-xs font-medium text-zinc-400">Fecha y hora del pago</label>
+                                <DatePicker v-model="form.payment_date" 
+                                dateFormat="dd/mm/yy" 
+                                showTime 
+                                hourFormat="24" 
+                                showIcon 
+                                fluid 
+                                iconDisplay="input" 
+                                required />
                                 <p v-if="form.errors.payment_date" class="text-sm text-red-400">{{ form.errors.payment_date }}</p>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Folio (Opcional)</label>
-                                <input v-model="form.transaction_folio" type="text" placeholder="Ej. SPEI-12345"
-                                       class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
+                                <label class="text-xs font-medium text-zinc-400">Folio (opcional)</label>
+                                <InputText v-model="form.transaction_folio" placeholder="Ej. SPEI-12345" class="w-full" />
                                 <p class="text-xs text-zinc-500 mt-0.5">Déjalo vacío para auto-generar uno.</p>
                                 <p v-if="form.errors.transaction_folio" class="text-sm text-red-400">{{ form.errors.transaction_folio }}</p>
                             </div>
@@ -102,10 +99,7 @@ const submit = () => {
 
                         <!-- Botón Submit -->
                         <div class="flex justify-end pt-4 border-t border-zinc-800/60">
-                            <button type="submit" :disabled="form.processing"
-                                    class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50">
-                                {{ form.processing ? 'Registrando...' : 'Guardar Pago' }}
-                            </button>
+                            <Button type="submit" :label="form.processing ? 'Registrando...' : 'Guardar pago'" :loading="form.processing" class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5" />
                         </div>
                     </form>
                 </div>

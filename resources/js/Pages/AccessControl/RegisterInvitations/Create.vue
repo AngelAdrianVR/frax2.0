@@ -10,8 +10,8 @@
                         <i class="pi pi-arrow-left"></i>
                     </Link>
                     <div>
-                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight">
-                            Nueva Invitación
+                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight m-0">
+                            Nueva invitación
                         </h1>
                         <p class="mt-1 text-sm text-zinc-400">
                             Envía un acceso para que un familiar o dueño se registre en el sistema.
@@ -25,37 +25,35 @@
                     <div class="p-6 sm:p-8 space-y-6">
                         <!-- Email -->
                         <div class="flex flex-col gap-1.5">
-                            <label for="email" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                                Correo Electrónico
+                            <label for="email" class="text-xs font-medium text-zinc-400">
+                                Correo electrónico
                             </label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                v-model="form.email" 
+                            <InputText
+                                id="email"
+                                v-model="form.email"
                                 placeholder="ejemplo@correo.com"
-                                class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.email }"
-                                required
+                                class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500"
+                                :class="{ 'p-invalid': form.errors.email }"
                             />
                             <p v-if="form.errors.email" class="text-sm text-red-400">{{ form.errors.email }}</p>
                         </div>
 
                         <!-- Rol -->
                         <div class="flex flex-col gap-1.5">
-                            <label for="role_type" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                                Tipo de Relación / Rol
+                            <label for="role_type" class="text-xs font-medium text-zinc-400">
+                                Tipo de relación / Rol
                             </label>
-                            <select 
-                                id="role_type" 
-                                v-model="form.role_type" 
-                                class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                :class="{ 'border-red-500 focus:border-red-500': form.errors.role_type }"
-                                required
-                            >
-                                <option value="" disabled>Selecciona el tipo</option>
-                                <option value="Familiar">Familiar / Residente</option>
-                                <option value="Dueño">Dueño / Co-Propietario</option>
-                            </select>
+                            <Select
+                                id="role_type"
+                                v-model="form.role_type"
+                                :options="roleOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Selecciona el tipo"
+                                class="w-full !rounded-xl !text-[13px]"
+                                :class="{ 'p-invalid': form.errors.role_type }"
+                                pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100"
+                            />
                             <p v-if="form.errors.role_type" class="text-sm text-red-400">{{ form.errors.role_type }}</p>
                         </div>
                         
@@ -81,14 +79,12 @@
                               class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm">
                             Cancelar
                         </Link>
-                        <button 
-                            type="submit" 
-                            :disabled="form.processing"
-                            class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50"
-                        >
-                            <span v-if="form.processing"><i class="pi pi-spin pi-spinner mr-2"></i> Enviando...</span>
-                            <span v-else>Enviar Invitación</span>
-                        </button>
+                        <Button
+                            type="submit"
+                            :label="form.processing ? 'Enviando...' : 'Enviar invitación'"
+                            :loading="form.processing"
+                            class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5"
+                        />
                     </div>
                 </form>
 
@@ -103,6 +99,9 @@ import { useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
+import Select from 'primevue/select';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
 const toast = useToast();
 
@@ -110,6 +109,11 @@ const form = useForm({
     email: '',
     role_type: '',
 });
+
+const roleOptions = [
+    { label: 'Familiar / Residente', value: 'Familiar' },
+    { label: 'Dueño / Co-Propietario', value: 'Dueño' },
+];
 
 const submit = () => {
     form.post(route('register-invitations.store'), {

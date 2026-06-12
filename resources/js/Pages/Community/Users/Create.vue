@@ -1,7 +1,11 @@
 <script setup>
+import { computed } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import Select from 'primevue/select';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
 const props = defineProps({
     roles: Array
@@ -15,12 +19,19 @@ const form = useForm({
     password: '',
     alias: '',
     phone: '',
-    role_name: 'Residente', // Valor por defecto
+    role_name: 'Residente',
     committee_role: ''
 });
 
+const roleOptions = computed(() =>
+    props.roles.map(r => ({ label: r.name, value: r.name }))
+);
+
 const submit = () => {
-    form.post(route('users.store'));
+    form.post(route('users.store'), {
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
 </script>
 
@@ -31,7 +42,7 @@ const submit = () => {
                 
                 <div class="mb-6 px-4 sm:px-0 flex justify-between items-center">
                     <div>
-                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight">Nuevo Residente</h1>
+                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight m-0">Nuevo residente</h1>
                         <p class="text-sm text-zinc-400 mt-1">Registra un nuevo usuario en la comunidad.</p>
                     </div>
                     <Link :href="route('users.index')" class="text-zinc-400 hover:text-zinc-200 font-medium text-sm flex items-center gap-1 transition-colors">
@@ -49,53 +60,29 @@ const submit = () => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Nombre -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Nombre Completo <span class="text-red-400">*</span></label>
-                                    <input 
-                                        v-model="form.name" 
-                                        type="text" 
-                                        required
-                                        autocomplete="off"
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                    >
+                                    <label class="text-xs font-medium text-zinc-400">Nombre completo <span class="text-red-400">*</span></label>
+                                    <InputText v-model="form.name" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" :class="{ 'p-invalid': form.errors.name }" />
                                     <p v-if="form.errors.name" class="text-sm text-red-400">{{ form.errors.name }}</p>
                                 </div>
 
                                 <!-- Alias -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Alias / Apodo (Opcional)</label>
-                                    <input 
-                                        v-model="form.alias" 
-                                        type="text" 
-                                        autocomplete="off"
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                    >
+                                    <label class="text-xs font-medium text-zinc-400">Alias / Apodo (opcional)</label>
+                                    <InputText v-model="form.alias" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                     <p v-if="form.errors.alias" class="text-sm text-red-400">{{ form.errors.alias }}</p>
                                 </div>
 
                                 <!-- Email -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Correo Electrónico <span class="text-red-400">*</span></label>
-                                    <input 
-                                        v-model="form.email" 
-                                        type="email" 
-                                        required
-                                        autocomplete="off"
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                    >
+                                    <label class="text-xs font-medium text-zinc-400">Correo electrónico <span class="text-red-400">*</span></label>
+                                    <InputText v-model="form.email" type="email" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" :class="{ 'p-invalid': form.errors.email }" />
                                     <p v-if="form.errors.email" class="text-sm text-red-400">{{ form.errors.email }}</p>
                                 </div>
 
                                 <!-- Teléfono -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Teléfono</label>
-                                    <input 
-                                        v-model="form.phone" 
-                                        type="text"
-                                        inputmode="numeric"
-                                        autocomplete="off"
-                                        @input="form.phone = form.phone.replace(/[^0-9]/g, '')"
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                    >
+                                    <label class="text-xs font-medium text-zinc-400">Teléfono</label>
+                                    <InputText v-model="form.phone" @input="form.phone = form.phone.replace(/[^0-9]/g, '')" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                     <p v-if="form.errors.phone" class="text-sm text-red-400">{{ form.errors.phone }}</p>
                                 </div>
                                 
@@ -107,20 +94,10 @@ const submit = () => {
 
                                 <!-- Contraseña con botón de visualización -->
                                 <div class="md:col-span-2 max-w-md">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Contraseña Temporal <span class="text-red-400">*</span></label>
+                                    <label class="text-xs font-medium text-zinc-400">Contraseña temporal <span class="text-red-400">*</span></label>
                                     <div class="relative mt-1.5">
-                                        <input 
-                                            v-model="form.password" 
-                                            :type="showPassword ? 'text' : 'password'" 
-                                            required
-                                            autocomplete="new-password"
-                                            class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 pr-10 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                        >
-                                        <button 
-                                            type="button"
-                                            @click="showPassword = !showPassword"
-                                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-zinc-300 focus:outline-none transition-colors"
-                                        >
+                                        <InputText v-model="form.password" :type="showPassword ? 'text' : 'password'" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 !pr-10" :class="{ 'p-invalid': form.errors.password }" />
+                                        <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-zinc-300 focus:outline-none transition-colors">
                                             <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'" class="text-lg"></i>
                                         </button>
                                     </div>
@@ -134,43 +111,21 @@ const submit = () => {
 
                                 <!-- Rol de Sistema (Selector) -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Tipo de Usuario (Permisos) <span class="text-red-400">*</span></label>
-                                    <select 
-                                        v-model="form.role_name" 
-                                        required
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                    >
-                                        <option value="">Selecciona el tipo de acceso</option>
-                                        <option v-for="role in roles" :key="role.id" :value="role.name">
-                                            {{ role.name }}
-                                        </option>
-                                    </select>
+                                    <label class="text-xs font-medium text-zinc-400">Tipo de usuario (Permisos) <span class="text-red-400">*</span></label>
+                                    <Select v-model="form.role_name" :options="roleOptions" optionLabel="label" optionValue="value" placeholder="Selecciona el tipo de acceso" class="w-full !rounded-xl !text-[13px]" :class="{ 'p-invalid': form.errors.role_name }" pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                     <p class="text-xs text-zinc-500">Define a qué partes del sistema tendrá acceso.</p>
                                 </div>
 
                                 <!-- Puesto / Mesa directiva (Texto) -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Puesto / Cargo (Opcional)</label>
-                                    <input 
-                                        v-model="form.committee_role" 
-                                        type="text" 
-                                        placeholder="Ej: Tesorero, Administrador, Vigilante..."
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600"
-                                    >
+                                    <label class="text-xs font-medium text-zinc-400">Puesto / Cargo (opcional)</label>
+                                    <InputText v-model="form.committee_role" placeholder="Ej: Tesorero, Administrador, Vigilante..." class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500" />
                                     <p class="text-xs text-zinc-500">Este texto se mostrará públicamente en su tarjeta.</p>
                                 </div>
                             </div>
 
                             <div class="flex justify-end pt-4 border-t border-zinc-800/60">
-                                <button 
-                                    type="submit" 
-                                    :disabled="form.processing"
-                                    class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50 flex items-center gap-2"
-                                >
-                                    <i class="pi pi-save" v-if="!form.processing"></i>
-                                    <i class="pi pi-spinner pi-spin" v-else></i>
-                                    Crear Residente
-                                </button>
+                                <Button type="submit" label="Crear residente" icon="pi pi-save" :loading="form.processing" class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5" />
                             </div>
                         </form>
                     </div>

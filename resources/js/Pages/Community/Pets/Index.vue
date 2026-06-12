@@ -2,13 +2,13 @@
     <AppLayout :title="'Mis Mascotas'">
         <ConfirmDialog></ConfirmDialog>
 
-        <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
+        <div class="text-zinc-800 dark:text-zinc-100 p-4 sm:p-8 transition-colors duration-300">
             
             <!-- Encabezado -->
             <div class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
-                        Mis Mascotas
+                    <h1 class="text-3xl font-bold text-zinc-100 tracking-tight m-0">
+                        Mis mascotas
                     </h1>
                     <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                         Gestiona el perfil, historial médico y documentación de tus mascotas.
@@ -23,7 +23,7 @@
             <div class="max-w-7xl mx-auto">
                 
                 <!-- ESTADO VACÍO -->
-                <div v-if="pets.data.length === 0" class="bg-white dark:bg-zinc-800 rounded-xl shadow-sm p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-700">
+                <div v-if="pets.data.length === 0" class="rounded-xl shadow-sm p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-700">
                     <div class="mx-auto h-12 w-12 text-zinc-400">
                         <i class="pi pi-briefcase text-4xl"></i>
                     </div>
@@ -33,25 +33,25 @@
 
                 <div v-else>
                     <!-- VISTA DESKTOP (Tabla) -->
-                    <div class="hidden md:block overflow-hidden rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+                    <div class="hidden md:block overflow-hidden rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700">
                         <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-                            <thead class="bg-zinc-50 dark:bg-zinc-700/50">
+                            <thead class="bg-zinc-800/50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-400">
                                         Mascota
                                     </th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-400">
                                         Detalles & Especie
                                     </th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-zinc-400">
                                         Salud & Documentos
                                     </th>
-                                    <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-zinc-400">
                                         Acciones
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700 bg-white dark:bg-zinc-800">
+                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                                 <tr 
                                     v-for="pet in pets.data" 
                                     :key="pet.id" 
@@ -126,7 +126,7 @@
                             v-for="pet in pets.data" 
                             :key="pet.id" 
                             @click="openModal(pet)"
-                            class="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden border border-zinc-200 dark:border-zinc-700 cursor-pointer active:scale-[0.98] transition-transform"
+                            class="rounded-xl shadow-md overflow-hidden border border-zinc-200 dark:border-zinc-700 cursor-pointer active:scale-[0.98] transition-transform"
                         >
                             <div class="bg-zinc-50 dark:bg-zinc-700/50 px-4 py-3 border-b border-zinc-100 dark:border-zinc-700 flex justify-between items-center">
                                 <div class="flex items-center gap-3">
@@ -165,8 +165,8 @@
                                     :href="link.url" 
                                     class="px-4 py-2 text-sm border rounded-md transition-colors"
                                     :class="link.active 
-                                        ? 'bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-500' 
-                                        : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600'"
+                                        ? 'bg-[#0E63B1] text-white border-[#0E63B1]' 
+                                        : 'text-zinc-700 border-zinc-300 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600'"
                                     v-html="link.label" 
                                 />
                             </template>
@@ -180,7 +180,7 @@
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <div @click="closeModal" class="absolute inset-0 bg-zinc-900/75 transition-opacity backdrop-blur-sm"></div>
             
-            <div class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
+            <div class="relative rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
                 
                 <!-- Header -->
                 <div class="px-6 py-4 bg-zinc-50 dark:bg-zinc-700/50 border-b border-zinc-100 dark:border-zinc-700 flex justify-between items-center sticky top-0 z-10">
@@ -204,7 +204,7 @@
                                     <img v-if="photoPreview || form.photo_url" :src="photoPreview || form.photo_url" class="h-full w-full object-cover">
                                     <i v-else class="pi pi-camera text-4xl text-zinc-300"></i>
                                 </div>
-                                <label class="absolute bottom-0 right-0 bg-indigo-600 text-white py-2 px-3 rounded-full shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
+                                <label class="absolute bottom-0 right-0 bg-[#0E63B1] text-white py-2 px-3 rounded-full shadow-md cursor-pointer hover:bg-[#0c5599] transition-colors">
                                     <i class="pi pi-pencil text-xs"></i>
                                     <input type="file" class="hidden" @change="updatePhotoPreview" accept="image/*">
                                 </label>
@@ -313,9 +313,9 @@
                     </button>
                     <div class="flex gap-3 w-full sm:w-auto justify-end">
                         <button @click="closeModal" class="px-4 py-2 bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-600 rounded-lg text-zinc-700 dark:text-zinc-200 text-sm">Cancelar</button>
-                        <button @click="submitUpdate" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md text-sm font-medium transition-colors flex items-center gap-2" :disabled="processing">
+                        <button @click="submitUpdate" class="px-4 py-2 bg-[#0E63B1] hover:bg-[#0c5599] text-white rounded-lg shadow-md text-sm font-medium transition-colors flex items-center gap-2" :disabled="processing">
                             <i v-if="processing" class="pi pi-spin pi-spinner"></i>
-                            {{ processing ? 'Guardando...' : 'Guardar Cambios' }}
+                            {{ processing ? 'Guardando...' : 'Guardar cambios' }}
                         </button>
                     </div>
                 </div>

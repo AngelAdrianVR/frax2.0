@@ -1,6 +1,8 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, useForm } from '@inertiajs/vue3';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
 const form = useForm({
     name: '',
@@ -9,7 +11,10 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('checkpoints.store'));
+    form.post(route('checkpoints.store'), {
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
 </script>
 
@@ -23,7 +28,7 @@ const submit = () => {
                         <i class="pi pi-arrow-left"></i>
                     </Link>
                     <div>
-                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight">Nuevo Punto de Control</h1>
+                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight m-0">Nuevo punto de control</h1>
                         <p class="text-sm text-zinc-400">Registra un nuevo punto físico para los rondines.</p>
                     </div>
                 </div>
@@ -33,36 +38,39 @@ const submit = () => {
                         
                         <!-- Nombre -->
                         <div class="flex flex-col gap-1.5">
-                            <label for="name" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Nombre de la Ubicación</label>
-                            <input v-model="form.name" type="text" id="name" placeholder="Ej. Casa Club Norte, Alberca, Caseta Principal..." 
-                                class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" required />
+                            <label for="name" class="text-xs font-medium text-zinc-400">Nombre de la ubicación</label>
+                            <InputText
+                                id="name"
+                                v-model="form.name"
+                                placeholder="Ej. Casa Club Norte, Alberca, Caseta Principal..."
+                                class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500"
+                                :class="{ 'p-invalid': form.errors.name }"
+                            />
                             <p v-if="form.errors.name" class="text-sm text-red-400">{{ form.errors.name }}</p>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Coordenadas -->
                             <div class="flex flex-col gap-1.5">
-                                <label for="coordinates" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Coordenadas GPS (Opcional)</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <i class="pi pi-map text-zinc-500"></i>
-                                    </div>
-                                    <input v-model="form.coordinates" type="text" id="coordinates" placeholder="20.659698, -103.349609" 
-                                        class="w-full pl-11 bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
-                                </div>
+                                <label for="coordinates" class="text-xs font-medium text-zinc-400">Coordenadas GPS (opcional)</label>
+                                <InputText
+                                    id="coordinates"
+                                    v-model="form.coordinates"
+                                    placeholder="20.659698, -103.349609"
+                                    class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500"
+                                />
                                 <p v-if="form.errors.coordinates" class="text-sm text-red-400">{{ form.errors.coordinates }}</p>
                             </div>
 
                             <!-- Tag NFC -->
                             <div class="flex flex-col gap-1.5">
-                                <label for="tag_nfc_id" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">ID del Tag NFC / Código QR</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <i class="pi pi-qrcode text-zinc-500"></i>
-                                    </div>
-                                    <input v-model="form.tag_nfc_id" type="text" id="tag_nfc_id" placeholder="Ej. TAG-8839201" 
-                                        class="w-full pl-11 bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 font-mono" />
-                                </div>
+                                <label for="tag_nfc_id" class="text-xs font-medium text-zinc-400">ID del Tag NFC / Código QR</label>
+                                <InputText
+                                    id="tag_nfc_id"
+                                    v-model="form.tag_nfc_id"
+                                    placeholder="Ej. TAG-8839201"
+                                    class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500 !font-mono"
+                                />
                                 <p class="text-xs text-zinc-500">Identificador único que el guardia escaneará.</p>
                                 <p v-if="form.errors.tag_nfc_id" class="text-sm text-red-400">{{ form.errors.tag_nfc_id }}</p>
                             </div>
@@ -72,9 +80,13 @@ const submit = () => {
                             <Link :href="route('checkpoints.index')" class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm">
                                 Cancelar
                             </Link>
-                            <button type="submit" :disabled="form.processing" class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50 flex items-center">
-                                <i class="pi pi-save mr-2"></i> Guardar Punto
-                            </button>
+                            <Button
+                                type="submit"
+                                label="Guardar punto"
+                                icon="pi pi-save"
+                                :loading="form.processing"
+                                class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5"
+                            />
                         </div>
                     </form>
                 </div>

@@ -1,12 +1,13 @@
 <script setup>
 import { useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Select from 'primevue/select';
+import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
+import Button from 'primevue/button';
 
 const props = defineProps({
-    visit: {
-        type: Object,
-        required: true
-    }
+    visit: { type: Object, required: true }
 });
 
 const form = useForm({
@@ -17,8 +18,16 @@ const form = useForm({
     status: props.visit.status,
 });
 
+const accessTypeOptions = [
+    { label: '🚶‍♂️ Peatonal', value: 'Peatonal' },
+    { label: '🚗 Vehicular', value: 'Vehicular' },
+];
+
 const submit = () => {
-    form.put(route('visits.update', props.visit.id));
+    form.put(route('visits.update', props.visit.id), {
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
 </script>
 
@@ -33,7 +42,7 @@ const submit = () => {
                         <i class="pi pi-arrow-left text-sm"></i>
                     </Link>
                     <div>
-                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight">Editar Invitación</h1>
+                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight m-0">Editar invitación</h1>
                         <p class="text-sm text-zinc-400">Modifica los datos del pase de acceso.</p>
                     </div>
                 </div>
@@ -43,7 +52,7 @@ const submit = () => {
                     <!-- Tarjeta de Estatus -->
                     <div class="bg-zinc-900 border border-zinc-800/60 rounded-xl overflow-hidden">
                         <div class="p-6">
-                            <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">Estatus del Pase</label>
+                            <label class="block text-xs font-medium text-zinc-400 mb-3">Estatus del pase</label>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <label class="relative flex flex-col items-center justify-center p-3 border rounded-xl cursor-pointer transition-all duration-200"
                                     :class="form.status === 'Pendiente' ? 'border-amber-500/60 bg-amber-500/10' : 'border-zinc-700/40 hover:bg-zinc-800/50'">
@@ -78,34 +87,24 @@ const submit = () => {
                         <div class="p-6 space-y-5">
                             
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Visitante</label>
-                                <input v-model="form.name" type="text" required
-                                    class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
+                                <label class="text-xs font-medium text-zinc-400">Visitante</label>
+                                <InputText v-model="form.name" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" :class="{ 'p-invalid': form.errors.name }" />
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Tipo de Acceso</label>
-                                    <div class="relative">
-                                        <select v-model="form.access_type" 
-                                            class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 appearance-none">
-                                            <option value="Peatonal">🚶‍♂️ Peatonal</option>
-                                            <option value="Vehicular">🚗 Vehicular</option>
-                                        </select>
-                                        <i class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none text-xs"></i>
-                                    </div>
+                                    <label class="text-xs font-medium text-zinc-400">Tipo de acceso</label>
+                                    <Select v-model="form.access_type" :options="accessTypeOptions" optionLabel="label" optionValue="value" placeholder="Tipo" class="w-full !rounded-xl !text-[13px]" pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                 </div>
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Válido hasta</label>
-                                    <input v-model="form.expiration_date" type="datetime-local" 
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
+                                    <label class="text-xs font-medium text-zinc-400">Válido hasta</label>
+                                    <InputText v-model="form.expiration_date" type="datetime-local" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                 </div>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Motivo</label>
-                                <textarea v-model="form.reason" rows="2"
-                                    class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 resize-none"></textarea>
+                                <label class="text-xs font-medium text-zinc-400">Motivo</label>
+                                <Textarea v-model="form.reason" rows="2" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" autoResize />
                             </div>
                         </div>
                     </div>
@@ -114,11 +113,7 @@ const submit = () => {
                         <Link :href="route('visits.index')" class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm text-center">
                             Descartar
                         </Link>
-                        <button type="submit" :disabled="form.processing"
-                            class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50 flex items-center gap-2">
-                            <i v-if="form.processing" class="pi pi-spinner pi-spin"></i>
-                            <span v-else>Guardar Cambios</span>
-                        </button>
+                        <Button type="submit" label="Guardar cambios" :loading="form.processing" class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5" />
                     </div>
                 </form>
             </div>

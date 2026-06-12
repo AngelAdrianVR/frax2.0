@@ -111,6 +111,11 @@ const form = useForm({
     role_type: props.invitation.role_type || '',
 });
 
+const roleOptions = [
+    { label: 'Familiar / Residente', value: 'Familiar' },
+    { label: 'Dueño / Co-Propietario', value: 'Dueño' },
+];
+
 const submit = () => {
     form.put(route('register-invitations.update', props.invitation.id), {
         preserveScroll: true,

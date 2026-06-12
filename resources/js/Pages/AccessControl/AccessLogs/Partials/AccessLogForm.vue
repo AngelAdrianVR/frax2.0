@@ -1,8 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Textarea from 'primevue/textarea';
 
@@ -71,7 +69,7 @@ const submit = () => {
         <!-- Fila 1: Categoría + Método -->
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="block text-[12px] font-semibold text-zinc-400 uppercase tracking-[0.05em] mb-1.5">Tipo de Acceso *</label>
+                <label class="block text-[12px] font-semibold text-zinc-400 mb-1.5">Tipo de acceso *</label>
                 <Select
                     v-model="form.access_category"
                     :options="categoryOptions"
@@ -84,7 +82,7 @@ const submit = () => {
                 <p v-if="form.errors.access_category" class="text-[11px] text-red-500 mt-1">{{ form.errors.access_category }}</p>
             </div>
             <div>
-                <label class="block text-[12px] font-semibold text-zinc-400 uppercase tracking-[0.05em] mb-1.5">Verificación *</label>
+                <label class="block text-[12px] font-semibold text-zinc-400 mb-1.5">Verificación *</label>
                 <Select
                     v-model="form.verification_method"
                     :options="methodOptions"
@@ -97,7 +95,7 @@ const submit = () => {
 
         <!-- Fila 2: Nombre -->
         <div>
-            <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.05em] mb-1.5">Nombre del Visitante *</label>
+            <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5">Nombre del visitante *</label>
             <InputText v-model="form.visitor_name" placeholder="Ej. Juan Pérez" :class="[inputClass, { 'p-invalid': form.errors.visitor_name }]" />
             <p v-if="form.errors.visitor_name" class="text-[11px] text-red-500 mt-1">{{ form.errors.visitor_name }}</p>
         </div>
@@ -105,11 +103,11 @@ const submit = () => {
         <!-- Fila 3: Empresa + Identificación -->
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.05em] mb-1.5">Empresa</label>
+                <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5">Empresa</label>
                 <InputText v-model="form.visitor_company" placeholder="Opcional" :class="inputClass" />
             </div>
             <div>
-                <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.05em] mb-1.5">Identificación</label>
+                <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5">Identificación</label>
                 <InputText v-model="form.visitor_identification" placeholder="INE / ID" :class="inputClass" />
             </div>
         </div>
@@ -118,7 +116,7 @@ const submit = () => {
         <div class="bg-zinc-800/40 rounded-xl p-4 space-y-3 border border-zinc-700/40">
             <div class="flex items-center gap-2">
                 <i class="pi pi-car text-zinc-500 text-sm"></i>
-                <p class="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.05em]">Vehículo (opcional)</p>
+                <p class="text-[11px] font-semibold text-zinc-500">Vehículo (opcional)</p>
             </div>
             <div class="grid grid-cols-3 gap-4">
                 <div>
@@ -139,7 +137,7 @@ const submit = () => {
         <!-- Fila 5: Unidad + Notas -->
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="block text-[12px] font-semibold text-zinc-400 uppercase tracking-[0.05em] mb-1.5">Unidad de Destino *</label>
+                <label class="block text-[12px] font-semibold text-zinc-400 mb-1.5">Unidad de destino *</label>
                 <Select
                     v-model="form.private_unit_id"
                     :options="unitOptions"
@@ -153,7 +151,7 @@ const submit = () => {
                 <p v-if="form.errors.private_unit_id" class="text-[11px] text-red-400 mt-1">{{ form.errors.private_unit_id }}</p>
             </div>
             <div>
-                <label class="block text-[12px] font-semibold text-zinc-400 uppercase tracking-[0.05em] mb-1.5">Notas</label>
+                <label class="block text-[12px] font-semibold text-zinc-400 mb-1.5">Notas</label>
                 <Textarea v-model="form.notes" placeholder="Observaciones..." rows="2" :class="inputClass" autoResize />
             </div>
         </div>

@@ -1,6 +1,10 @@
 <script setup>
+import { computed } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useForm, Link } from '@inertiajs/vue3';
+import Select from 'primevue/select';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
 const props = defineProps({
     patrol: Object,
@@ -15,8 +19,21 @@ const form = useForm({
     scanned_points: props.patrol.scanned_points
 });
 
+const guardOptions = computed(() =>
+    props.guards.map(g => ({ label: g.name, value: g.id }))
+);
+
+const statusOptions = [
+    { label: 'Activo (En curso)', value: 'Activo' },
+    { label: 'Terminado (Sin novedad)', value: 'Terminado' },
+    { label: 'Incidente (Atención requerida)', value: 'Incidente' },
+];
+
 const submit = () => {
-    form.put(route('patrols.update', props.patrol.id));
+    form.put(route('patrols.update', props.patrol.id), {
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
 </script>
 
@@ -36,7 +53,7 @@ const submit = () => {
                 <div class="bg-zinc-900 border border-zinc-800/60 rounded-xl overflow-hidden">
                     <div class="px-6 py-8 sm:p-10">
                         <div class="mb-8">
-                            <h2 class="text-lg font-medium text-zinc-100 tracking-tight">Editar Rondín</h2>
+                            <h2 class="text-lg font-medium text-zinc-100 tracking-tight m-0">Editar rondín</h2>
                             <p class="mt-1 text-sm text-zinc-400">Actualiza la información del recorrido seleccionado.</p>
                         </div>
 
@@ -44,28 +61,33 @@ const submit = () => {
                             
                             <!-- Guardia -->
                             <div class="flex flex-col gap-1.5">
-                                <label for="user_id" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Guardia Asignado *</label>
-                                <select id="user_id" v-model="form.user_id" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" required>
-                                    <option value="" disabled>Selecciona un guardia...</option>
-                                    <option v-for="guard in guards" :key="guard.id" :value="guard.id">
-                                        {{ guard.name }}
-                                    </option>
-                                </select>
+                                <label for="user_id" class="text-xs font-medium text-zinc-400">Guardia asignado *</label>
+                                <Select
+                                    id="user_id"
+                                    v-model="form.user_id"
+                                    :options="guardOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Selecciona un guardia..."
+                                    class="w-full !rounded-xl !text-[13px]"
+                                    :class="{ 'p-invalid': form.errors.user_id }"
+                                    pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100"
+                                />
                                 <p v-if="form.errors.user_id" class="text-sm text-red-400">{{ form.errors.user_id }}</p>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Inicio -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label for="start_time" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Fecha y Hora de Inicio *</label>
-                                    <input type="datetime-local" id="start_time" v-model="form.start_time" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" required>
+                                    <label for="start_time" class="text-xs font-medium text-zinc-400">Fecha y hora de inicio *</label>
+                                    <InputText id="start_time" v-model="form.start_time" type="datetime-local" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                     <p v-if="form.errors.start_time" class="text-sm text-red-400">{{ form.errors.start_time }}</p>
                                 </div>
 
                                 <!-- Fin -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label for="end_time" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Fecha y Hora de Fin</label>
-                                    <input type="datetime-local" id="end_time" v-model="form.end_time" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600">
+                                    <label for="end_time" class="text-xs font-medium text-zinc-400">Fecha y hora de fin</label>
+                                    <InputText id="end_time" v-model="form.end_time" type="datetime-local" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                     <p class="text-xs text-zinc-500 mt-0.5">Dejar vacío si el rondín aún está en curso.</p>
                                     <p v-if="form.errors.end_time" class="text-sm text-red-400">{{ form.errors.end_time }}</p>
                                 </div>
@@ -74,19 +96,24 @@ const submit = () => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Estatus -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label for="status" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Estatus del Rondín *</label>
-                                    <select id="status" v-model="form.status" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" required>
-                                        <option value="Activo">Activo (En curso)</option>
-                                        <option value="Terminado">Terminado (Sin Novedad)</option>
-                                        <option value="Incidente">Incidente (Atención requerida)</option>
-                                    </select>
+                                    <label for="status" class="text-xs font-medium text-zinc-400">Estatus del rondín *</label>
+                                    <Select
+                                        id="status"
+                                        v-model="form.status"
+                                        :options="statusOptions"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Selecciona estatus"
+                                        class="w-full !rounded-xl !text-[13px]"
+                                        pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100"
+                                    />
                                     <p v-if="form.errors.status" class="text-sm text-red-400">{{ form.errors.status }}</p>
                                 </div>
 
                                 <!-- Puntos Escaneados -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label for="scanned_points" class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Puntos Escaneados</label>
-                                    <input type="number" id="scanned_points" v-model="form.scanned_points" min="0" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600">
+                                    <label for="scanned_points" class="text-xs font-medium text-zinc-400">Puntos escaneados</label>
+                                    <InputText id="scanned_points" v-model="form.scanned_points" type="number" min="0" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                     <p v-if="form.errors.scanned_points" class="text-sm text-red-400">{{ form.errors.scanned_points }}</p>
                                 </div>
                             </div>
@@ -96,9 +123,12 @@ const submit = () => {
                                 <Link :href="route('patrols.index')" class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm">
                                     Cancelar
                                 </Link>
-                                <button type="submit" :disabled="form.processing" class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50">
-                                    Guardar Cambios
-                                </button>
+                                <Button
+                                    type="submit"
+                                    label="Guardar cambios"
+                                    :loading="form.processing"
+                                    class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5"
+                                />
                             </div>
 
                         </form>

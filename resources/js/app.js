@@ -12,6 +12,9 @@ import Accordion from 'primevue/accordion';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
 import 'primeicons/primeicons.css';
+import DatePicker from 'primevue/datepicker';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
 
 // Configuración de Tema (Aura + Zinc)
 import Aura from '@primeuix/themes/aura'; 
@@ -19,6 +22,7 @@ import { definePreset } from '@primeuix/themes';
 
 const MyPreset = definePreset(Aura, {
     semantic: {
+        // Mapeo de la paleta primaria global a Zinc
         primary: {
             50: '{zinc.50}',
             100: '{zinc.100}',
@@ -31,6 +35,27 @@ const MyPreset = definePreset(Aura, {
             800: '{zinc.800}',
             900: '{zinc.900}',
             950: '{zinc.950}'
+        },
+        // Separación explícita de esquemas de color para Inputs (InputText, Select, DatePicker, etc.)
+        colorScheme: {
+            light: {
+                formField: {
+                    background: '{zinc.50}',         // Fondo claro en Light Mode
+                    borderColor: '{zinc.300}',        // Borde gris suave
+                    hoverBorderColor: '{zinc.400}',   // Borde al pasar el mouse
+                    focusBorderColor: '{zinc.500}',   // Borde al hacer foco
+                    color: '{zinc.900}'               // Color del texto escrito
+                }
+            },
+            dark: {
+                formField: {
+                    background: '{zinc.800}',         // Fondo Zinc 800 solicitado para modo oscuro
+                    borderColor: '{zinc.700}',        // Borde sutil oscuro que combina con border-zinc-800/60
+                    hoverBorderColor: '{zinc.500}',   // Borde intermedio al pasar el mouse
+                    focusBorderColor: '{zinc.400}',   // Borde claro al enfocar (Estilo minimalista Tesla)
+                    color: '{zinc.100}'               // Color del texto escrito en modo oscuro
+                }
+            }
         }
     }
 });
@@ -53,12 +78,15 @@ createInertiaApp({
                 theme: {
                     preset: MyPreset,
                     options: {
-                        darkModeSelector: '.my-app-dark',
+                        darkModeSelector: '.dark',
                     }
                 }
             })
             // Registro de componentes globales
             .component('Accordion', Accordion)
+            .component('DatePicker', DatePicker)
+            .component('Button', Button)
+            .component('InputText', InputText)
             .mount(el);
     },
     progress: {

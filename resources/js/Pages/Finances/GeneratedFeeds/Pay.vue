@@ -59,14 +59,14 @@ const formatCurrency = (value) => {
                     
                     <!-- Columna Izquierda: Detalles del Recibo (Checkout) -->
                     <div class="lg:col-span-5">
-                        <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-900/50 relative overflow-hidden">
+                        <div class="rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-800/60 relative overflow-hidden">
                             <!-- Patrón decorativo de recibo -->
                             <div class="absolute top-0 left-0 right-0 h-2 flex justify-around">
                                 <div v-for="i in 20" :key="i" class="w-2 h-2 bg-zinc-50 dark:bg-zinc-900 rounded-b-full"></div>
                             </div>
 
                             <div class="text-center mt-4 mb-8">
-                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 mb-4">
+                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0E63B1]/10 text-[#0E63B1] mb-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
@@ -96,24 +96,24 @@ const formatCurrency = (value) => {
                                 </div>
                             </div>
 
-                            <div class="mt-8 bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl flex justify-between items-center">
-                                <span class="font-semibold text-zinc-900 dark:text-white">Total a Pagar</span>
-                                <span class="text-2xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400">{{ formatCurrency(fee.balance) }}</span>
+                            <div class="mt-8 bg-zinc-800/40 p-4 rounded-2xl flex justify-between items-center">
+                                <span class="font-semibold text-zinc-100">Total a pagar</span>
+                                <span class="text-2xl font-bold tracking-tight text-[#0E63B1]">{{ formatCurrency(fee.balance) }}</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Columna Derecha: Método de Pago y Formulario -->
                     <div class="lg:col-span-7">
-                        <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-900/50">
-                            <h3 class="text-xl font-bold text-zinc-900 dark:text-white mb-6">Método de Pago</h3>
+                        <div class="rounded-3xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-800/60">
+                            <h3 class="text-xl font-bold text-zinc-100 mb-6 m-0">Método de pago</h3>
                             
                             <!-- Tabs de Método de Pago -->
                             <div class="grid grid-cols-2 gap-4 mb-8">
                                 <button type="button" 
                                         @click="form.payment_method = 'transferencia'"
                                         class="flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all"
-                                        :class="form.payment_method === 'transferencia' ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300 dark:hover:border-zinc-600'">
+                                        :class="form.payment_method === 'transferencia' ? 'border-[#0E63B1] bg-[#0E63B1]/10 text-[#0E63B1]' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300 dark:hover:border-zinc-600'">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 mb-2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
                                     </svg>
@@ -133,7 +133,7 @@ const formatCurrency = (value) => {
 
                             <!-- Formulario de Transferencia -->
                             <form @submit.prevent="submitPayment" v-if="form.payment_method === 'transferencia'">
-                                <div class="bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl p-5 mb-6 text-sm text-indigo-800 dark:text-indigo-300">
+                                <div class="bg-[#0E63B1]/10 rounded-2xl p-5 mb-6 text-sm text-[#0E63B1]">
                                     <p class="font-bold mb-2">Instrucciones:</p>
                                     <p>Realiza la transferencia por la cantidad exacta a la CLABE <strong>012345678901234567</strong> del banco <strong>BBVA</strong> a nombre del Condominio.</p>
                                 </div>
@@ -198,7 +198,7 @@ const formatCurrency = (value) => {
 
                                 <div class="mt-8">
                                     <button type="submit" :disabled="form.processing" 
-                                            class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors">
+                                            class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-[#0E63B1] hover:bg-[#0c5599] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0E63B1] disabled:opacity-50 transition-colors">
                                         <span v-if="form.processing">Procesando...</span>
                                         <span v-else>Enviar Comprobante de Pago</span>
                                     </button>

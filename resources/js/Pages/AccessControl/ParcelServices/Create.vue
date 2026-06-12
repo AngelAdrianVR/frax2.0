@@ -1,21 +1,41 @@
 <script setup>
+import { computed } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Select from 'primevue/select';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
-// Se esperan las unidades privadas para que el guardia seleccione a qué casa va
-defineProps({
-    privateUnits: Array 
+const props = defineProps({
+    privateUnits: Array
 });
 
 const form = useForm({
     name: '',
     tracking_number: '',
     private_unit_id: '',
-    status: 'En Caseta' // Estatus inicial por defecto
+    status: 'En Caseta'
 });
 
+const statusOptions = [
+    { label: 'En caseta', value: 'En Caseta' },
+    { label: 'Recibido', value: 'Recibido' },
+    { label: 'Entregado al residente', value: 'Entregado' },
+    { label: 'Devuelto / Regresado', value: 'Devuelto' },
+];
+
+const unitOptions = computed(() =>
+    props.privateUnits.map(u => ({
+        label: u.name || `#${u.lot_number}`,
+        value: u.id,
+    }))
+);
+
 const submit = () => {
-    form.post(route('parcel-services.store'));
+    form.post(route('parcel-services.store'), {
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
 </script>
 
@@ -36,7 +56,7 @@ const submit = () => {
                             <i class="pi pi-box text-xl"></i>
                         </div>
                         <div>
-                            <h2 class="text-lg font-medium text-zinc-100 tracking-tight">Registrar Nuevo Paquete</h2>
+                            <h2 class="text-lg font-medium text-zinc-100 tracking-tight m-0">Registrar nuevo paquete</h2>
                             <p class="text-sm text-zinc-400">Ingresa los datos del paquete recibido en caseta.</p>
                         </div>
                     </div>
@@ -44,39 +64,57 @@ const submit = () => {
                     <form @submit.prevent="submit" class="p-6 sm:p-8 space-y-6">
                         <!-- Estatus -->
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Estatus Actual</label>
-                            <select v-model="form.status" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" required>
-                                <option value="En Caseta">En Caseta</option>
-                                <option value="Recibido">Recibido</option>
-                                <option value="Entregado">Entregado al Residente</option>
-                                <option value="Devuelto">Devuelto / Regresado</option>
-                            </select>
+                            <label class="text-xs font-medium text-zinc-400">Estatus actual</label>
+                            <Select
+                                v-model="form.status"
+                                :options="statusOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Selecciona estatus"
+                                class="w-full !rounded-xl !text-[13px]"
+                                :class="{ 'p-invalid': form.errors.status }"
+                                pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100"
+                            />
                             <p v-if="form.errors.status" class="text-sm text-red-400">{{ form.errors.status }}</p>
                         </div>
 
                         <!-- Destino -->
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Unidad / Casa Destino</label>
-                            <select v-model="form.private_unit_id" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" required>
-                                <option value="" disabled>Selecciona la casa destino...</option>
-                                <option v-for="unit in privateUnits" :key="unit.id" :value="unit.id">
-                                    {{ unit.name }}
-                                </option>
-                            </select>
+                            <label class="text-xs font-medium text-zinc-400">Unidad / Casa destino</label>
+                            <Select
+                                v-model="form.private_unit_id"
+                                :options="unitOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Selecciona la casa destino..."
+                                class="w-full !rounded-xl !text-[13px]"
+                                :class="{ 'p-invalid': form.errors.private_unit_id }"
+                                pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100"
+                                filter
+                            />
                             <p v-if="form.errors.private_unit_id" class="text-sm text-red-400">{{ form.errors.private_unit_id }}</p>
                         </div>
 
                         <!-- Detalles del paquete -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Mensajería / Descripción</label>
-                                <input v-model="form.name" type="text" placeholder="Ej. Amazon, DHL, Sobre Manila" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" required />
+                                <label class="text-xs font-medium text-zinc-400">Mensajería / Descripción</label>
+                                <InputText
+                                    v-model="form.name"
+                                    placeholder="Ej. Amazon, DHL, Sobre Manila"
+                                    class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500"
+                                    :class="{ 'p-invalid': form.errors.name }"
+                                />
                                 <p v-if="form.errors.name" class="text-sm text-red-400">{{ form.errors.name }}</p>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Número de Guía (Opcional)</label>
-                                <input v-model="form.tracking_number" type="text" placeholder="Ej. TBA123456789" class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 font-mono" />
+                                <label class="text-xs font-medium text-zinc-400">Número de guía (opcional)</label>
+                                <InputText
+                                    v-model="form.tracking_number"
+                                    placeholder="Ej. TBA123456789"
+                                    class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500 !font-mono"
+                                />
                                 <p v-if="form.errors.tracking_number" class="text-sm text-red-400">{{ form.errors.tracking_number }}</p>
                             </div>
                         </div>
@@ -85,10 +123,12 @@ const submit = () => {
                             <Link :href="route('parcel-services.index')" class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm">
                                 Cancelar
                             </Link>
-                            <button type="submit" :disabled="form.processing" class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50 flex items-center">
-                                <i v-if="form.processing" class="pi pi-spinner pi-spin mr-2"></i>
-                                Guardar Paquete
-                            </button>
+                            <Button
+                                type="submit"
+                                label="Guardar paquete"
+                                :loading="form.processing"
+                                class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5"
+                            />
                         </div>
                     </form>
                 </div>

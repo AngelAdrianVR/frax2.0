@@ -1,12 +1,14 @@
 <script setup>
+import { computed } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Select from 'primevue/select';
+import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
+import Button from 'primevue/button';
 
 const props = defineProps({
-    privateUnits: {
-        type: Array,
-        default: () => []
-    }
+    privateUnits: { type: Array, default: () => [] }
 });
 
 const form = useForm({
@@ -17,8 +19,20 @@ const form = useForm({
     private_unit_id: '',
 });
 
+const accessTypeOptions = [
+    { label: '🚶‍♂️ Peatonal', value: 'Peatonal' },
+    { label: '🚗 Vehicular', value: 'Vehicular' },
+];
+
+const unitOptions = computed(() =>
+    props.privateUnits.map(u => ({ label: `🏠 ${u.name}`, value: u.id }))
+);
+
 const submit = () => {
-    form.post(route('visits.store'));
+    form.post(route('visits.store'), {
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
 </script>
 
@@ -33,7 +47,7 @@ const submit = () => {
                         <i class="pi pi-arrow-left text-sm"></i>
                     </Link>
                     <div>
-                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight">Nueva Invitación</h1>
+                        <h1 class="text-lg font-medium text-zinc-100 tracking-tight m-0">Nueva invitación</h1>
                         <p class="text-sm text-zinc-400">Registra una visita para generar un pase de acceso.</p>
                     </div>
                 </div>
@@ -47,17 +61,15 @@ const submit = () => {
                             
                             <!-- Nombre -->
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Visitante</label>
-                                <input v-model="form.name" type="text" placeholder="Nombre completo" required
-                                    class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
+                                <label class="text-xs font-medium text-zinc-400">Visitante</label>
+                                <InputText v-model="form.name" placeholder="Nombre completo" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500" :class="{ 'p-invalid': form.errors.name }" />
                                 <p v-if="form.errors.name" class="text-sm text-red-400">{{ form.errors.name }}</p>
                             </div>
 
                             <!-- Motivo -->
                             <div class="flex flex-col gap-1.5">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Motivo (Opcional)</label>
-                                <textarea v-model="form.reason" rows="2" placeholder="Ej. Fiesta, Entrega, Familiar..."
-                                    class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 placeholder-zinc-500 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 resize-none"></textarea>
+                                <label class="text-xs font-medium text-zinc-400">Motivo (opcional)</label>
+                                <Textarea v-model="form.reason" rows="2" placeholder="Ej. Fiesta, Entrega, Familiar..." class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100 placeholder:!text-zinc-500" autoResize />
                             </div>
                         </div>
                     </div>
@@ -69,38 +81,21 @@ const submit = () => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Tipo de Acceso -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Tipo de Acceso</label>
-                                    <div class="relative">
-                                        <select v-model="form.access_type" 
-                                            class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 appearance-none">
-                                            <option value="Peatonal">🚶‍♂️ Peatonal</option>
-                                            <option value="Vehicular">🚗 Vehicular</option>
-                                        </select>
-                                        <i class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none text-xs"></i>
-                                    </div>
+                                    <label class="text-xs font-medium text-zinc-400">Tipo de acceso</label>
+                                    <Select v-model="form.access_type" :options="accessTypeOptions" optionLabel="label" optionValue="value" placeholder="Selecciona tipo" class="w-full !rounded-xl !text-[13px]" pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                 </div>
 
                                 <!-- Fecha de Expiración -->
                                 <div class="flex flex-col gap-1.5">
-                                    <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Válido hasta</label>
-                                    <input v-model="form.expiration_date" type="datetime-local" 
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600" />
+                                    <label class="text-xs font-medium text-zinc-400">Válido hasta</label>
+                                    <InputText v-model="form.expiration_date" type="datetime-local" class="w-full !rounded-xl !text-[13px] !bg-zinc-800 !border-zinc-700/40 !text-zinc-100" />
                                 </div>
                             </div>
 
-                            <!-- Selector de Unidad (Solo Admin) -->
+                            <!-- Selector de Unidad -->
                             <div v-if="privateUnits.length > 0" class="flex flex-col gap-1.5 pt-1">
-                                <label class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Asignar a Propiedad</label>
-                                <div class="relative">
-                                    <select v-model="form.private_unit_id" required
-                                        class="w-full bg-zinc-800 border border-zinc-700/40 text-zinc-100 rounded-xl px-4 py-2.5 transition-all duration-200 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 appearance-none">
-                                        <option value="" disabled>Selecciona una casa/lote...</option>
-                                        <option v-for="unit in privateUnits" :key="unit.id" :value="unit.id">
-                                            🏠 {{ unit.name }}
-                                        </option>
-                                    </select>
-                                    <i class="pi pi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none text-xs"></i>
-                                </div>
+                                <label class="text-xs font-medium text-zinc-400">Asignar a propiedad</label>
+                                <Select v-model="form.private_unit_id" :options="unitOptions" optionLabel="label" optionValue="value" placeholder="Selecciona una casa/lote..." class="w-full !rounded-xl !text-[13px]" :class="{ 'p-invalid': form.errors.private_unit_id }" pt:root:class="!bg-zinc-800 !border-zinc-700/40 !text-zinc-100" filter />
                             </div>
 
                         </div>
@@ -111,12 +106,7 @@ const submit = () => {
                         <Link :href="route('visits.index')" class="px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/50 font-medium rounded-xl transition-all duration-200 text-sm text-center">
                             Cancelar
                         </Link>
-                        <button type="submit" :disabled="form.processing"
-                            class="px-5 py-2.5 bg-[#0E63B1] hover:bg-[#0c5599] text-white font-medium rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200 text-sm disabled:opacity-50 flex items-center gap-2">
-                            <i v-if="form.processing" class="pi pi-spinner pi-spin"></i>
-                            <span v-if="form.processing">Generando...</span>
-                            <span v-else>Crear Pase de Acceso</span>
-                        </button>
+                        <Button type="submit" :label="form.processing ? 'Generando...' : 'Crear pase de acceso'" :loading="form.processing" class="!rounded-xl !text-[13px] !font-medium !bg-[#0E63B1] !border-[#0E63B1] !text-white hover:!bg-[#0c5599] !px-5 !py-2.5" />
                     </div>
                 </form>
             </div>
